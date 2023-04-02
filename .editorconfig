@@ -1,0 +1,4 @@
+root = true
+
+[*.{cs,vb,fs,csproj,vbproj,fsproj,props,targets,sln,slnf}]
+charset = utf-8
