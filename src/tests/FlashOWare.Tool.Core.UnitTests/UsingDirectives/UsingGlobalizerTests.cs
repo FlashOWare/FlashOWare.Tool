@@ -1,4 +1,6 @@
-namespace FlashOWare.Tool.Core.UnitTests;
+using FlashOWare.Tool.Core.UsingDirectives;
+
+namespace FlashOWare.Tool.Core.UnitTests.UsingDirectives;
 
 public class UsingGlobalizerTests
 {

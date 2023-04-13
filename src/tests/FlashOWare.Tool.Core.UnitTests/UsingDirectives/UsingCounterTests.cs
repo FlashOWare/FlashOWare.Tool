@@ -1,4 +1,6 @@
-namespace FlashOWare.Tool.Core.UnitTests;
+using FlashOWare.Tool.Core.UsingDirectives;
+
+namespace FlashOWare.Tool.Core.UnitTests.UsingDirectives;
 
 public class UsingCounterTests
 {
@@ -162,7 +164,13 @@ public class UsingCounterTests
     public void Count_BlockScopedNamespaces_FindsAllOccurences()
     {
         //Arrange
-        var documents = new List<string>{ """
+        var documents = new List<string> { """
+            //using static System;
+            //using System.Console;
+            //using MyAlias = System;
+            using static System.Console;
+            using MyAlias = System.Console;
+
             using System;
             using System.Collections.Generic;
             using System.IO;
@@ -199,6 +207,7 @@ public class UsingCounterTests
             """ };
         var expectedResult = new Dictionary<string, int>
         {
+            { "static System.Console", 1 },
             { "System", 3 },
             { "System.Collections.Generic", 3 },
             { "System.IO", 2 },
@@ -212,4 +221,10 @@ public class UsingCounterTests
         //Assert
         Assert.Equal(expectedResult, count);
     }
+
+    //TODO: explore AdhocWorkspace (empty workspace)
+    //AdhocWorkspace.Create
+    //no semantics, references to BCL, other projects
+    //Basic.Reference.Assemblies
+    //Basic.Reference.Assemblies.[TFM]
 }

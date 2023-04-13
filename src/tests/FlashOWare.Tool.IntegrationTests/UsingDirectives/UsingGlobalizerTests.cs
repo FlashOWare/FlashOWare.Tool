@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace FlashOWare.Tool.IntegrationTests;
+namespace FlashOWare.Tool.IntegrationTests.UsingDirectives;
 
 public class UsingGlobalizerTests
 {
