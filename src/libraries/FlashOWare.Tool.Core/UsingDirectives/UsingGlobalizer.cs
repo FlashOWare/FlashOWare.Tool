@@ -29,6 +29,6 @@ public static class UsingGlobalizer
         //var newNode = usingNode.WithAlias("MyAlias");
         //var newDocument = cSharpDocument.WithSyntaxRoot(null);
 
-        throw new NotImplementedException("2code ^ !2code [S2023E06] Global Usings .NET Tool Chapter 2");
+        throw new NotImplementedException("2code ^ !2code [S2023E07] Global Usings .NET Tool Chapter 3");
     }
 }
