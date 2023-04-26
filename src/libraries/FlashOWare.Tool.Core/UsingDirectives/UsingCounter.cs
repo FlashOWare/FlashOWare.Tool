@@ -1,77 +1,103 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace FlashOWare.Tool.Core.UsingDirectives;
 
-//TODO: Initial Release Version, MVP
-//# Count Usings
-//- Top Level Usings
-//- Ignore nested Usings
-//- don't count static nor alias usings
-//# Globalize Usings
-//- create new "GlobalUsings.cs" if not existing
-//- no using static
-//- no using alias
-//- error if exists
-//- both csproj & sln
+//TODO: Initial Release Version (MVP)
+//Ignore auto-generated documents and auto-generated code, see https://sourceroslyn.io/#Microsoft.CodeAnalysis/InternalUtilities/GeneratedCodeUtilities.cs
+//check if CSharp project, throw if VisualBasic project (not supported)
+//support cancellation via CancellationToken
+
+//TODO: Return Result Type
+//string ProjectName
+//Occurrence
+//int Occurrences
+
+//NAME-SUGGESTIONS
+//Using
+//UsingDirective
+//Aggregate
+//Count
+//Result
+//Increment
+
+public class UsingCountResult
+{
+    private readonly Dictionary<string, UsingOccurence> _occurences;
+
+    public UsingCountResult()
+    {
+    }
+
+    public IReadOnlyCollection<UsingOccurence> Occurences => _occurences.Values;
+
+    public bool TryGetValue(string name, out UsingOccurence occurence)
+    {
+        return _occurences.TryGetValue(name, out occurence);
+    }
+
+    public void Add(string name)
+    {
+        _occurences.Add(name, new UsingOccurence(name));
+    }
+}
+
+public class UsingOccurence
+{
+    public UsingOccurence()
+    {
+    }
+
+    [SetsRequiredMembers]
+    public UsingOccurence(string name)
+    {
+        Name = name;
+    }
+
+    public required string Name { get; init; }
+    public int Count { get; internal set; }
+    //TODO: Add flags/kinds etc. (static, global, alias)
+}
 
 public static class UsingCounter
 {
-    //TODO: "largest" type: Project, don't do solution on this level
-    public static IReadOnlyDictionary<string, int> Count(IEnumerable<Document> documents)
+    //Task<UsingCountResult>
+    //Task<IEnumerable<UsingCountResult>>
+    public static async Task<IReadOnlyDictionary<string, int>> CountAsync(Project project)
     {
         var result = new Dictionary<string, int>();
 
-        foreach (var cSharpDocument in documents)
+        foreach (Document document in project.Documents)
         {
-            //TODO: change to async!
-            //TODO: support cancellation via CancellationToken
-            SyntaxNode syntaxRoot = cSharpDocument.GetSyntaxRootAsync().Result;
-            PopulateUsings(result, syntaxRoot);
-            //var newDocument = cSharpDocument.WithSyntaxRoot(null);
+            SyntaxNode syntaxRoot = await document.GetSyntaxRootAsync();
+            var compilationUnit = (CompilationUnitSyntax)syntaxRoot;
+            CountUsings(result, compilationUnit);
         }
 
         return result;
     }
 
-    public static IReadOnlyDictionary<string, int> Count(IReadOnlyList<string> documents)
+    private static void CountUsings(Dictionary<string, int> result, CompilationUnitSyntax compilationUnit)
     {
-        var result = new Dictionary<string, int>();
-
-        foreach (string cSharpDocument in documents)
+        foreach (UsingDirectiveSyntax usingNode in compilationUnit.Usings)
         {
-            SyntaxTree cSharpSyntaxTree = CSharpSyntaxTree.ParseText(cSharpDocument);
-            SyntaxNode syntaxRoot = cSharpSyntaxTree.GetRoot();
-            PopulateUsings(result, syntaxRoot);
-        }
-
-        return result;
-    }
-
-    private static void PopulateUsings(Dictionary<string, int> result, SyntaxNode syntaxNode)
-    {
-        CompilationUnitSyntax compilationUnit = (CompilationUnitSyntax)syntaxNode;
-
-        //TODO: ignore auto-generated code: see https://sourceroslyn.io/#Microsoft.CodeAnalysis/InternalUtilities/GeneratedCodeUtilities.cs,1a8366e77d732c39
-        //TODO: consider descendIntoChildren lambda
-        foreach (UsingDirectiveSyntax usingNode in syntaxNode.DescendantNodes().OfType<UsingDirectiveSyntax>())
-        //foreach (UsingDirectiveSyntax usingNode in compilationUnit.Usings)
-        {
-            //var newNode = syntaxNode.RemoveNode(usingNode);
-            //return new node
-            //var newNode = usingNode.WithAlias("MyAlias");
-
             if (usingNode.Alias is not null)
             {
                 continue;
             }
-            if (usingNode.GlobalKeyword.IsKind(SyntaxKind.GlobalKeyword))
+            if (!usingNode.GlobalKeyword.IsKind(SyntaxKind.None))
+            {
+                continue;
+            }
+            if (!usingNode.StaticKeyword.IsKind(SyntaxKind.None))
             {
                 continue;
             }
 
             string identifier = usingNode.Name.ToString();
+
             if (result.TryGetValue(identifier, out int count))
             {
                 count++;
@@ -79,11 +105,6 @@ public static class UsingCounter
             else
             {
                 count = 1;
-            }
-
-            if (!usingNode.StaticKeyword.IsKind(SyntaxKind.None))
-            {
-                identifier = $"static {identifier}";
             }
 
             result[identifier] = count;

@@ -34,7 +34,7 @@ Project project = await workspace.OpenProjectAsync(path);
 //project.AddDocument(); //only adds to memory, not written to disk, use System.IO.File
 //workspace.TryApplyChanges(); //does not change files on disk, write via System.IO.File
 
-var map = UsingCounter.Count(project.Documents);
+var map = await UsingCounter.CountAsync(project);
 foreach (var entry in map)
 {
     WriteLine($"{entry.Key}: {entry.Value}");
