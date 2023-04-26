@@ -29,7 +29,13 @@ public static class UsingCounter
                 continue;
             }
 
-            SyntaxNode syntaxRoot = await document.GetSyntaxRootAsync();
+            SyntaxNode? syntaxRoot = await document.GetSyntaxRootAsync();
+
+            if (syntaxRoot is null)
+            {
+                throw new NotSupportedException($"{nameof(Document)}.{nameof(Document.SupportsSyntaxTree)} = {document.SupportsSyntaxTree} ({document.Name})");
+            }
+
             var compilationUnit = (CompilationUnitSyntax)syntaxRoot;
 
             SyntaxNode firstNode = compilationUnit.ChildNodes().First();

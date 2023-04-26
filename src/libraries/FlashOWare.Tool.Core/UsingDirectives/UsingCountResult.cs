@@ -17,7 +17,7 @@ public sealed class UsingCountResult //: IEquatable<UsingCountResult>
 
     internal void IncrementOrAdd(string identifier)
     {
-        if (_usings.TryGetValue(identifier, out UsingDirective usingDirective))
+        if (_usings.TryGetValue(identifier, out UsingDirective? usingDirective))
         {
             usingDirective.Occurrences++;
         }

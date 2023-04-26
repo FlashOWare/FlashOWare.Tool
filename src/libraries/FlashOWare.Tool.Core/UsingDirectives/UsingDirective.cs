@@ -4,7 +4,7 @@ namespace FlashOWare.Tool.Core.UsingDirectives;
 
 //TODO: de-dupe .ctor
 
-public sealed class UsingDirective : IEquatable<UsingDirective>
+public sealed partial class UsingDirective
 {
     internal UsingDirective()
     {
@@ -27,7 +27,15 @@ public sealed class UsingDirective : IEquatable<UsingDirective>
     public required string Name { get; init; }
     public int Occurrences { get; internal set; }
 
-    bool IEquatable<UsingDirective>.Equals(UsingDirective other)
+    public override string ToString()
+    {
+        return $"{Name}: {Occurrences}";
+    }
+}
+
+public partial class UsingDirective : IEquatable<UsingDirective>
+{
+    public bool Equals(UsingDirective? other)
     {
         if (other == null)
         {
@@ -38,10 +46,5 @@ public sealed class UsingDirective : IEquatable<UsingDirective>
             return Name.Equals(other.Name, StringComparison.Ordinal)
                 && Occurrences == other.Occurrences;
         }
-    }
-
-    public override string ToString()
-    {
-        return $"{Name}: {Occurrences}";
     }
 }

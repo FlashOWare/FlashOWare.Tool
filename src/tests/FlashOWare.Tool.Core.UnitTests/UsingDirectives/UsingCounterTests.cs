@@ -2,6 +2,7 @@ using Basic.Reference.Assemblies;
 using FlashOWare.Tool.Core.UsingDirectives;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using System.Diagnostics;
 using System.Text;
 
 namespace FlashOWare.Tool.Core.UnitTests.UsingDirectives;
@@ -346,13 +347,16 @@ public class UsingCounterTests
             solution = solution.AddDocument(documentId, document.Name, document.Text);
         }
 
-        Project project = solution.GetProject(projectId);
+        Project? project = solution.GetProject(projectId);
+        Debug.Assert(project is not null, $"{nameof(ProjectId)} {projectId} is not an id of a project that is part of this solution.");
         project = project.AddMetadataReferences(ReferenceAssemblies.NetStandard20);
         project = project.WithCompilationOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
-        var errors = project.GetCompilationAsync().Result.GetDiagnostics()
+        Debug.Assert(project.SupportsCompilation, $"{nameof(Project)}.{nameof(Project.SupportsCompilation)} = {project.SupportsCompilation} ({project.Name})");
+        var errors = project.GetCompilationAsync(CancellationToken.None).Result!.GetDiagnostics()
             .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
             .ToArray();
+
         if (errors.Length > 0)
         {
             StringBuilder test = new();
