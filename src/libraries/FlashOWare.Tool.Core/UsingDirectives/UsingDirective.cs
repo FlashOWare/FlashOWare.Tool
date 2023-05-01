@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace FlashOWare.Tool.Core.UsingDirectives;
 
+//TODO: UsingDirective is not immutable, should not be equatable
 //TODO: de-dupe .ctor
 
 public sealed partial class UsingDirective

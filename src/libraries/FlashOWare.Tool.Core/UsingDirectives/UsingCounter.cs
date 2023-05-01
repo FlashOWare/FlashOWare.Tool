@@ -75,11 +75,11 @@ public static class UsingCounter
             {
                 continue;
             }
-            if (!usingNode.GlobalKeyword.IsKind(SyntaxKind.None))
+            if (!usingNode.StaticKeyword.IsKind(SyntaxKind.None))
             {
                 continue;
             }
-            if (!usingNode.StaticKeyword.IsKind(SyntaxKind.None))
+            if (!usingNode.GlobalKeyword.IsKind(SyntaxKind.None))
             {
                 continue;
             }

@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace FlashOWare.Tool.IntegrationTests.UsingDirectives;
+namespace FlashOWare.Tool.Cli.Tests.UsingDirectives;
 
 public class UsingCounterTests
 {

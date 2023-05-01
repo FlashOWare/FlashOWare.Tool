@@ -1,1 +1,1 @@
-global using static System.Console;
+global using FlashOWare.Tool.Cli;

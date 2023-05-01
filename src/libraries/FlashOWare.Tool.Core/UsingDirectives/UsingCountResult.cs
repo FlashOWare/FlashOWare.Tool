@@ -1,10 +1,9 @@
 namespace FlashOWare.Tool.Core.UsingDirectives;
 
-//TODO: implement IEquatable (for parity with UsingDirective)
 //TODO: add required Project Name (to display in CLI output)
 //TODO: override ToString
 
-public sealed class UsingCountResult //: IEquatable<UsingCountResult>
+public sealed class UsingCountResult
 {
     private readonly Dictionary<string, UsingDirective> _usings = new();
 

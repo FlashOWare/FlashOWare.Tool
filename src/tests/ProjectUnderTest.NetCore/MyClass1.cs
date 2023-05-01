@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FlashOWare.Tool.ProjectUnderTest
+namespace ProjectUnderTest.NetCore
 {
-    internal class MyClass2
+    internal class MyClass1
     {
     }
 }

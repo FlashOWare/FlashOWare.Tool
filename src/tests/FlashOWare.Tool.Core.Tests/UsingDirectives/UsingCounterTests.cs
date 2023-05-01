@@ -5,12 +5,13 @@ using Microsoft.CodeAnalysis.CSharp;
 using System.Diagnostics;
 using System.Text;
 
-namespace FlashOWare.Tool.Core.UnitTests.UsingDirectives;
+namespace FlashOWare.Tool.Core.Tests.UsingDirectives;
 
 //TODO: use async/await over Task.Result
 //or move Errors-Check to production code instead?
 
 //TODO: more Auto-Generated Comment Tests
+//TODO: change Assert.Equal to Assert.Collection + Assert.Multiple
 
 public class UsingCounterTests
 {
@@ -339,7 +340,7 @@ public class UsingCounterTests
         var solution = workspace.CurrentSolution;
 
         var projectId = ProjectId.CreateNewId();
-        solution = solution.AddProject(projectId, "TestProject", "TestProject", LanguageNames.CSharp);
+        solution = solution.AddProject(projectId, "TestProject", "TestAssembly", LanguageNames.CSharp);
 
         foreach (var document in documents)
         {

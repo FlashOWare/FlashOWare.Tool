@@ -10,14 +10,15 @@ namespace FlashOWare.Tool.Core.UsingDirectives;
 //- File-Name?
 //  - e.g. from .NET 7 "xUnit" template: ".\Usings.cs"
 //  - e.g. from ImplicitUsings: "\obj\Debug\net7.0\MyProject.GlobalUsings.g.cs"
-//error if exists?
+//Append if exists
 
 //top-level usings only, no nested usings within namespaces
 //no using alias (neither type nor namespace alias)
 //no using static
 //no global usings
 //Ignore auto-generated documents and auto-generated code
-//both csproj & sln
+//check C# 10 or greater
+//support cancellation via CancellationToken
 
 public static class UsingGlobalizer
 {
