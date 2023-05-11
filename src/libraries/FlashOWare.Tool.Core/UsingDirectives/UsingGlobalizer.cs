@@ -19,6 +19,7 @@ namespace FlashOWare.Tool.Core.UsingDirectives;
 //Ignore auto-generated documents and auto-generated code
 //check C# 10 or greater
 //support cancellation via CancellationToken
+//check no compiler errors
 
 public static class UsingGlobalizer
 {
@@ -30,6 +31,6 @@ public static class UsingGlobalizer
         //var newNode = usingNode.WithAlias("MyAlias");
         //var newDocument = cSharpDocument.WithSyntaxRoot(null);
 
-        throw new NotImplementedException("2code ^ !2code [S2023E07] Global Usings .NET Tool Chapter 3");
+        throw new NotImplementedException("2code ^ !2code [S2023E08] Global Usings .NET Tool Chapter 4");
     }
 }

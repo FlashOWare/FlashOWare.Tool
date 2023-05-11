@@ -5,6 +5,34 @@ namespace FlashOWare.Tool.Core.Tests.UsingDirectives;
 public class UsingGlobalizerTests
 {
     [Fact]
+    public void Globalize_NoLocalUsingDirectives_NoReplace()
+    {
+        //Arrange
+        var documents = new List<string> { """
+            internal class Program
+            {
+                private static void Main(string[] args)
+                {
+                    System.Console.WriteLine("Hello, World!");
+                }
+            }
+            """ };
+        var expectedResult = new List<string> { """
+            internal class Program
+            {
+                private static void Main(string[] args)
+                {
+                    System.Console.WriteLine("Hello, World!");
+                }
+            }
+            """ };
+        //Act
+        var actualProject = UsingGlobalizer.Globalize(documents, "System");
+        //Assert
+        Assert.Equal(expectedResult, actualProject);
+    }
+
+    [Fact]
     public void Globalize_LocalUsingDirective_ReplacesWithGlobalUsingDirective()
     {
         //Arrange

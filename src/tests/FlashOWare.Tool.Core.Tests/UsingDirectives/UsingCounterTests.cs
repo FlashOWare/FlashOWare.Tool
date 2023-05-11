@@ -1,25 +1,53 @@
-using Basic.Reference.Assemblies;
+using FlashOWare.Tool.Core.Tests.Testing;
 using FlashOWare.Tool.Core.UsingDirectives;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using System.Diagnostics;
-using System.Text;
 
 namespace FlashOWare.Tool.Core.Tests.UsingDirectives;
 
-//TODO: use async/await over Task.Result
-//or move Errors-Check to production code instead?
-
-//TODO: more Auto-Generated Comment Tests
 //TODO: change Assert.Equal to Assert.Collection + Assert.Multiple
 
 public class UsingCounterTests
 {
     [Fact]
+    public async Task CountAsync_Empty_FindsNoOccurrences()
+    {
+        //Arrange
+        var project = await CreateProjectCheckedAsync("");
+        var expectedResult = new UsingDirective[]
+        {
+        };
+        //Act
+        var result = await UsingCounter.CountAsync(project);
+        //Assert
+        Assert.Equal(expectedResult, result.Usings);
+    }
+
+    [Fact]
+    public async Task CountAsync_NoUsings_FindsNoOccurrences()
+    {
+        //Arrange
+        var project = await CreateProjectCheckedAsync("""
+            internal class Program
+            {
+                private static void Main(string[] args)
+                {
+                    System.Console.WriteLine("Hello, World!");
+                }
+            }
+            """);
+        var expectedResult = new UsingDirective[]
+        {
+        };
+        //Act
+        var result = await UsingCounter.CountAsync(project);
+        //Assert
+        Assert.Equal(expectedResult, result.Usings);
+    }
+
+    [Fact]
     public async Task CountAsync_SingleUsing_FindsOneOccurrence()
     {
         //Arrange
-        var project = CreateProject("""
+        var project = await CreateProjectCheckedAsync("""
             using System;
             """);
         var expectedResult = new UsingDirective[]
@@ -36,7 +64,7 @@ public class UsingCounterTests
     public async Task CountAsync_MultipleUsings_FindsMultipleOccurrences()
     {
         //Arrange
-        var project = CreateProject("""
+        var project = await CreateProjectCheckedAsync("""
             using System;
             using System.Collections.Generic;
             using System.IO;
@@ -65,7 +93,7 @@ public class UsingCounterTests
     public async Task CountAsync_SingleUsingInMultipleDocuments_FindsTwoOccurrences()
     {
         //Arrange
-        var project = CreateProject("""
+        var project = await CreateProjectCheckedAsync("""
             using System;
             """, """
             using System;
@@ -84,7 +112,7 @@ public class UsingCounterTests
     public async Task CountAsync_MultipleUsingsInMultipleDocuments_FindsManyOccurrences()
     {
         //Arrange
-        var project = CreateProject("""
+        var project = await CreateProjectCheckedAsync("""
             using System;
             using System.Collections.Generic;
             using System.IO;
@@ -123,7 +151,7 @@ public class UsingCounterTests
     public async Task CountAsync_FileScopedNamespaces_FindsAllTopLevelOccurrences()
     {
         //Arrange
-        var project = CreateProject("""
+        var project = await CreateProjectCheckedAsync("""
             using System;
             using System.Collections.Generic;
             using System.IO;
@@ -175,7 +203,7 @@ public class UsingCounterTests
     public async Task CountAsync_BlockScopedNamespaces_FindsAllTopLevelOccurrences()
     {
         //Arrange
-        var project = CreateProject("""
+        var project = await CreateProjectCheckedAsync("""
             using System;
             using System.Collections.Generic;
             using System.IO;
@@ -230,7 +258,7 @@ public class UsingCounterTests
     public async Task CountAsync_WithUsingAlias_DoNotInclude()
     {
         //Arrange
-        var project = CreateProject("""
+        var project = await CreateProjectCheckedAsync("""
             using MyNamespace = System;
             using MyType = System.Console;
             """);
@@ -247,7 +275,7 @@ public class UsingCounterTests
     public async Task CountAsync_WithUsingStatic_DoNotInclude()
     {
         //Arrange
-        var project = CreateProject("""
+        var project = await CreateProjectCheckedAsync("""
             using static System.Console;
             """);
         var expectedResult = new UsingDirective[]
@@ -263,7 +291,7 @@ public class UsingCounterTests
     public async Task CountAsync_WithGlobalUsings_DoNotInclude()
     {
         //Arrange
-        var project = CreateProject("""
+        var project = await CreateProjectCheckedAsync("""
             global using System;
             global using MyNamespace = System;
             global using MyType = System.Console;
@@ -279,18 +307,45 @@ public class UsingCounterTests
     }
 
     [Fact]
+    public async Task CountAsync_GeneratedCodeAttribute_Ignore()
+    {
+        //Arrange
+        var project = await CreateProjectCheckedAsync("""
+            using System.CodeDom.Compiler;
+            [assembly: GeneratedCodeAttribute("FlashOWare.Tool", "1.0.0.0")]
+            """, """
+            using System;
+            using System.Collections.Generic;
+            using System.IO;
+            using System.Linq;
+            using System.Net.Http;
+            using System.Threading;
+            using System.Threading.Tasks;
+            """);
+        var expectedResult = new UsingDirective[]
+        {
+        };
+        //Act
+        var result = await UsingCounter.CountAsync(project);
+        //Assert
+        Assert.Equal(expectedResult, result.Usings);
+    }
+
+    [Fact]
     public async Task CountAsync_AutoGeneratedDocuments_Ignore()
     {
         //Arrange
-        var project = CreateProject(
+        var project = await CreateProjectCheckedAsync(
             ("TemporaryGeneratedFile_File1.cs", "using System;"),
             ("File2.designer.cs", "using System;"),
             ("File3.generated.cs", "using System;"),
             ("File4.g.cs", "using System;"),
-            ("File5.g.i.cs", "using System;")
+            ("File5.g.i.cs", "using System;"),
+            ("File6.cs", "using System.IO;")
         );
         var expectedResult = new UsingDirective[]
         {
+            new("System.IO", 1),
         };
         //Act
         var result = await UsingCounter.CountAsync(project);
@@ -302,25 +357,29 @@ public class UsingCounterTests
     public async Task CountAsync_AutoGeneratedTexts_Ignore()
     {
         //Arrange
-        var project = CreateProject("""
-            //<auto-generated>
+        var project = await CreateProjectCheckedAsync("""
+            // <auto-generated>
             using System;
             """, """
-            //<auto-generated/>
+            // <auto-generated/>
             using System;
             """, """
-            /*<auto-generated>*/
+            /* <auto-generated> */
             using System;
             """, """
-            /*<auto-generated/>*/
+            /* <auto-generated/> */
             using System;
             """, """
             // auto-generated
-            using System;
+            using System.Linq;
+            """, """
+            /* auto-generated */
+            using System.Threading;
             """);
         var expectedResult = new UsingDirective[]
         {
-            new("System", 1),
+            new("System.Linq", 1),
+            new("System.Threading", 1),
         };
         //Act
         var result = await UsingCounter.CountAsync(project);
@@ -328,47 +387,47 @@ public class UsingCounterTests
         Assert.Equal(expectedResult, result.Usings);
     }
 
-    private static Project CreateProject(params string[] documents)
+    [Fact]
+    public async Task CountAsync_Error_Throws()
     {
-        int index = 0;
-        return CreateProject(documents.Select(text => ($"TestDocument{index++}.cs", text)).ToArray());
+        //Arrange
+        var project = CreateProjectUnchecked("Hello, World!");
+        //Act
+        var result = () => UsingCounter.CountAsync(project);
+        //Assert
+        await Assert.ThrowsAsync<InvalidOperationException>(result);
     }
 
-    private static Project CreateProject(params (string Name, string Text)[] documents)
+    [Fact]
+    public async Task CountAsync_Cancel_Throws()
     {
-        using var workspace = new AdhocWorkspace();
-        var solution = workspace.CurrentSolution;
+        //Arrange
+        var project = await CreateProjectCheckedAsync("""
+            using System;
+            """);
+        var cancellationToken = new CancellationToken(true);
+        //Act
+        var result = () => UsingCounter.CountAsync(project, cancellationToken);
+        //Assert
+        await Assert.ThrowsAsync<OperationCanceledException>(result);
+    }
 
-        var projectId = ProjectId.CreateNewId();
-        solution = solution.AddProject(projectId, "TestProject", "TestAssembly", LanguageNames.CSharp);
+    [Fact]
+    public async Task CountAsync_VisualBasic_Throws()
+    {
+        //Arrange
+        var project = await VisualBasicFactory.CreateProjectCheckedAsync(("Program.vb", """
+            Imports System
 
-        foreach (var document in documents)
-        {
-            var documentId = DocumentId.CreateNewId(projectId);
-            solution = solution.AddDocument(documentId, document.Name, document.Text);
-        }
-
-        Project? project = solution.GetProject(projectId);
-        Debug.Assert(project is not null, $"{nameof(ProjectId)} {projectId} is not an id of a project that is part of this solution.");
-        project = project.AddMetadataReferences(ReferenceAssemblies.NetStandard20);
-        project = project.WithCompilationOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-
-        Debug.Assert(project.SupportsCompilation, $"{nameof(Project)}.{nameof(Project.SupportsCompilation)} = {project.SupportsCompilation} ({project.Name})");
-        var errors = project.GetCompilationAsync(CancellationToken.None).Result!.GetDiagnostics()
-            .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
-            .ToArray();
-
-        if (errors.Length > 0)
-        {
-            StringBuilder test = new();
-            foreach (var error in errors)
-            {
-                test.AppendLine(error.ToString());
-            }
-
-            throw new InvalidOperationException(test.ToString());
-        }
-
-        return project;
+            Module Program
+                Sub Main(args As String())
+                    Console.WriteLine("Hello World!")
+                End Sub
+            End Module
+            """));
+        //Act
+        var result = () => UsingCounter.CountAsync(project);
+        //Assert
+        await Assert.ThrowsAsync<InvalidOperationException>(result);
     }
 }
