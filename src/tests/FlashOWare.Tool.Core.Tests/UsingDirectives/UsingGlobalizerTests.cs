@@ -1,3 +1,4 @@
+using FlashOWare.Tool.Core.Tests.Assertions;
 using FlashOWare.Tool.Core.UsingDirectives;
 
 namespace FlashOWare.Tool.Core.Tests.UsingDirectives;
@@ -5,10 +6,10 @@ namespace FlashOWare.Tool.Core.Tests.UsingDirectives;
 public class UsingGlobalizerTests
 {
     [Fact]
-    public void Globalize_NoLocalUsingDirectives_NoReplace()
+    public async Task Globalize_NoLocalUsingDirectives_NoReplace()
     {
         //Arrange
-        var documents = new List<string> { """
+        var project = await CreateProjectCheckedAsync("""
             internal class Program
             {
                 private static void Main(string[] args)
@@ -16,8 +17,8 @@ public class UsingGlobalizerTests
                     System.Console.WriteLine("Hello, World!");
                 }
             }
-            """ };
-        var expectedResult = new List<string> { """
+            """);
+        var expectedProject = await CreateProjectCheckedAsync("""
             internal class Program
             {
                 private static void Main(string[] args)
@@ -25,35 +26,36 @@ public class UsingGlobalizerTests
                     System.Console.WriteLine("Hello, World!");
                 }
             }
-            """ };
+            """);
         //Act
-        var actualProject = UsingGlobalizer.Globalize(documents, "System");
+        var actualProject = await UsingGlobalizer.GlobalizeAsync(project, "System");
         //Assert
-        Assert.Equal(expectedResult, actualProject);
+        await RoslynAssert.EqualAsync(expectedProject, actualProject);
     }
 
     [Fact]
-    public void Globalize_LocalUsingDirective_ReplacesWithGlobalUsingDirective()
+    public async Task Globalize_LocalUsingDirective_ReplacesWithGlobalUsingDirective()
     {
         //Arrange
-        var documents = new List<string> { """
+        var project = await CreateProjectCheckedAsync("""
             using System;
-            """ };
-        var expectedResult = new List<string> {
+            """);
+        var expectedProject = await CreateProjectCheckedAsync(
             "", """
             global using System;
-            """ };
+
+            """);
         //Act
-        var actualProject = UsingGlobalizer.Globalize(documents, "System");
+        var actualProject = await UsingGlobalizer.GlobalizeAsync(project, "System");
         //Assert
-        Assert.Equal(expectedResult, actualProject);
+        await RoslynAssert.EqualAsync(expectedProject, actualProject);
     }
 
     [Fact]
-    public void Globalize_LocalUsingDirectives_ReplacesWithGlobalUsingDirective()
+    public async Task Globalize_LocalUsingDirectives_ReplacesWithGlobalUsingDirective()
     {
         //Arrange
-        var documents = new List<string> { """
+        var project = await CreateProjectCheckedAsync("""
             using System;
             using System.Collections.Generic;
             using System.IO;
@@ -61,8 +63,8 @@ public class UsingGlobalizerTests
             using System.Net.Http;
             using System.Threading;
             using System.Threading.Tasks;
-            """ };
-        var expectedResult = new List<string> { """
+            """);
+        var expectedProject = await CreateProjectCheckedAsync("""
             using System;
             using System.IO;
             using System.Linq;
@@ -71,38 +73,40 @@ public class UsingGlobalizerTests
             using System.Threading.Tasks;
             """, """
             global using System.Collections.Generic;
-            """ };
+
+            """);
         //Act
-        var actualProject = UsingGlobalizer.Globalize(documents, "System.Collections.Generic");
+        var actualProject = await UsingGlobalizer.GlobalizeAsync(project, "System.Collections.Generic");
         //Assert
-        Assert.Equal(expectedResult, actualProject);
+        await RoslynAssert.EqualAsync(expectedProject, actualProject);
     }
 
     [Fact]
-    public void Globalize_MultipleDocuments_ReplacesWithGlobalUsingDirective()
+    public async Task Globalize_MultipleDocuments_ReplacesWithGlobalUsingDirective()
     {
         //Arrange
-        var documents = new List<string> { """
+        var project = await CreateProjectCheckedAsync("""
             using System;
             """, """
             using System;
-            """ };
-        var expectedResult = new List<string> {
+            """);
+        var expectedProject = await CreateProjectCheckedAsync(
             "",
             "", """
             global using System;
-            """ };
+
+            """);
         //Act
-        var actualProject = UsingGlobalizer.Globalize(documents, "System");
+        var actualProject = await UsingGlobalizer.GlobalizeAsync(project, "System");
         //Assert
-        Assert.Equal(expectedResult, actualProject);
+        await RoslynAssert.EqualAsync(expectedProject, actualProject);
     }
 
     [Fact]
-    public void Globalize_MultipleDocuments_ReplacesWithGlobalUsingDirectives()
+    public async Task Globalize_MultipleDocuments_ReplacesWithGlobalUsingDirectives()
     {
         //Arrange
-        var documents = new List<string> { """
+        var project = await CreateProjectCheckedAsync("""
             using System;
             using System.Collections.Generic;
             using System.IO;
@@ -120,8 +124,8 @@ public class UsingGlobalizerTests
             using System.Collections.Generic;
             using System.IO;
             using System.Threading;
-            """ };
-        var expectedResult = new List<string> { """
+            """);
+        var expectedProject = await CreateProjectCheckedAsync("""
             using System;
             using System.IO;
             using System.Linq;
@@ -138,18 +142,19 @@ public class UsingGlobalizerTests
             using System.Threading;
             """, """
             global using System.Collections.Generic;
-            """ };
+
+            """);
         //Act
-        var actualProject = UsingGlobalizer.Globalize(documents, "System.Collections.Generic");
+        var actualProject = await UsingGlobalizer.GlobalizeAsync(project, "System.Collections.Generic");
         //Assert
-        Assert.Equal(expectedResult, actualProject);
+        await RoslynAssert.EqualAsync(expectedProject, actualProject);
     }
 
     [Fact]
-    public void Globalize_FileScopedNamespaces_ReplacesWithGlobalUsingDirective()
+    public async Task Globalize_FileScopedNamespaces_ReplacesWithGlobalUsingDirective()
     {
         //Arrange
-        var documents = new List<string> { """
+        var project = await CreateProjectCheckedAsync("""
             using System;
             using System.Collections.Generic;
             using System.IO;
@@ -180,8 +185,8 @@ public class UsingGlobalizerTests
             using System.Threading;
 
             public class MyClass3 {}
-            """ };
-        var expectedResult = new List<string> { """
+            """);
+        var expectedProject = await CreateProjectCheckedAsync("""
             using System;
             using System.IO;
             using System.Linq;
@@ -211,18 +216,19 @@ public class UsingGlobalizerTests
             public class MyClass3 {}
             """, """
             global using System.Collections.Generic;
-            """ };
+
+            """);
         //Act
-        var actualProject = UsingGlobalizer.Globalize(documents, "System.Collections.Generic");
+        var actualProject = await UsingGlobalizer.GlobalizeAsync(project, "System.Collections.Generic");
         //Assert
-        Assert.Equal(expectedResult, actualProject);
+        await RoslynAssert.EqualAsync(expectedProject, actualProject);
     }
 
     [Fact]
-    public void Globalize_BlockScopedNamespaces_ReplacesWithGlobalUsingDirective()
+    public async Task Globalize_BlockScopedNamespaces_ReplacesWithGlobalUsingDirective()
     {
         //Arrange
-        var documents = new List<string> { """
+        var project = await CreateProjectCheckedAsync("""
             using System;
             using System.Collections.Generic;
             using System.IO;
@@ -256,8 +262,8 @@ public class UsingGlobalizerTests
 
                 public class MyClass3 {}
             }
-            """ };
-        var expectedResult = new List<string> { """
+            """);
+        var expectedProject = await CreateProjectCheckedAsync("""
             using System;
             using System.IO;
             using System.Linq;
@@ -290,10 +296,11 @@ public class UsingGlobalizerTests
             }
             """, """
             global using System.Collections.Generic;
-            """ };
+
+            """);
         //Act
-        var actualProject = UsingGlobalizer.Globalize(documents, "System.Collections.Generic");
+        var actualProject = await UsingGlobalizer.GlobalizeAsync(project, "System.Collections.Generic");
         //Assert
-        Assert.Equal(expectedResult, actualProject);
+        await RoslynAssert.EqualAsync(expectedProject, actualProject);
     }
 }

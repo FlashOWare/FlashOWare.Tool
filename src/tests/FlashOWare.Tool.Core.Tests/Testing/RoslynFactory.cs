@@ -51,13 +51,13 @@ internal static partial class RoslynFactory
     {
         if (diagnostics.Length > 0)
         {
-            StringBuilder test = new();
+            StringBuilder message = new();
             foreach (var diagnostic in diagnostics)
             {
-                test.AppendLine(diagnostic.ToString());
+                message.AppendLine(diagnostic.ToString());
             }
 
-            throw new InvalidOperationException(test.ToString());
+            throw new InvalidOperationException(message.ToString());
         }
     }
 }

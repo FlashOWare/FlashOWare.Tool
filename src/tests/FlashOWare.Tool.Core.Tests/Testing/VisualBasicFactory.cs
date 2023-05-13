@@ -8,6 +8,16 @@ namespace FlashOWare.Tool.Core.Tests.Testing;
 
 internal static partial class VisualBasicFactory
 {
+    public static Project CreateProjectUnchecked()
+    {
+        return CreateProjectUnchecked(Array.Empty<string>());
+    }
+
+    public static Task<Project> CreateProjectCheckedAsync()
+    {
+        return CreateProjectCheckedAsync(Array.Empty<string>());
+    }
+
     public static Project CreateProjectUnchecked(params string[] documents)
     {
         int index = 0;

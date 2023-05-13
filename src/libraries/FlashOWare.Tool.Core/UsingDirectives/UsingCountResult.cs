@@ -1,7 +1,6 @@
-namespace FlashOWare.Tool.Core.UsingDirectives;
+using System.Diagnostics.CodeAnalysis;
 
-//TODO: add required Project Name (to display in CLI output)
-//TODO: override ToString
+namespace FlashOWare.Tool.Core.UsingDirectives;
 
 public sealed class UsingCountResult
 {
@@ -11,7 +10,13 @@ public sealed class UsingCountResult
     {
     }
 
-    //public required string ProjectName { get; init; }
+    [SetsRequiredMembers]
+    internal UsingCountResult(string projectName)
+    {
+        ProjectName = projectName;
+    }
+
+    public required string ProjectName { get; init; }
     public IReadOnlyCollection<UsingDirective> Usings => _usings.Values;
 
     internal void IncrementOrAdd(string identifier)
@@ -24,5 +29,10 @@ public sealed class UsingCountResult
         {
             _usings.Add(identifier, new UsingDirective(identifier));
         }
+    }
+
+    public override string ToString()
+    {
+        return ProjectName;
     }
 }

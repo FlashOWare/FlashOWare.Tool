@@ -2,7 +2,7 @@ using FlashOWare.Tool.Core.CodeAnalysis;
 
 namespace FlashOWare.Tool.Core.Tests.CodeAnalysis;
 
-public class RoslynUtilitiesTests
+public partial class RoslynUtilitiesTests
 {
     [Theory]
     [MemberData(nameof(GeneratedCodeAttribute))]

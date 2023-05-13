@@ -1,3 +1,8 @@
+using FlashOWare.Tool.Core.CodeAnalysis;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.Diagnostics;
+
 namespace FlashOWare.Tool.Core.UsingDirectives;
 
 //TODO: Initial Release Version (MVP)
@@ -17,20 +22,52 @@ namespace FlashOWare.Tool.Core.UsingDirectives;
 //no using static
 //no global usings
 //Ignore auto-generated documents and auto-generated code
-//check C# 10 or greater
+//check C# project and LangVersion 10 or greater
 //support cancellation via CancellationToken
 //check no compiler errors
 
 public static class UsingGlobalizer
 {
-    public static IReadOnlyList<string> Globalize(IReadOnlyList<string> documents, string localUsing)
+    public static async Task<Project> GlobalizeAsync(Project project, string localUsing)
     {
-        //TODO
-        //var newNode = rootSyntaxNode.RemoveNode(usingNode);
-        //return new node
-        //var newNode = usingNode.WithAlias("MyAlias");
-        //var newDocument = cSharpDocument.WithSyntaxRoot(null);
+        var solution = project.Solution;
 
-        throw new NotImplementedException("2code ^ !2code [S2023E08] Global Usings .NET Tool Chapter 4");
+        foreach (Document document in project.Documents)
+        {
+            SyntaxNode? syntaxRoot = await document.GetSyntaxRootAsync();
+            if (syntaxRoot is null)
+            {
+                throw new InvalidOperationException($"{nameof(Document)}.{nameof(Document.SupportsSyntaxTree)} = {document.SupportsSyntaxTree} ({document.Name})");
+            }
+
+            var compilationUnit = (CompilationUnitSyntax)syntaxRoot;
+
+            solution = await GlobalizeAsync(solution, project, document, compilationUnit, localUsing);
+        }
+
+        var newProject = solution.GetProject(project.Id);
+        Debug.Assert(newProject is not null, $"{nameof(ProjectId)} is not an {nameof(ProjectId)} of a {nameof(Project)} that is part of this {nameof(Solution)}.");
+        return newProject;
+    }
+
+    private static async Task<Solution> GlobalizeAsync(Solution solution, Project project, Document document, CompilationUnitSyntax compilationUnit, string localUsing)
+    {
+        var options = await document.GetOptionsAsync();
+
+        foreach (UsingDirectiveSyntax usingNode in compilationUnit.Usings)
+        {
+            if (usingNode.Name.ToString() == localUsing)
+            {
+                var newRoot = compilationUnit.RemoveNode(usingNode, default);
+                Debug.Assert(newRoot is not null, "The root node itself is removed.");
+
+                solution = solution.WithDocumentSyntaxRoot(document.Id, newRoot);
+
+                var syntaxRoot = CSharpSyntaxFactory.GlobalUsingDirectiveRoot(localUsing, options);
+                solution = solution.AddDocument(DocumentId.CreateNewId(project.Id), "GlobalUsings.cs", syntaxRoot, new string[] { "Properties" });
+            }
+        }
+
+        return solution;
     }
 }

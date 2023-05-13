@@ -2,9 +2,6 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace FlashOWare.Tool.Core.UsingDirectives;
 
-//TODO: UsingDirective is not immutable, should not be equatable
-//TODO: de-dupe .ctor
-
 public sealed partial class UsingDirective
 {
     internal UsingDirective()
@@ -13,9 +10,8 @@ public sealed partial class UsingDirective
 
     [SetsRequiredMembers]
     internal UsingDirective(string name)
+        : this(name, 1)
     {
-        Name = name;
-        Occurrences = 1;
     }
 
     [SetsRequiredMembers]
@@ -31,21 +27,5 @@ public sealed partial class UsingDirective
     public override string ToString()
     {
         return $"{Name}: {Occurrences}";
-    }
-}
-
-public partial class UsingDirective : IEquatable<UsingDirective>
-{
-    public bool Equals(UsingDirective? other)
-    {
-        if (other == null)
-        {
-            return false;
-        }
-        else
-        {
-            return Name.Equals(other.Name, StringComparison.Ordinal)
-                && Occurrences == other.Occurrences;
-        }
     }
 }
