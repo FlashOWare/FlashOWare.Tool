@@ -58,7 +58,7 @@ public static class UsingGlobalizer
         {
             if (usingNode.Name.ToString() == localUsing)
             {
-                var newRoot = compilationUnit.RemoveNode(usingNode, default);
+                var newRoot = compilationUnit.RemoveNode(usingNode, SyntaxRemoveOptions.KeepNoTrivia);
                 Debug.Assert(newRoot is not null, "The root node itself is removed.");
 
                 solution = solution.WithDocumentSyntaxRoot(document.Id, newRoot);

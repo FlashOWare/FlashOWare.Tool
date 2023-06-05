@@ -17,7 +17,7 @@ internal static partial class RoslynFactory
 
     public static void Check(Compilation compilation)
     {
-        ThrowIfContainsError(compilation.GetDiagnostics());
+        ThrowIfContainsError(compilation.GetDiagnostics(CancellationToken.None));
     }
 
     public static void Check(Microsoft.CodeAnalysis.CSharp.Syntax.CompilationUnitSyntax root)

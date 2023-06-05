@@ -51,7 +51,7 @@ internal static class RoslynAssert
 
                     """);
 
-                var diff = InlineDiffBuilder.Diff(expectedText, actualText);
+                var diff = InlineDiffBuilder.Diff(expectedText, actualText, true, false, null);
 
                 foreach (var line in diff.Lines)
                 {
