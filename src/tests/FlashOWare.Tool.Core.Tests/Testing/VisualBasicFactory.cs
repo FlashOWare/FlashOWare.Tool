@@ -35,12 +35,12 @@ internal static partial class VisualBasicFactory
         using var workspace = new AdhocWorkspace();
         var solution = workspace.CurrentSolution;
 
-        var projectId = ProjectId.CreateNewId();
+        var projectId = ProjectId.CreateNewId("Test-Project-Id");
         solution = solution.AddProject(projectId, "TestProject", "TestAssembly", LanguageNames.VisualBasic);
 
         foreach (var document in documents)
         {
-            var documentId = DocumentId.CreateNewId(projectId);
+            var documentId = DocumentId.CreateNewId(projectId, $"Test-Document-Id: {document.Name}");
             solution = solution.AddDocument(documentId, document.Name, document.Text);
         }
 
