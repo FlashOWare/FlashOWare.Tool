@@ -1,4 +1,5 @@
 using FlashOWare.Tool.Cli.CodeAnalysis;
+using FlashOWare.Tool.Cli.Diagnostics;
 using FlashOWare.Tool.Core.UsingDirectives;
 using Microsoft.Build.Locator;
 using Microsoft.CodeAnalysis;
@@ -46,6 +47,6 @@ public static class CliApplication
         var newProject = await UsingGlobalizer.GlobalizeAsync(project, "System");
         workspace.ApplyChanges(newProject.Solution);
 
-        return 0;
+        return ExitCodes.Success;
     }
 }
