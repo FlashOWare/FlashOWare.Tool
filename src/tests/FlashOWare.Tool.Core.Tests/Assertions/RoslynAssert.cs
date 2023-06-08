@@ -1,6 +1,7 @@
 using DiffPlex.DiffBuilder;
 using DiffPlex.DiffBuilder.Model;
 using Microsoft.CodeAnalysis;
+using System.Diagnostics;
 using System.Text;
 using Xunit.Sdk;
 
@@ -10,6 +11,12 @@ internal static class RoslynAssert
 {
     public static async Task EqualAsync(Project expected, Project actual)
     {
+        if (ReferenceEqualityComparer.Instance.Equals(expected, actual))
+        {
+            string message = $"{nameof(expected)} and {nameof(actual)} are {nameof(ReferenceEquals)}";
+            throw new XunitException(message);
+        }
+
         if (expected.Name != actual.Name)
         {
             string message = $"""
@@ -36,17 +43,30 @@ internal static class RoslynAssert
             var expectedDocument = expectedDocuments[i];
             var actualDocument = actualDocuments[i];
 
-            var expectedSource = await expectedDocument.GetTextAsync(CancellationToken.None);
-            var actualSource = await actualDocument.GetTextAsync(CancellationToken.None);
+            string expectedDocumentPath = GetPath(expectedDocument);
+            string actualDocumentPath = GetPath(actualDocument);
 
-            var expectedText = expectedSource.ToString().ReplaceLineEndings();
-            var actualText = actualSource.ToString().ReplaceLineEndings();
+            var expectedText = await GetNormalizedTextAsync(expectedDocument);
+            var actualText = await GetNormalizedTextAsync(actualDocument);
 
-            if (expectedDocument.Name != actualDocument.Name || expectedText != actualText)
+            bool hasTextChanged = expectedText != actualText;
+            if (hasTextChanged || expectedDocumentPath != actualDocumentPath)
             {
+                if (!hasTextChanged)
+                {
+                    throw new XunitException($"""
+                        Expected: {expectedDocumentPath}
+                        Actual:   {actualDocumentPath}
+                        Content did match. No diff to be shown:
+
+                        {actualText}
+                        
+                        """);
+                }
+
                 var message = new StringBuilder($"""
-                    Expected: {expectedDocument.Name}
-                    Actual:   {actualDocument.Name}
+                    Expected: {expectedDocumentPath}
+                    Actual:   {actualDocumentPath}
                     Content did not match. Diff shown with expected as baseline:
 
                     """);
@@ -74,5 +94,17 @@ internal static class RoslynAssert
         return documents.Length == 1
             ? $"{documents.Length} {nameof(Document)}"
             : $"{documents.Length} {nameof(Document)}s";
+    }
+
+    private static string GetPath(Document document)
+    {
+        Debug.Assert(document.FilePath is null, $"Expected no document file: {document.FilePath}");
+        return String.Join(Path.DirectorySeparatorChar, document.Folders.Append(document.Name));
+    }
+
+    private static async Task<string> GetNormalizedTextAsync(Document document)
+    {
+        var sourceText = await document.GetTextAsync(CancellationToken.None);
+        return sourceText.ToString().ReplaceLineEndings();
     }
 }
