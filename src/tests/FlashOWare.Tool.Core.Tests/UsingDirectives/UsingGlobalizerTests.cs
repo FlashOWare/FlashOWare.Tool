@@ -16,9 +16,9 @@ public class UsingGlobalizerTests
         var project = await CreateProjectCheckedAsync();
         var expectedProject = await CreateProjectCheckedAsync();
         //Act
-        var actualProject = await UsingGlobalizer.GlobalizeAsync(project, "System");
+        var actualResult = await UsingGlobalizer.GlobalizeAsync(project, "System");
         //Assert
-        await RoslynAssert.EqualAsync(expectedProject, actualProject);
+        await ToolAssert.AssertAsync(actualResult, expectedProject, "System", 0, DefaultDocumentName);
     }
 
     [Fact]
@@ -44,9 +44,9 @@ public class UsingGlobalizerTests
             }
             """);
         //Act
-        var actualProject = await UsingGlobalizer.GlobalizeAsync(project, "System");
+        var actualResult = await UsingGlobalizer.GlobalizeAsync(project, "System");
         //Assert
-        await RoslynAssert.EqualAsync(expectedProject, actualProject);
+        await ToolAssert.AssertAsync(actualResult, expectedProject, "System", 0, DefaultDocumentName);
     }
 
     [Fact]
@@ -62,9 +62,9 @@ public class UsingGlobalizerTests
 
             """).WithDocumentNameAsync(^1, DefaultDocumentName);
         //Act
-        var actualProject = await UsingGlobalizer.GlobalizeAsync(project, "System");
+        var actualResult = await UsingGlobalizer.GlobalizeAsync(project, "System");
         //Assert
-        await RoslynAssert.EqualAsync(expectedProject, actualProject);
+        await ToolAssert.AssertAsync(actualResult, expectedProject, "System", 1, DefaultDocumentName);
     }
 
     [Fact]
@@ -92,9 +92,9 @@ public class UsingGlobalizerTests
 
             """).WithDocumentNameAsync(^1, DefaultDocumentName);
         //Act
-        var actualProject = await UsingGlobalizer.GlobalizeAsync(project, "System.Collections.Generic");
+        var actualResult = await UsingGlobalizer.GlobalizeAsync(project, "System.Collections.Generic");
         //Assert
-        await RoslynAssert.EqualAsync(expectedProject, actualProject);
+        await ToolAssert.AssertAsync(actualResult, expectedProject, "System.Collections.Generic", 1, DefaultDocumentName);
     }
 
     [Fact]
@@ -113,9 +113,9 @@ public class UsingGlobalizerTests
 
             """).WithDocumentNameAsync(^1, DefaultDocumentName);
         //Act
-        var actualProject = await UsingGlobalizer.GlobalizeAsync(project, "System");
+        var actualResult = await UsingGlobalizer.GlobalizeAsync(project, "System");
         //Assert
-        await RoslynAssert.EqualAsync(expectedProject, actualProject);
+        await ToolAssert.AssertAsync(actualResult, expectedProject, "System", 2, DefaultDocumentName);
     }
 
     [Fact]
@@ -161,9 +161,9 @@ public class UsingGlobalizerTests
 
             """).WithDocumentNameAsync(^1, DefaultDocumentName);
         //Act
-        var actualProject = await UsingGlobalizer.GlobalizeAsync(project, "System.Collections.Generic");
+        var actualResult = await UsingGlobalizer.GlobalizeAsync(project, "System.Collections.Generic");
         //Assert
-        await RoslynAssert.EqualAsync(expectedProject, actualProject);
+        await ToolAssert.AssertAsync(actualResult, expectedProject, "System.Collections.Generic", 3, DefaultDocumentName);
     }
 
     [Fact]
@@ -236,9 +236,9 @@ public class UsingGlobalizerTests
 
             """).WithDocumentNameAsync(^1, DefaultDocumentName);
         //Act
-        var actualProject = await UsingGlobalizer.GlobalizeAsync(project, "System.Collections.Generic");
+        var actualResult = await UsingGlobalizer.GlobalizeAsync(project, "System.Collections.Generic");
         //Assert
-        await RoslynAssert.EqualAsync(expectedProject, actualProject);
+        await ToolAssert.AssertAsync(actualResult, expectedProject, "System.Collections.Generic", 2, DefaultDocumentName);
     }
 
     [Fact]
@@ -317,9 +317,9 @@ public class UsingGlobalizerTests
 
             """).WithDocumentNameAsync(^1, DefaultDocumentName);
         //Act
-        var actualProject = await UsingGlobalizer.GlobalizeAsync(project, "System.Collections.Generic");
+        var actualResult = await UsingGlobalizer.GlobalizeAsync(project, "System.Collections.Generic");
         //Assert
-        await RoslynAssert.EqualAsync(expectedProject, actualProject);
+        await ToolAssert.AssertAsync(actualResult, expectedProject, "System.Collections.Generic", 2, DefaultDocumentName);
     }
 
     [Theory]
@@ -337,9 +337,9 @@ public class UsingGlobalizerTests
             using MyType = System.Console;
             """);
         //Act
-        var actualProject = await UsingGlobalizer.GlobalizeAsync(project, localUsing);
+        var actualResult = await UsingGlobalizer.GlobalizeAsync(project, localUsing);
         //Assert
-        await RoslynAssert.EqualAsync(expectedProject, actualProject);
+        await ToolAssert.AssertAsync(actualResult, expectedProject, localUsing, 0, DefaultDocumentName);
     }
 
     [Fact]
@@ -353,9 +353,9 @@ public class UsingGlobalizerTests
             using static System.Console;
             """);
         //Act
-        var actualProject = await UsingGlobalizer.GlobalizeAsync(project, "System.Console");
+        var actualResult = await UsingGlobalizer.GlobalizeAsync(project, "System.Console");
         //Assert
-        await RoslynAssert.EqualAsync(expectedProject, actualProject);
+        await ToolAssert.AssertAsync(actualResult, expectedProject, "System.Console", 0, DefaultDocumentName);
     }
 
     [Theory]
@@ -377,9 +377,9 @@ public class UsingGlobalizerTests
             global using static System.Console;
             """);
         //Act
-        var actualProject = await UsingGlobalizer.GlobalizeAsync(project, localUsing);
+        var actualResult = await UsingGlobalizer.GlobalizeAsync(project, localUsing);
         //Assert
-        await RoslynAssert.EqualAsync(expectedProject, actualProject);
+        await ToolAssert.AssertAsync(actualResult, expectedProject, localUsing, 0, DefaultDocumentName);
     }
 
     [Fact]
@@ -411,9 +411,9 @@ public class UsingGlobalizerTests
             using System.Threading.Tasks;
             """);
         //Act
-        var actualProject = await UsingGlobalizer.GlobalizeAsync(project, "System");
+        var actualResult = await UsingGlobalizer.GlobalizeAsync(project, "System");
         //Assert
-        await RoslynAssert.EqualAsync(expectedProject, actualProject);
+        await ToolAssert.AssertAsync(actualResult, expectedProject, "System", 0, DefaultDocumentName);
     }
 
     [Fact]
@@ -441,9 +441,9 @@ public class UsingGlobalizerTests
                 """)
             ).WithDocumentNameAsync(^1, DefaultDocumentName);
         //Act
-        var actualProject = await UsingGlobalizer.GlobalizeAsync(project, "System");
+        var actualResult = await UsingGlobalizer.GlobalizeAsync(project, "System");
         //Assert
-        await RoslynAssert.EqualAsync(expectedProject, actualProject);
+        await ToolAssert.AssertAsync(actualResult, expectedProject, "System", 1, DefaultDocumentName);
     }
 
     [Fact]
@@ -490,9 +490,9 @@ public class UsingGlobalizerTests
 
             """).WithDocumentNameAsync(^1, DefaultDocumentName);
         //Act
-        var actualProject = await UsingGlobalizer.GlobalizeAsync(project, "System");
+        var actualResult = await UsingGlobalizer.GlobalizeAsync(project, "System");
         //Assert
-        await RoslynAssert.EqualAsync(expectedProject, actualProject);
+        await ToolAssert.AssertAsync(actualResult, expectedProject, "System", 2, DefaultDocumentName);
     }
 
     [Fact]
@@ -575,8 +575,8 @@ public class UsingGlobalizerTests
             using System.Threading.Tasks;
             """).WithDocumentNameAsync(0, DefaultDocumentName);
         //Act
-        var actualProject = await UsingGlobalizer.GlobalizeAsync(project, "System.Linq");
+        var actualResult = await UsingGlobalizer.GlobalizeAsync(project, "System.Linq");
         //Assert
-        await RoslynAssert.EqualAsync(expectedProject, actualProject);
+        await ToolAssert.AssertAsync(actualResult, expectedProject, "System.Linq", 1, DefaultDocumentName);
     }
 }

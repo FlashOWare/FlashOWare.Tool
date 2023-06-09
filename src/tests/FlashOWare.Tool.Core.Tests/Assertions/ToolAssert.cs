@@ -1,4 +1,5 @@
 using FlashOWare.Tool.Core.UsingDirectives;
+using Microsoft.CodeAnalysis;
 using Xunit.Sdk;
 
 namespace FlashOWare.Tool.Core.Tests.Assertions;
@@ -9,7 +10,7 @@ internal static class ToolAssert
     {
         Assert.Equal("TestProject", actual.ProjectName);
 
-        if (!expected.SequenceEqual(actual.Usings, EqualityComparerUsingDirective.Instance))
+        if (!expected.SequenceEqual(actual.Usings, UsingDirectiveEqualityComparer.Instance))
         {
             string message = $"""
                 Expected: [{String.Join<UsingDirective>(", ", expected)}]
@@ -18,11 +19,19 @@ internal static class ToolAssert
             throw new XunitException(message);
         }
     }
+
+    public static async Task AssertAsync(UsingGlobalizationResult actual, Project project, string localUsing, int occurrences, string targetDocument)
+    {
+        await RoslynAssert.EqualAsync(project, actual.Project);
+        Assert.Equal(localUsing, actual.Using.Name);
+        Assert.Equal(occurrences, actual.Using.Occurrences);
+        Assert.Equal(targetDocument, actual.TargetDocument);
+    }
 }
 
-file sealed class EqualityComparerUsingDirective : IEqualityComparer<UsingDirective>
+file sealed class UsingDirectiveEqualityComparer : IEqualityComparer<UsingDirective>
 {
-    public static EqualityComparerUsingDirective Instance { get; } = new EqualityComparerUsingDirective();
+    public static UsingDirectiveEqualityComparer Instance { get; } = new UsingDirectiveEqualityComparer();
 
     public bool Equals(UsingDirective? x, UsingDirective? y)
     {

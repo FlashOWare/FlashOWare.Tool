@@ -27,7 +27,7 @@ public sealed class UsingCountResult
         }
         else
         {
-            _usings.Add(identifier, new UsingDirective(identifier));
+            _usings.Add(identifier, new UsingDirective(identifier, 1));
         }
     }
 

@@ -10,7 +10,7 @@ public sealed partial class UsingDirective
 
     [SetsRequiredMembers]
     internal UsingDirective(string name)
-        : this(name, 1)
+        : this(name, 0)
     {
     }
 

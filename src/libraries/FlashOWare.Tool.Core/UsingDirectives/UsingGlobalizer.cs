@@ -7,8 +7,11 @@ namespace FlashOWare.Tool.Core.UsingDirectives;
 
 public static class UsingGlobalizer
 {
-    public static async Task<Project> GlobalizeAsync(Project project, string localUsing, CancellationToken cancellationToken = default)
+    private const string DefaultTargetDocument = "GlobalUsings.cs";
+
+    public static async Task<UsingGlobalizationResult> GlobalizeAsync(Project project, string localUsing, CancellationToken cancellationToken = default)
     {
+        var usingDirective = new UsingDirective(localUsing);
         var solution = project.Solution;
 
         foreach (Document document in project.Documents)
@@ -21,15 +24,15 @@ public static class UsingGlobalizer
 
             var compilationUnit = (CompilationUnitSyntax)syntaxRoot;
 
-            solution = await GlobalizeAsync(solution, project, document, compilationUnit, localUsing);
+            solution = await GlobalizeAsync(solution, project, document, compilationUnit, localUsing, usingDirective);
         }
 
         var newProject = solution.GetProject(project.Id);
         Debug.Assert(newProject is not null, $"{nameof(ProjectId)} is not an {nameof(ProjectId)} of a {nameof(Project)} that is part of this {nameof(Solution)}.");
-        return newProject;
+        return new UsingGlobalizationResult(newProject, usingDirective, DefaultTargetDocument);
     }
 
-    private static async Task<Solution> GlobalizeAsync(Solution solution, Project project, Document document, CompilationUnitSyntax compilationUnit, string localUsing)
+    private static async Task<Solution> GlobalizeAsync(Solution solution, Project project, Document document, CompilationUnitSyntax compilationUnit, string localUsing, UsingDirective result)
     {
         var options = await document.GetOptionsAsync();
 
@@ -44,6 +47,8 @@ public static class UsingGlobalizer
 
                 var syntaxRoot = CSharpSyntaxFactory.GlobalUsingDirectiveRoot(localUsing, options);
                 solution = solution.AddDocument(DocumentId.CreateNewId(project.Id), "GlobalUsings.cs", syntaxRoot, new string[] { "Properties" });
+
+                result.Occurrences++;
             }
         }
 
