@@ -39,11 +39,11 @@ public static partial class RoslynUtilities
 
     private static bool IsGeneratedFileName(Document document)
     {
-        if (document.Name.StartsWith("TemporaryGeneratedFile_", StringComparison.Ordinal) ||
-            document.Name.EndsWith(".designer.cs", StringComparison.Ordinal) ||
-            document.Name.EndsWith(".generated.cs", StringComparison.Ordinal) ||
-            document.Name.EndsWith(".g.cs", StringComparison.Ordinal) ||
-            document.Name.EndsWith(".g.i.cs", StringComparison.Ordinal))
+        if (document.Name.StartsWith("TemporaryGeneratedFile_", StringComparison.OrdinalIgnoreCase) ||
+            document.Name.EndsWith(".designer.cs", StringComparison.OrdinalIgnoreCase) ||
+            document.Name.EndsWith(".generated.cs", StringComparison.OrdinalIgnoreCase) ||
+            document.Name.EndsWith(".g.cs", StringComparison.OrdinalIgnoreCase) ||
+            document.Name.EndsWith(".g.i.cs", StringComparison.OrdinalIgnoreCase))
         {
             return true;
         }
