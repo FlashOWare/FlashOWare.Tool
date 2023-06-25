@@ -434,12 +434,11 @@ public class UsingGlobalizerTests
             ("File3.generated.cs", "using System;"),
             ("File4.g.cs", "using System;"),
             ("File5.g.i.cs", "using System;"),
-            ("File6.cs", "using System;"),
-            ("", """
+            ("File6.cs", ""),
+            (DefaultDocumentName, """
                 global using System;
 
-                """)
-            ).WithDocumentNameAsync(^1, DefaultDocumentName);
+                """));
         //Act
         var actualResult = await UsingGlobalizer.GlobalizeAsync(project, "System");
         //Assert
