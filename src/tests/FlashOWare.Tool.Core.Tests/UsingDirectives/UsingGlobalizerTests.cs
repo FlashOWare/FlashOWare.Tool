@@ -578,4 +578,18 @@ public class UsingGlobalizerTests
         //Assert
         await ToolAssert.AssertAsync(actualResult, expectedProject, "System.Linq", 1, DefaultDocumentName);
     }
+
+    [Fact]
+    public async Task GlobalizeAsync_Ambiguous_Throws()
+    {
+        //Arrange
+        var project = await CreateProjectCheckedAsync(
+            ("MyFile.cs", "using System;"),
+            (DefaultDocumentName, "global using System;"),
+            (DefaultDocumentName, "global using System;"));
+        //Act
+        var result = () => UsingGlobalizer.GlobalizeAsync(project, "System");
+        //Assert
+        await Assert.ThrowsAsync<InvalidOperationException>(result);
+    }
 }

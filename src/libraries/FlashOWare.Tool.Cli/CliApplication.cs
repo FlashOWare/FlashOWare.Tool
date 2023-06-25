@@ -14,6 +14,11 @@ public static class CliApplication
 {
     public static async Task<int> RunAsync(string[] args)
     {
+        //TODO: how to deal with Trivia when removing UsingDirectiveSyntax nodes?
+        //TODO: do not modify SDK-style project files!
+        //TODO: when the UsingGlobalizer's MVP is complete, Stefan must dance!
+        //TODO: use System.CommandLine!
+
         ConsoleColor color = Console.ForegroundColor;
         Console.ForegroundColor = ConsoleColor.Red;
         Console.WriteLine("2code ^ !2code...that is the question!");
