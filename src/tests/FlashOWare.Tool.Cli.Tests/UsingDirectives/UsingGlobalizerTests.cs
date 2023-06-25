@@ -1,17 +1,16 @@
-using System.Diagnostics;
-
 namespace FlashOWare.Tool.Cli.Tests.UsingDirectives;
 
 public class UsingGlobalizerTests
 {
-    [Fact]
-    public void Globalize_MultipleDocuments_ReplacesWithGlobalUsingDirectives()
+    [Fact(Skip = "2code ^ !2code - Episode: Integration Testing")]
+    public async Task Globalize_MultipleDocuments_ReplacesWithGlobalUsingDirectives()
     {
         //Arrange
         string projectPath = "../FlashOWare.Tool.ProjectUnderTest";
+        string[] args = new[] { "using", "globalize", "System", projectPath };
         //Act
-        var process = Process.Start("", new[] { "flashoware" });
+        int exitCode = await CliApplication.RunAsync(args);
         //Assert
-        Assert.Fail("TODO");
+        Assert.Equal(0, exitCode);
     }
 }
