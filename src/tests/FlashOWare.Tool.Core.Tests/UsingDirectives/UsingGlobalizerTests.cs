@@ -482,8 +482,10 @@ public class UsingGlobalizerTests
             using System;
             """, """
             // auto-generated
+
             """, """
             /* auto-generated */
+
             """, """
             global using System;
 
