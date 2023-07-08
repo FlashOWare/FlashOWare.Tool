@@ -52,6 +52,6 @@ public static partial class CliApplication
 
     private static void OnWorkspaceFailed(object? sender, WorkspaceDiagnosticEventArgs e)
     {
-        Console.WriteLine(e.Diagnostic.ToString());
+        Console.Out.WriteLine(e.Diagnostic.ToString());
     }
 }
