@@ -25,9 +25,9 @@ on:
       - main
 
 jobs:
-  ubuntu-22_04:
-    name: ubuntu-22_04
-    runs-on: ubuntu-22.04
+  windows-2022:
+    name: windows-2022
+    runs-on: windows-2022
     steps:
       - uses: actions/checkout@v3
       - name: 'Cache: .nuke/temp, ~/.nuget/packages'

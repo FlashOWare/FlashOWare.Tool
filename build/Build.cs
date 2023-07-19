@@ -17,15 +17,15 @@ using static Nuke.Common.Tools.DotNet.DotNetTasks;
 
 [GitHubActions(
     "publish",
-        GitHubActionsImage.Ubuntu2204,
+        GitHubActionsImage.WindowsServer2022,
         OnPushBranches = new[] { "publish" },
         InvokedTargets = new[] { nameof(Publish) },
         ImportSecrets = new[] { nameof(NuGetApiKey) })]
 [GitHubActions(
     "ci",
-        GitHubActionsImage.Ubuntu2204,
+        GitHubActionsImage.WindowsServer2022,
         OnPushBranches = new[] { "main" },
-        OnPullRequestBranches = new[] {"main"},
+        OnPullRequestBranches = new[] { "main" },
         InvokedTargets = new[] { nameof(Test), nameof(Pack) })]
 // [GitHubActions(
 //     "ci",
