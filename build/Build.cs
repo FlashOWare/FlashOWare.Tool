@@ -26,6 +26,7 @@ using static Nuke.Common.Tools.DotNet.DotNetTasks;
         GitHubActionsImage.WindowsServer2022,
         OnPushBranches = new[] { "main" },
         OnPullRequestBranches = new[] { "main" },
+        //FetchDepth = 1,
         InvokedTargets = new[] { nameof(Test), nameof(Pack) })]
 // [GitHubActions(
 //     "ci",
@@ -104,6 +105,7 @@ class Build : NukeBuild
            DotNetTest(_ => _
                .SetProjectFile(Solution)
                .SetConfiguration(Configuration)
+               //.SetFilter(EnvironmentInfo.IsWin ? "" : "only-non-win-tests")
                .SetNoBuild(FinishedTargets.Contains(Compile))
                .SetResultsDirectory(TestResultsDirectory));
         });
