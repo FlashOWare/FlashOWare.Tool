@@ -44,6 +44,7 @@ public static partial class CliApplication
     {
         try
         {
+            await s_msBuildMutex.WaitAsync(cancellationToken);
             Project project = await workspace.OpenProjectAsync(projectFilePath, null, cancellationToken);
 
             var result = await UsingCounter.CountAsync(project, cancellationToken);
@@ -57,12 +58,17 @@ public static partial class CliApplication
         {
             console.WriteLine("Operation canceled.");
         }
+        finally
+        {
+            s_msBuildMutex.Release();
+        }
     }
 
     private static async Task GlobalizeUsingsAsync(MSBuildWorkspace workspace, string projectFilePath, string localUsing, IConsole console, CancellationToken cancellationToken)
     {
         try
         {
+            await s_msBuildMutex.WaitAsync(cancellationToken);
             Project project = await workspace.OpenProjectAsync(projectFilePath, null, cancellationToken);
 
             workspace.ThrowIfCannotApplyChanges(ApplyChangesKind.AddDocument, ApplyChangesKind.ChangeDocument);
@@ -101,6 +107,10 @@ public static partial class CliApplication
         catch (OperationCanceledException)
         {
             console.WriteLine("Operation canceled.");
+        }
+        finally
+        {
+            s_msBuildMutex.Release();
         }
     }
 }

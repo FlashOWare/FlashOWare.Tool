@@ -7,6 +7,8 @@ namespace FlashOWare.Tool.Cli;
 
 public static partial class CliApplication
 {
+    private static readonly SemaphoreSlim s_msBuildMutex = new(1, 1);
+
     public static async Task<int> RunAsync(string[] args, IConsole? console = null)
     {
         var msBuild = MSBuildLocator.RegisterDefaults();
