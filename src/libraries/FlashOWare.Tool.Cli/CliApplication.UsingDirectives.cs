@@ -68,20 +68,20 @@ public static partial class CliApplication
             workspace.ThrowIfCannotApplyChanges(ApplyChangesKind.AddDocument, ApplyChangesKind.ChangeDocument);
             var result = await UsingGlobalizer.GlobalizeAsync(project, localUsing, cancellationToken);
 
-            //string? oldProject = null;
-            //if (project.DocumentIds.Count < result.Project.DocumentIds.Count)
-            //{
-            //    Debug.Assert(project.FilePath is not null, $"{nameof(Project)} '{project.Name}' has no project file.");
-            //    oldProject = await File.ReadAllTextAsync(project.FilePath, cancellationToken);
-            //}
+            string? oldProject = null;
+            if (project.DocumentIds.Count < result.Project.DocumentIds.Count)
+            {
+                Debug.Assert(project.FilePath is not null, $"{nameof(Project)} '{project.Name}' has no project file.");
+                oldProject = await File.ReadAllTextAsync(project.FilePath, cancellationToken);
+            }
 
             workspace.ApplyChanges(result.Project.Solution);
 
-            //if (oldProject is not null)
-            //{
-            //    Debug.Assert(project.FilePath is not null, $"{nameof(Project)} '{project.Name}' has no project file.");
-            //    await File.WriteAllTextAsync(project.FilePath, oldProject, cancellationToken);
-            //}
+            if (oldProject is not null)
+            {
+                Debug.Assert(project.FilePath is not null, $"{nameof(Project)} '{project.Name}' has no project file.");
+                await File.WriteAllTextAsync(project.FilePath, oldProject, cancellationToken);
+            }
 
             console.WriteLine($"{nameof(Project)}: {result.Project.Name}");
 
