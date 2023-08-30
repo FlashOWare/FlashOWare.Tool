@@ -1,6 +1,6 @@
-using FlashOWare.Tool.Cli.Tests.CommandLine;
 using FlashOWare.Tool.Cli.Tests.IO;
 using Microsoft.CodeAnalysis;
+using System.CommandLine.IO;
 using Xunit.Abstractions;
 
 namespace FlashOWare.Tool.Cli.Tests.Testing;

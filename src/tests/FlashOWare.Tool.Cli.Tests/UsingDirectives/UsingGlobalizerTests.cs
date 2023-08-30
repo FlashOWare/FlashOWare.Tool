@@ -1,3 +1,4 @@
+using FlashOWare.Tool.Cli.Tests.CommandLine.IO;
 using FlashOWare.Tool.Cli.Tests.IO;
 using FlashOWare.Tool.Cli.Tests.Testing;
 

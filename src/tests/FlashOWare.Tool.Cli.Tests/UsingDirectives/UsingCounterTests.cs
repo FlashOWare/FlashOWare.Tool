@@ -1,8 +1,8 @@
+using FlashOWare.Tool.Cli.Tests.CommandLine.IO;
 using FlashOWare.Tool.Cli.Tests.Testing;
 
 namespace FlashOWare.Tool.Cli.Tests.UsingDirectives;
 
-//TODO: use System.CommandLine.IO.TestConsole + extension methods for assertions
 //TODO: use Assert.Multiple
 //TODO: fix parallel test execution
 
