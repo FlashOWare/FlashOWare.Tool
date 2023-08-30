@@ -9,9 +9,9 @@ public static partial class CliApplication
 {
     private static readonly SemaphoreSlim s_msBuildMutex = new(1, 1);
 
-    public static async Task<int> RunAsync(string[] args, IConsole? console = null)
+    public static async Task<int> RunAsync(string[] args, IConsole? console = null, VisualStudioInstance? msBuild = null)
     {
-        var msBuild = MSBuildLocator.RegisterDefaults();
+        msBuild ??= MSBuildLocator.RegisterDefaults();
 
         var properties = ImmutableDictionary<string, string>.Empty.Add("Configuration", "Release");
         using var workspace = MSBuildWorkspace.Create(properties);

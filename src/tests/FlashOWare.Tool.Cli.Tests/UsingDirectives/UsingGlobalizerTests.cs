@@ -4,9 +4,6 @@ using FlashOWare.Tool.Cli.Tests.Testing;
 
 namespace FlashOWare.Tool.Cli.Tests.UsingDirectives;
 
-//TODO: Validate Input: [<PROJECT>]
-//TODO: Redesign command-line arguments: flashoware using globalize <USING> [<PROJECT>] [options]
-
 public class UsingGlobalizerTests : IntegrationTests
 {
     [Fact]
@@ -56,7 +53,7 @@ public class UsingGlobalizerTests : IntegrationTests
             """, "GlobalUsings.cs", Names.Properties);
         string[] args = CreateArgs(Usings.System, project);
         //Act
-        int exitCode = await CliApplication.RunAsync(args, Console);
+        int exitCode = await RunAsync(args);
         //Assert
         Console.AssertOutput($"""
             Project: {Names.Project}

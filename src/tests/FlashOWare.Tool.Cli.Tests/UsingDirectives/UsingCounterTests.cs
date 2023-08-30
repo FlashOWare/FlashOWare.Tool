@@ -3,9 +3,6 @@ using FlashOWare.Tool.Cli.Tests.Testing;
 
 namespace FlashOWare.Tool.Cli.Tests.UsingDirectives;
 
-//TODO: use Assert.Multiple
-//TODO: fix parallel test execution
-
 public class UsingCounterTests : IntegrationTests
 {
     [Fact]
@@ -55,7 +52,7 @@ public class UsingCounterTests : IntegrationTests
             """, "GlobalUsings.cs", Names.Properties);
         string[] args = CreateArgs(project);
         //Act
-        int exitCode = await CliApplication.RunAsync(args, Console);
+        int exitCode = await RunAsync(args);
         //Assert
         Console.AssertOutput($"""
             Project: {Names.Project}

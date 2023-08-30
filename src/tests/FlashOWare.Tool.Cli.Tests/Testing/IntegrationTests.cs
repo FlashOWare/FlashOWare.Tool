@@ -1,4 +1,5 @@
 using FlashOWare.Tool.Cli.Tests.IO;
+using Microsoft.Build.Locator;
 using Microsoft.CodeAnalysis;
 using System.CommandLine.IO;
 using Xunit.Abstractions;
@@ -7,6 +8,7 @@ namespace FlashOWare.Tool.Cli.Tests.Testing;
 
 public abstract class IntegrationTests : IDisposable
 {
+    private static readonly Lazy<VisualStudioInstance> s_msBuildInstance = new(MSBuildLocator.RegisterDefaults);
     private static int s_number = 0;
 
     private readonly DirectoryInfo _scratch;
@@ -33,11 +35,18 @@ public abstract class IntegrationTests : IDisposable
         _system = new RedirectedConsole();
     }
 
+    protected static VisualStudioInstance MSBuild => s_msBuildInstance.Value;
+
     protected ITestOutputHelper? Output { get; }
 
     protected TestConsole Console { get; }
 
     protected FileSystemWorkspace Workspace { get; }
+
+    protected Task<int> RunAsync(params string[] args)
+    {
+        return CliApplication.RunAsync(args, Console, MSBuild);
+    }
 
     void IDisposable.Dispose()
     {
