@@ -1,3 +1,4 @@
+using FlashOWare.Tool.Cli.CommandLine;
 using Microsoft.Build.Locator;
 using Microsoft.CodeAnalysis;
 using System.Collections.Immutable;
@@ -6,7 +7,7 @@ namespace FlashOWare.Tool.Cli;
 
 public static partial class CliApplication
 {
-    public static async Task<int> RunAsync(string[] args)
+    public static async Task<int> RunAsync(string[] args, IConsole? console = null)
     {
         var msBuild = MSBuildLocator.RegisterDefaults();
 
@@ -28,30 +29,24 @@ public static partial class CliApplication
         {
             if (context.BindingContext.ParseResult.GetValueForOption(aboutOption))
             {
-                ConsoleColor color = Console.ForegroundColor;
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("2code ^ !2code...that is the question!");
-                Console.ForegroundColor = color;
+                context.Console.WriteLine(ConsoleColor.Red, "2code ^ !2code...that is the question!");
             }
 
             if (context.BindingContext.ParseResult.GetValueForOption(infoOption))
             {
-                ConsoleColor color = Console.ForegroundColor;
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine($"MSBuild ({msBuild.DiscoveryType}): {msBuild.Name} {msBuild.Version}");
-                Console.ForegroundColor = color;
+                context.Console.WriteLine(ConsoleColor.Green, $"MSBuild ({msBuild.DiscoveryType}): {msBuild.Name} {msBuild.Version}");
             }
         });
 
         AddUsingCommand(rootCommand, workspace);
 
-        int exitCode = await rootCommand.InvokeAsync(args);
+        int exitCode = await rootCommand.InvokeAsync(args, console);
         workspace.WorkspaceFailed -= OnWorkspaceFailed;
         return exitCode;
     }
 
     private static void OnWorkspaceFailed(object? sender, WorkspaceDiagnosticEventArgs e)
     {
-        Console.Out.WriteLine(e.Diagnostic.ToString());
+        Console.Error.WriteLine(e.Diagnostic.ToString());
     }
 }

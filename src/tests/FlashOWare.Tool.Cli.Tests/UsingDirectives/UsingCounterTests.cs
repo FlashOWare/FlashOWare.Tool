@@ -1,51 +1,76 @@
-using FlashOWare.Tool.Cli.Tests.IO;
 using FlashOWare.Tool.Cli.Tests.Testing;
 
 namespace FlashOWare.Tool.Cli.Tests.UsingDirectives;
 
-//TODO: fix WorkspaceFailed
-//TODO: fix newline "issue"
-//TODO: demo MSBuildWorkspace Create(IDictionary<string, string> properties)
-//TODO: use System.CommandLine.IConsole
-//TODO: Validate Input: [<PROJECT>]
+//TODO: use System.CommandLine.IO.TestConsole + extension methods for assertions
+//TODO: use Assert.Multiple
+//TODO: fix parallel test execution
 
-public class UsingCounterTests : IDisposable
+public class UsingCounterTests : IntegrationTests
 {
-    private readonly TestTextWriter _output;
-
-    public UsingCounterTests()
-    {
-        _output = new TestTextWriter();
-        Console.SetOut(_output);
-    }
-
-    void IDisposable.Dispose()
-    {
-        _output.Dispose();
-    }
-
     [Fact]
     public async Task Count_ProjectUnderTest_FindAllOccurrences()
     {
         //Arrange
-        string[] args = CreateArgs(FileSystemUtilities.TestProject);
+        FileInfo project = Workspace.CSharp.CreateProject(Texts.CreateCSharpLibraryProject(), Names.CSharpProject);
+        Workspace.CSharp.CreateDocument("""
+            using System;
+            using System.Collections.Generic;
+            using System.Linq;
+            using System.Text;
+            using System.Threading.Tasks;
+
+            namespace ProjectUnderTest.NetCore
+            {
+                internal class MyClass1
+                {
+                }
+            }
+            """, "MyClass1");
+        Workspace.CSharp.CreateDocument("""
+            using System;
+            using System.Collections.Generic;
+            using System.Linq;
+            using System.Text;
+            using System.Threading.Tasks;
+
+            namespace ProjectUnderTest.NetCore;
+
+            internal class MyClass2
+            {
+            }
+            """, "MyClass2");
+        Workspace.CSharp.CreateDocument("""
+            using System.Reflection;
+
+            [assembly: AssemblyDescription("A .NET tool that facilitates development workflows.")]
+            [assembly: AssemblyCopyright("Copyright © FlashOWare 2023")]
+            [assembly: AssemblyTrademark("")]
+            [assembly: AssemblyCulture("")]
+            """, "AssemblyInfo.cs", Names.Properties);
+        Workspace.CSharp.CreateDocument("""
+            global using System.IO;
+            global using System.Net.Http;
+            global using System.Threading;
+            """, "GlobalUsings.cs", Names.Properties);
+        string[] args = CreateArgs(project);
         //Act
-        int exitCode = await CliApplication.RunAsync(args);
+        int exitCode = await CliApplication.RunAsync(args, Console);
         //Assert
-        Assert.Equal(ExitCodes.Success, exitCode);
-        _output.AssertText("""
-            Project: ProjectUnderTest.NetCore(net6.0)
-              System: 6
-              System.Collections.Generic: 6
-              System.Linq: 6
-              System.Text: 6
-              System.Threading.Tasks: 6
+        Console.AssertOutput($"""
+            Project: {Names.Project}
+              System: 2
+              System.Collections.Generic: 2
+              System.Linq: 2
+              System.Text: 2
+              System.Threading.Tasks: 2
               System.Reflection: 1
             """);
+        Assert.Equal(ExitCodes.Success, exitCode);
     }
 
-    private static string[] CreateArgs(string project)
+    private static string[] CreateArgs(FileInfo project)
     {
-        return new[] { "using", "count", project };
+        return new[] { "using", "count", project.FullName };
     }
 }

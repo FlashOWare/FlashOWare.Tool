@@ -1,6 +1,8 @@
 using FlashOWare.Tool.Cli.CodeAnalysis;
 using FlashOWare.Tool.Core.UsingDirectives;
 using Microsoft.CodeAnalysis;
+using System.CommandLine.IO;
+using System.Diagnostics;
 
 namespace FlashOWare.Tool.Cli;
 
@@ -19,7 +21,7 @@ public static partial class CliApplication
         {
             FileInfo project = context.ParseResult.GetValueForArgument(projectArgument);
 
-            await CountUsingsAsync(workspace, project.FullName, context.GetCancellationToken());
+            await CountUsingsAsync(workspace, project.FullName, context.Console, context.GetCancellationToken());
         });
 
         var usingArgument = new Argument<string>("USING", "The name of the top-level using directive to convert to a global using directive.");
@@ -30,7 +32,7 @@ public static partial class CliApplication
             string localUsing = context.ParseResult.GetValueForArgument(usingArgument);
             FileInfo project = context.ParseResult.GetValueForArgument(projectArgument);
 
-            await GlobalizeUsingsAsync(workspace, project.FullName, localUsing, context.GetCancellationToken());
+            await GlobalizeUsingsAsync(workspace, project.FullName, localUsing, context.Console, context.GetCancellationToken());
         });
 
         usingCommand.Add(countCommand);
@@ -38,26 +40,26 @@ public static partial class CliApplication
         rootCommand.Add(usingCommand);
     }
 
-    private static async Task CountUsingsAsync(MSBuildWorkspace workspace, string projectFilePath, CancellationToken cancellationToken)
+    private static async Task CountUsingsAsync(MSBuildWorkspace workspace, string projectFilePath, IConsole console, CancellationToken cancellationToken)
     {
         try
         {
             Project project = await workspace.OpenProjectAsync(projectFilePath, null, cancellationToken);
 
             var result = await UsingCounter.CountAsync(project, cancellationToken);
-            Console.WriteLine($"{nameof(Project)}: {result.ProjectName}");
+            console.WriteLine($"{nameof(Project)}: {result.ProjectName}");
             foreach (var usingDirective in result.Usings)
             {
-                Console.WriteLine($"  {usingDirective.Name}: {usingDirective.Occurrences}");
+                console.WriteLine($"  {usingDirective.Name}: {usingDirective.Occurrences}");
             }
         }
         catch (OperationCanceledException)
         {
-            await Console.Out.WriteLineAsync("Operation canceled.");
+            console.WriteLine("Operation canceled.");
         }
     }
 
-    private static async Task GlobalizeUsingsAsync(MSBuildWorkspace workspace, string projectFilePath, string localUsing, CancellationToken cancellationToken)
+    private static async Task GlobalizeUsingsAsync(MSBuildWorkspace workspace, string projectFilePath, string localUsing, IConsole console, CancellationToken cancellationToken)
     {
         try
         {
@@ -65,26 +67,40 @@ public static partial class CliApplication
 
             workspace.ThrowIfCannotApplyChanges(ApplyChangesKind.AddDocument, ApplyChangesKind.ChangeDocument);
             var result = await UsingGlobalizer.GlobalizeAsync(project, localUsing, cancellationToken);
+
+            //string? oldProject = null;
+            //if (project.DocumentIds.Count < result.Project.DocumentIds.Count)
+            //{
+            //    Debug.Assert(project.FilePath is not null, $"{nameof(Project)} '{project.Name}' has no project file.");
+            //    oldProject = await File.ReadAllTextAsync(project.FilePath, cancellationToken);
+            //}
+
             workspace.ApplyChanges(result.Project.Solution);
 
-            Console.WriteLine($"{nameof(Project)}: {result.Project.Name}");
+            //if (oldProject is not null)
+            //{
+            //    Debug.Assert(project.FilePath is not null, $"{nameof(Project)} '{project.Name}' has no project file.");
+            //    await File.WriteAllTextAsync(project.FilePath, oldProject, cancellationToken);
+            //}
+
+            console.WriteLine($"{nameof(Project)}: {result.Project.Name}");
 
             if (result.Using.Occurrences == 0)
             {
-                Console.WriteLine($"""No occurrences of Using Directive "{localUsing}" were globalized.""");
+                console.WriteLine($"""No occurrences of Using Directive "{localUsing}" were globalized.""");
             }
             else if (result.Using.Occurrences == 1)
             {
-                Console.WriteLine($"""1 occurrence of Using Directive "{localUsing}" was globalized to "{result.TargetDocument}".""");
+                console.WriteLine($"""1 occurrence of Using Directive "{localUsing}" was globalized to "{result.TargetDocument}".""");
             }
             else
             {
-                Console.WriteLine($"""{result.Using.Occurrences} occurrences of Using Directive "{localUsing}" were globalized to "{result.TargetDocument}".""");
+                console.WriteLine($"""{result.Using.Occurrences} occurrences of Using Directive "{localUsing}" were globalized to "{result.TargetDocument}".""");
             }
         }
         catch (OperationCanceledException)
         {
-            await Console.Out.WriteLineAsync("Operation canceled.");
+            console.WriteLine("Operation canceled.");
         }
     }
 }
