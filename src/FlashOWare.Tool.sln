@@ -19,10 +19,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FlashOWare.Tool.Cli.Tests",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FlashOWare.Tool.Core.Tests", "tests\FlashOWare.Tool.Core.Tests\FlashOWare.Tool.Core.Tests.csproj", "{0DF40A5B-DFBE-4ADE-8177-08C0B4043CFD}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProjectUnderTest.NetCore", "tests\ProjectUnderTest.NetCore\ProjectUnderTest.NetCore.csproj", "{D8F1D048-0DCD-488F-A0EA-F04CFE75A4B5}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectUnderTest.NetFx", "tests\ProjectUnderTest.NetFx\ProjectUnderTest.NetFx.csproj", "{EFA38915-EBA8-41B8-9050-205E2B350A4D}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -49,14 +45,6 @@ Global
 		{0DF40A5B-DFBE-4ADE-8177-08C0B4043CFD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0DF40A5B-DFBE-4ADE-8177-08C0B4043CFD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0DF40A5B-DFBE-4ADE-8177-08C0B4043CFD}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D8F1D048-0DCD-488F-A0EA-F04CFE75A4B5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D8F1D048-0DCD-488F-A0EA-F04CFE75A4B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D8F1D048-0DCD-488F-A0EA-F04CFE75A4B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D8F1D048-0DCD-488F-A0EA-F04CFE75A4B5}.Release|Any CPU.Build.0 = Release|Any CPU
-		{EFA38915-EBA8-41B8-9050-205E2B350A4D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{EFA38915-EBA8-41B8-9050-205E2B350A4D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{EFA38915-EBA8-41B8-9050-205E2B350A4D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{EFA38915-EBA8-41B8-9050-205E2B350A4D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -67,8 +55,6 @@ Global
 		{F4680467-0381-425A-8705-8290A1ED4BEB} = {9F424A3E-8479-43F0-B6DA-908AF0266F91}
 		{6742E7B6-F532-467E-9C6B-372821D4795B} = {0AD2FF6B-8579-4788-B5F0-9CCF924AB04B}
 		{0DF40A5B-DFBE-4ADE-8177-08C0B4043CFD} = {0AD2FF6B-8579-4788-B5F0-9CCF924AB04B}
-		{D8F1D048-0DCD-488F-A0EA-F04CFE75A4B5} = {0AD2FF6B-8579-4788-B5F0-9CCF924AB04B}
-		{EFA38915-EBA8-41B8-9050-205E2B350A4D} = {0AD2FF6B-8579-4788-B5F0-9CCF924AB04B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6A756353-C210-4028-890D-BB9F94D9049B}

@@ -57,6 +57,8 @@ public abstract class IntegrationTests : IDisposable
 
         _system.AssertEmpty();
         _system.Dispose();
+
+        Output?.WriteLine("MSBuild ({0}): {1} {2}", MSBuild.DiscoveryType, MSBuild.Name, MSBuild.Version);
     }
 
     public string GetScratchPath(string path)
