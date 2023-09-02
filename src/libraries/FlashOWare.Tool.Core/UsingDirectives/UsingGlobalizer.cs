@@ -84,7 +84,7 @@ public static class UsingGlobalizer
                 Project? project = solution.GetProject(projectId);
                 Debug.Assert(project is not null, $"{nameof(ProjectId)} is not a {nameof(ProjectId)} of a {nameof(Project)} that is part of this {nameof(Solution)}.");
 
-                if (project.Documents.SingleOrDefault(static document => document.Name == DefaultTargetDocument) is { } globalUsings)
+                if (project.Documents.SingleOrDefault(static document => document.Name == DefaultTargetDocument && document.Folders.Count == 0) is { } globalUsings)
                 {
                     SyntaxNode? globalUsingsSyntaxRoot = await globalUsings.GetSyntaxRootAsync(cancellationToken);
                     if (globalUsingsSyntaxRoot is null)
