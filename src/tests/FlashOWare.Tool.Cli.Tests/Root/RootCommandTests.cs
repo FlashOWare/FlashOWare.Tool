@@ -11,10 +11,11 @@ public class RootCommandTests : IntegrationTests
         //Arrange
         string[] args = { "--about" };
         //Act
-        int exitCode = await RunAsync(args);
+        await RunAsync(args);
         //Assert
-        Console.AssertOutput("2code ^ !2code...that is the question!");
-        Assert.Equal(ExitCodes.Success, exitCode);
+        Console.VerifyOutput("2code ^ !2code...that is the question!");
+        Result.Verify(ExitCodes.Success);
+
     }
 
     [Fact]
@@ -23,9 +24,9 @@ public class RootCommandTests : IntegrationTests
         //Arrange
         string[] args = { "--info" };
         //Act
-        int exitCode = await RunAsync(args);
+        await RunAsync(args);
         //Assert
-        Console.AssertOutput($"MSBuild ({MSBuild.DiscoveryType}): {MSBuild.Name} {MSBuild.Version}");
-        Assert.Equal(ExitCodes.Success, exitCode);
+        Console.VerifyOutput($"MSBuild ({MSBuild.DiscoveryType}): {MSBuild.Name} {MSBuild.Version}");
+        Result.Verify(ExitCodes.Success);
     }
 }

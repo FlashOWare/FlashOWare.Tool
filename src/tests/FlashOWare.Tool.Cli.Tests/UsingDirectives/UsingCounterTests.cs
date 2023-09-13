@@ -1,60 +1,62 @@
 using FlashOWare.Tool.Cli.Tests.CommandLine.IO;
 using FlashOWare.Tool.Cli.Tests.Testing;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace FlashOWare.Tool.Cli.Tests.UsingDirectives;
 
 public class UsingCounterTests : IntegrationTests
 {
     [Fact]
-    public async Task Count_ProjectUnderTest_FindAllOccurrences()
+    public async Task Count_SdkStyleProject_FindAllOccurrences()
     {
         //Arrange
-        FileInfo project = Workspace.CSharp.CreateProject(Texts.CreateCSharpLibraryProject(), Names.CSharpProject);
-        Workspace.CSharp.CreateDocument("""
-            using System;
-            using System.Collections.Generic;
-            using System.Linq;
-            using System.Text;
-            using System.Threading.Tasks;
+        var project = Workspace.CreateProject()
+            .AddDocument("""
+                using System;
+                using System.Collections.Generic;
+                using System.Linq;
+                using System.Text;
+                using System.Threading.Tasks;
 
-            namespace ProjectUnderTest.NetCore
-            {
-                internal class MyClass1
+                namespace ProjectUnderTest.NetCore
+                {
+                    internal class MyClass1
+                    {
+                    }
+                }
+                """, "MyClass1")
+            .AddDocument("""
+                using System;
+                using System.Collections.Generic;
+                using System.Linq;
+                using System.Text;
+                using System.Threading.Tasks;
+
+                namespace ProjectUnderTest.NetCore;
+
+                internal class MyClass2
                 {
                 }
-            }
-            """, "MyClass1");
-        Workspace.CSharp.CreateDocument("""
-            using System;
-            using System.Collections.Generic;
-            using System.Linq;
-            using System.Text;
-            using System.Threading.Tasks;
+                """, "MyClass2")
+            .AddDocument("""
+                using System.Reflection;
 
-            namespace ProjectUnderTest.NetCore;
-
-            internal class MyClass2
-            {
-            }
-            """, "MyClass2");
-        Workspace.CSharp.CreateDocument("""
-            using System.Reflection;
-
-            [assembly: AssemblyDescription("A .NET tool that facilitates development workflows.")]
-            [assembly: AssemblyCopyright("Copyright © FlashOWare 2023")]
-            [assembly: AssemblyTrademark("")]
-            [assembly: AssemblyCulture("")]
-            """, "AssemblyInfo.cs", Names.Properties);
-        Workspace.CSharp.CreateDocument("""
-            global using System.IO;
-            global using System.Net.Http;
-            global using System.Threading;
-            """, "GlobalUsings.cs", Names.Properties);
-        string[] args = CreateArgs(project);
+                [assembly: AssemblyDescription("A .NET tool that facilitates development workflows.")]
+                [assembly: AssemblyCopyright("Copyright © FlashOWare 2023")]
+                [assembly: AssemblyTrademark("")]
+                [assembly: AssemblyCulture("")]
+                """, Names.AssemblyInfo, Names.Properties)
+            .AddDocument("""
+                global using System.IO;
+                global using System.Net.Http;
+                global using System.Threading;
+                """, Names.GlobalUsings, Names.Properties)
+            .Initialize(ProjectKind.SdkStyle, TargetFramework.Net60, LanguageVersion.CSharp10);
+        string[] args = CreateArgs(project.File);
         //Act
-        int exitCode = await RunAsync(args);
+        await RunAsync(args);
         //Assert
-        Console.AssertOutput($"""
+        Console.VerifyOutput($"""
             Project: {Names.Project}
               System: 2
               System.Collections.Generic: 2
@@ -63,7 +65,7 @@ public class UsingCounterTests : IntegrationTests
               System.Threading.Tasks: 2
               System.Reflection: 1
             """);
-        Assert.Equal(ExitCodes.Success, exitCode);
+        Result.Verify(ExitCodes.Success);
     }
 
     private static string[] CreateArgs(FileInfo project)

@@ -30,6 +30,11 @@ internal static class TargetFrameworkExtensions
 
     public static string ToMonikerString(this TargetFramework[] tfms)
     {
+        if (tfms.Length < 2)
+        {
+            throw new ArgumentException($"{nameof(tfms.Length)} must be greater than or equal to 2.", nameof(tfms));
+        }
+
         StringBuilder moniker = new();
 
         for (int i = 0; i < tfms.Length; i++)
@@ -41,5 +46,31 @@ internal static class TargetFrameworkExtensions
         }
 
         return moniker.ToString(0, moniker.Length - 1);
+    }
+
+    public static string ToTargetFrameworkVersionString(this TargetFramework targetFrameworkVersion)
+    {
+        return targetFrameworkVersion switch
+        {
+            TargetFramework.Net472 => "v4.7.2",
+            TargetFramework.NetStandard20 => throw new NotSupportedException(".NET Standard 2.0 is not supported."),
+            TargetFramework.Net60 => throw new NotSupportedException(".NET 6.0 is not supported."),
+            TargetFramework.Net70 => throw new NotSupportedException(".NET 7.0 is not supported."),
+            TargetFramework.Latest => throw new NotSupportedException($"{nameof(TargetFramework)} 'latest' is not supported."),
+            _ => throw new InvalidEnumArgumentException(nameof(targetFrameworkVersion), (int)targetFrameworkVersion, typeof(TargetFramework)),
+        };
+    }
+
+    public static bool IsDotNetFramework(this TargetFramework tfm)
+    {
+        return tfm switch
+        {
+            TargetFramework.Net472 => true,
+            TargetFramework.NetStandard20 => false,
+            TargetFramework.Net60 => false,
+            TargetFramework.Net70 => false,
+            TargetFramework.Latest => false,
+            _ => throw new InvalidEnumArgumentException(nameof(tfm), (int)tfm, typeof(TargetFramework)),
+        };
     }
 }
