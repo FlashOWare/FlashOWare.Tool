@@ -14,23 +14,31 @@ public static partial class CliApplication
         var countCommand = new Command("count", "Count and list all top-level using directives of a C# project.");
         var globalizeCommand = new Command("globalize", "Move a top-level using directive to a global using directive in a C# project.");
 
-        var projectArgument = new Argument<FileInfo>("PROJECT", "The project file to operate on.");
+        var projectOption = new Option<FileInfo>(new[] { "--project", "-p" }, "The project file to operate on.");
 
-        countCommand.Add(projectArgument);
+        countCommand.Add(projectOption);
         countCommand.SetHandler(async (InvocationContext context) =>
         {
-            FileInfo project = context.ParseResult.GetValueForArgument(projectArgument);
+            FileInfo? project = context.ParseResult.GetValueForOption(projectOption);
+            if (project is null)
+            {
+                throw new NotImplementedException("Please pass a specific project path via --project.");
+            }
 
             await CountUsingsAsync(workspace, project.FullName, context.Console, context.GetCancellationToken());
         });
 
         var usingArgument = new Argument<string>("USING", "The name of the top-level using directive to convert to a global using directive.");
         globalizeCommand.Add(usingArgument);
-        globalizeCommand.Add(projectArgument);
+        globalizeCommand.Add(projectOption);
         globalizeCommand.SetHandler(async (InvocationContext context) =>
         {
             string localUsing = context.ParseResult.GetValueForArgument(usingArgument);
-            FileInfo project = context.ParseResult.GetValueForArgument(projectArgument);
+            FileInfo? project = context.ParseResult.GetValueForOption(projectOption);
+            if (project is null)
+            {
+                throw new NotImplementedException("Please pass a specific project path via --project.");
+            }
 
             await GlobalizeUsingsAsync(workspace, project.FullName, localUsing, context.Console, context.GetCancellationToken());
         });

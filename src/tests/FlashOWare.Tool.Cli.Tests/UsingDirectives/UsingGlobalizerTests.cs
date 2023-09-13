@@ -238,6 +238,6 @@ public class UsingGlobalizerTests : IntegrationTests
 
     private static string[] CreateArgs(string localUsing, FileInfo project)
     {
-        return new[] { "using", "globalize", localUsing, project.FullName };
+        return new[] { "using", "globalize", localUsing, "--project", project.FullName };
     }
 }
