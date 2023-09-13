@@ -51,8 +51,12 @@ class Build : NukeBuild
         .Before(Restore)
         .Executes(() =>
         {
-            // dotnet restore (without clean)
-            // dotnet restore clean => clean, restore
+            DotNetClean(_ => _
+                .SetProject(Solution)
+                .SetConfiguration(Configuration)
+                .EnableNoLogo());
+
+            ArtifactsDirectory.DeleteDirectory();
         });
 
     // nuke --solution1 <value>
