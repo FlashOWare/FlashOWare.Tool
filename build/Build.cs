@@ -89,7 +89,6 @@ class Build : NukeBuild
            DotNetTest(_ => _
                .SetProjectFile(Solution)
                .SetConfiguration(Configuration)
-               //.SetFilter(EnvironmentInfo.IsWin ? "" : "only-non-win-tests")
                .SetNoBuild(FinishedTargets.Contains(Compile))
                .SetResultsDirectory(TestResultsDirectory));
         });
