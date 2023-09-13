@@ -70,6 +70,6 @@ public class UsingCounterTests : IntegrationTests
 
     private static string[] CreateArgs(FileInfo project)
     {
-        return new[] { "using", "count", project.FullName };
+        return new[] { "using", "count", "--project", project.FullName };
     }
 }

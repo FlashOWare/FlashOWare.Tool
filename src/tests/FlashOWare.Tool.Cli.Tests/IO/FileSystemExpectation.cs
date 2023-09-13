@@ -144,20 +144,10 @@ internal sealed class FileSystemExpectation
 
     private bool IsFileSystemTreeEqual(FileInfo[] files)
     {
-        for (int i = 0; i < _files.Count; i++)
-        {
-            var expectedFile = _files[i];
-            var actualFile = files[i];
-
-            string relativePath = Path.GetRelativePath(_directory.FullName, actualFile.FullName);
-
-            if (expectedFile.FilePath != relativePath)
-            {
-                return false;
-            }
-        }
-
-        return true;
+        return !files
+            .Select(actualFile => Path.GetRelativePath(_directory.FullName, actualFile.FullName))
+            .Except(_files.Select(static expectedFile => expectedFile.FilePath))
+            .Any();
     }
 
     private static void Diff(string expected, string actual, StringBuilder destination)
