@@ -27,8 +27,7 @@
     <Description>A .NET tool that facilitates development workflows.</Description>
     <Copyright>© FlashOWare</Copyright>
     <PackageProjectUrl>https://github.com/FlashOWare/FlashOWare.Tool</PackageProjectUrl>
-    <PackageIconUrl>https://raw.githubusercontent.com/FlashOWare/FlashOWare.Tool/main/resources/F0.Tool-Preview.png</PackageIconUrl>
-    <PackageIcon>Icon.png</PackageIcon>
+    <PackageIconUrl>https://raw.githubusercontent.com/FlashOWare/FlashOWare.Tool/main/resources/FlashOWare.Tool.png</PackageIconUrl>
     <RepositoryUrl>https://github.com/FlashOWare/FlashOWare.Tool.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>FlashOWare;Tool;Roslyn;CodeAnalysis</PackageTags>
@@ -39,14 +38,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\libraries\FlashOWare.Tool.Cli\FlashOWare.Tool.Cli.csproj" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(Configuration)' == 'Debug'">
-    <None Include="..\..\..\resources\FlashOWare.Tool-Preview.png" Pack="true" PackagePath="Icon.png" Visible="false" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(Configuration)' == 'Release'">
-    <None Include="..\..\..\resources\FlashOWare.Tool.png" Pack="true" PackagePath="Icon.png" Visible="false" />
   </ItemGroup>
 
 </Project>
