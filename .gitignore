@@ -351,3 +351,4 @@ MigrationBackup/
 
 # NUKE
 .nuke/temp/
+.nuke/build.schema.json
