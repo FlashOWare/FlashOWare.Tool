@@ -1,4 +1,5 @@
 using FlashOWare.Tool.Cli.Tests.IO;
+using FlashOWare.Tool.Cli.Tests.Workspaces;
 using Microsoft.Build.Locator;
 using Microsoft.CodeAnalysis;
 using System.CommandLine.IO;
@@ -30,7 +31,9 @@ public abstract class IntegrationTests : IDisposable
         string name = type.FullName ?? type.Name;
 
         _scratch = FileSystemUtilities.CreateScratchDirectory(Build.Configuration, Build.TFM, name, incremented);
-        Workspace = new FileSystemWorkspace(_scratch);
+        Workspace = new PhysicalWorkspaceProvider(_scratch);
+
+        Result = new RunResult();
 
         _system = new RedirectedConsole();
     }
@@ -41,11 +44,15 @@ public abstract class IntegrationTests : IDisposable
 
     protected TestConsole Console { get; }
 
-    protected FileSystemWorkspace Workspace { get; }
+    protected PhysicalWorkspaceProvider Workspace { get; }
 
-    protected Task<int> RunAsync(params string[] args)
+    protected RunResult Result { get; }
+
+    protected async Task RunAsync(params string[] args)
     {
-        return CliApplication.RunAsync(args, Console, MSBuild);
+        int exitCode = await CliApplication.RunAsync(args, Console, MSBuild);
+
+        Result.Set(exitCode);
     }
 
     void IDisposable.Dispose()
@@ -59,10 +66,5 @@ public abstract class IntegrationTests : IDisposable
         _system.Dispose();
 
         Output?.WriteLine("MSBuild ({0}): {1} {2}", MSBuild.DiscoveryType, MSBuild.Name, MSBuild.Version);
-    }
-
-    public string GetScratchPath(string path)
-    {
-        return Path.Combine(_scratch.FullName, path);
     }
 }

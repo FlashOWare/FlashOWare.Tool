@@ -1,108 +1,239 @@
 using FlashOWare.Tool.Cli.Tests.CommandLine.IO;
-using FlashOWare.Tool.Cli.Tests.IO;
 using FlashOWare.Tool.Cli.Tests.Testing;
+using FlashOWare.Tool.Cli.Tests.Workspaces;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace FlashOWare.Tool.Cli.Tests.UsingDirectives;
 
 public class UsingGlobalizerTests : IntegrationTests
 {
     [Fact]
-    public async Task Globalize_MultipleDocuments_ReplacesWithGlobalUsingDirectives()
+    public async Task Globalize_SdkStyleProject_ReplacesWithGlobalUsingDirectives()
     {
         //Arrange
-        FileInfo project = Workspace.CSharp.CreateProject(Texts.CreateCSharpLibraryProject(), Names.CSharpProject);
-        Workspace.CSharp.CreateDocument("""
-            using System;
-            using System.Collections.Generic;
-            using System.Linq;
-            using System.Text;
-            using System.Threading.Tasks;
+        var project = Workspace.CreateProject()
+            .AddDocument("""
+                using System;
+                using System.Collections.Generic;
+                using System.Linq;
+                using System.Text;
+                using System.Threading.Tasks;
 
-            namespace ProjectUnderTest.NetCore
-            {
-                internal class MyClass1
+                namespace ProjectUnderTest.NetCore
+                {
+                    internal class MyClass1
+                    {
+                    }
+                }
+                """, "MyClass1")
+            .AddDocument("""
+                using System;
+                using System.Collections.Generic;
+                using System.Linq;
+                using System.Text;
+                using System.Threading.Tasks;
+
+                namespace ProjectUnderTest.NetCore;
+
+                internal class MyClass2
                 {
                 }
-            }
-            """, "MyClass1");
-        Workspace.CSharp.CreateDocument("""
-            using System;
-            using System.Collections.Generic;
-            using System.Linq;
-            using System.Text;
-            using System.Threading.Tasks;
+                """, "MyClass2")
+            .AddDocument("""
+                using System.Reflection;
 
-            namespace ProjectUnderTest.NetCore;
-
-            internal class MyClass2
-            {
-            }
-            """, "MyClass2");
-        Workspace.CSharp.CreateDocument("""
-            using System.Reflection;
-
-            [assembly: AssemblyDescription("A .NET tool that facilitates development workflows.")]
-            [assembly: AssemblyCopyright("Copyright © FlashOWare 2023")]
-            [assembly: AssemblyTrademark("")]
-            [assembly: AssemblyCulture("")]
-            """, "AssemblyInfo.cs", Names.Properties);
-        Workspace.CSharp.CreateDocument("""
-            global using System.IO;
-            global using System.Net.Http;
-            global using System.Threading;
-            """, "GlobalUsings.cs", Names.Properties);
-        string[] args = CreateArgs(Usings.System, project);
+                [assembly: AssemblyDescription("A .NET tool that facilitates development workflows.")]
+                [assembly: AssemblyCopyright("Copyright © FlashOWare 2023")]
+                [assembly: AssemblyTrademark("")]
+                [assembly: AssemblyCulture("")]
+                """, Names.AssemblyInfo, Names.Properties)
+            .AddDocument("""
+                global using System.IO;
+                global using System.Net.Http;
+                global using System.Threading;
+                """, Names.GlobalUsings, Names.Properties)
+            .Initialize(ProjectKind.SdkStyle, TargetFramework.Net60, LanguageVersion.CSharp10);
+        string[] args = CreateArgs(Usings.System, project.File);
         //Act
-        int exitCode = await RunAsync(args);
+        await RunAsync(args);
         //Assert
-        Console.AssertOutput($"""
+        Console.VerifyOutput($"""
             Project: {Names.Project}
             2 occurrences of Using Directive "System" were globalized to "GlobalUsings.cs".
             """);
-        Workspace.AssertFiles(PhysicalDocumentList.Create("""
-            global using System;
+        Workspace.CreateExpectation()
+            .AppendFile("""
+                global using System;
 
-            """, "GlobalUsings.cs")
-            .Add("""
-            using System.Collections.Generic;
-            using System.Linq;
-            using System.Text;
-            using System.Threading.Tasks;
+                """, Names.GlobalUsings)
+            .AppendFile("""
+                using System.Collections.Generic;
+                using System.Linq;
+                using System.Text;
+                using System.Threading.Tasks;
 
-            namespace ProjectUnderTest.NetCore
-            {
-                internal class MyClass1
+                namespace ProjectUnderTest.NetCore
+                {
+                    internal class MyClass1
+                    {
+                    }
+                }
+                """, "MyClass1.cs")
+            .AppendFile("""
+                using System.Collections.Generic;
+                using System.Linq;
+                using System.Text;
+                using System.Threading.Tasks;
+
+                namespace ProjectUnderTest.NetCore;
+
+                internal class MyClass2
                 {
                 }
-            }
-            """, "MyClass1.cs")
-            .Add("""
-            using System.Collections.Generic;
-            using System.Linq;
-            using System.Text;
-            using System.Threading.Tasks;
+                """, "MyClass2.cs")
+            .AppendFile(Projects.CreateProject(ProjectKind.SdkStyle, TargetFramework.Net60, LanguageVersion.CSharp10), Names.CSharpProject)
+            .AppendFile("""
+                using System.Reflection;
 
-            namespace ProjectUnderTest.NetCore;
+                [assembly: AssemblyDescription("A .NET tool that facilitates development workflows.")]
+                [assembly: AssemblyCopyright("Copyright © FlashOWare 2023")]
+                [assembly: AssemblyTrademark("")]
+                [assembly: AssemblyCulture("")]
+                """, Names.AssemblyInfo, Names.Properties)
+            .AppendFile("""
+                global using System.IO;
+                global using System.Net.Http;
+                global using System.Threading;
+                """, Names.GlobalUsings, Names.Properties)
+            .Verify();
+        Result.Verify(ExitCodes.Success);
+    }
 
-            internal class MyClass2
-            {
-            }
-            """, "MyClass2.cs")
-            .Add(Texts.CreateCSharpLibraryProject(), Names.CSharpProject)
-            .Add("""
-            using System.Reflection;
+    [Fact]
+    public async Task Globalize_DotNetFrameworkProject_ReplacesWithGlobalUsingDirectives()
+    {
+        //Arrange
+        var project = Workspace.CreateProject()
+            .AddDocument("""
+                using System;
+                using System.Collections.Generic;
+                using System.Linq;
+                using System.Text;
+                using System.Threading.Tasks;
 
-            [assembly: AssemblyDescription("A .NET tool that facilitates development workflows.")]
-            [assembly: AssemblyCopyright("Copyright © FlashOWare 2023")]
-            [assembly: AssemblyTrademark("")]
-            [assembly: AssemblyCulture("")]
-            """, "AssemblyInfo.cs", Names.Properties)
-            .Add("""
-            global using System.IO;
-            global using System.Net.Http;
-            global using System.Threading;
-            """, "GlobalUsings.cs", Names.Properties));
-        Assert.Equal(ExitCodes.Success, exitCode);
+                namespace ProjectUnderTest.NetFx
+                {
+                    internal class MyClass1
+                    {
+                    }
+                }
+                """, "MyClass1")
+            .AddDocument("""
+                using System;
+                using System.Collections.Generic;
+                using System.Linq;
+                using System.Text;
+                using System.Threading.Tasks;
+
+                namespace ProjectUnderTest.NetFx;
+
+                internal class MyClass2
+                {
+                }
+                """, "MyClass2")
+            .AddDocument($"""
+                using System.Reflection;
+                using System.Runtime.InteropServices;
+
+                [assembly: AssemblyTitle("ProjectUnderTest.NetFx")]
+                [assembly: AssemblyDescription("A .NET tool that facilitates development workflows.")]
+                [assembly: AssemblyConfiguration("")]
+                [assembly: AssemblyCompany("")]
+                [assembly: AssemblyProduct("ProjectUnderTest.NetFx")]
+                [assembly: AssemblyCopyright("Copyright © FlashOWare 2023")]
+                [assembly: AssemblyTrademark("")]
+                [assembly: AssemblyCulture("")]
+
+                [assembly: ComVisible(false)]
+
+                [assembly: Guid("{ProjectOptions.Default.AssemblyGuid}")]
+
+                [assembly: AssemblyVersion("1.0.0.0")]
+                [assembly: AssemblyFileVersion("1.0.0.0")]
+                """, Names.AssemblyInfo, Names.Properties)
+            .AddDocument("""
+                global using System.IO;
+                global using System.Net.Http;
+                global using System.Threading;
+                """, Names.GlobalUsings, Names.Properties)
+            .Initialize(ProjectKind.Classic, TargetFramework.Net472, LanguageVersion.CSharp10);
+        string[] args = CreateArgs(Usings.System, project.File);
+        //Act
+        await RunAsync(args);
+        //Assert
+        Console.VerifyOutput($"""
+            Project: {Names.Project}
+            2 occurrences of Using Directive "System" were globalized to "GlobalUsings.cs".
+            """);
+        string[] files = { Names.GlobalUsings, "MyClass1.cs", "MyClass2.cs", Path.Combine(Names.Properties, Names.AssemblyInfo), Path.Combine(Names.Properties, Names.GlobalUsings) };
+        Workspace.CreateExpectation()
+            .AppendFile("""
+                global using System;
+
+                """, Names.GlobalUsings)
+            .AppendFile("""
+                using System.Collections.Generic;
+                using System.Linq;
+                using System.Text;
+                using System.Threading.Tasks;
+
+                namespace ProjectUnderTest.NetFx
+                {
+                    internal class MyClass1
+                    {
+                    }
+                }
+                """, "MyClass1.cs")
+            .AppendFile("""
+                using System.Collections.Generic;
+                using System.Linq;
+                using System.Text;
+                using System.Threading.Tasks;
+
+                namespace ProjectUnderTest.NetFx;
+
+                internal class MyClass2
+                {
+                }
+                """, "MyClass2.cs")
+            .AppendFile(Projects.CreateProject(ProjectKind.Classic, TargetFramework.Net472, LanguageVersion.CSharp10, files), Names.CSharpProject)
+            .AppendFile($"""
+                using System.Reflection;
+                using System.Runtime.InteropServices;
+
+                [assembly: AssemblyTitle("ProjectUnderTest.NetFx")]
+                [assembly: AssemblyDescription("A .NET tool that facilitates development workflows.")]
+                [assembly: AssemblyConfiguration("")]
+                [assembly: AssemblyCompany("")]
+                [assembly: AssemblyProduct("ProjectUnderTest.NetFx")]
+                [assembly: AssemblyCopyright("Copyright © FlashOWare 2023")]
+                [assembly: AssemblyTrademark("")]
+                [assembly: AssemblyCulture("")]
+
+                [assembly: ComVisible(false)]
+
+                [assembly: Guid("{ProjectOptions.Default.AssemblyGuid}")]
+
+                [assembly: AssemblyVersion("1.0.0.0")]
+                [assembly: AssemblyFileVersion("1.0.0.0")]
+                """, Names.AssemblyInfo, Names.Properties)
+            .AppendFile("""
+                global using System.IO;
+                global using System.Net.Http;
+                global using System.Threading;
+                """, Names.GlobalUsings, Names.Properties)
+            .Verify();
+        Result.Verify(ExitCodes.Success);
     }
 
     private static string[] CreateArgs(string localUsing, FileInfo project)
