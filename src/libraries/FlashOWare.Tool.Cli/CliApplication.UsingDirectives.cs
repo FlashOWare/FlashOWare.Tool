@@ -83,7 +83,7 @@ public static partial class CliApplication
 
             workspace.ApplyChanges(result.Project.Solution);
 
-            if (oldProject is not null)
+            if (oldProject is not null && !IsNetFramework(oldProject))
             {
                 Debug.Assert(project.FilePath is not null, $"{nameof(Project)} '{project.Name}' has no project file.");
                 await File.WriteAllTextAsync(project.FilePath, oldProject, cancellationToken);
@@ -112,5 +112,22 @@ public static partial class CliApplication
         {
             s_msBuildMutex.Release();
         }
+    }
+
+    private static bool IsNetFramework(string project)
+    {
+        var index = project.IndexOf("<Project ");
+        if (index == -1)
+        {
+            return true;
+        }
+
+        index = project.IndexOf("Sdk=\"", index + "<Project ".Length);
+        if (index == -1)
+        {
+            return true;
+        }
+
+        return false;
     }
 }
