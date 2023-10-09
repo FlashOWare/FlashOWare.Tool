@@ -238,6 +238,21 @@ public class UsingGlobalizerTests : IntegrationTests
     }
 
     [Fact]
+    public async Task Globalize_ProjectFileDoesNotExist_FailsValidation()
+    {
+        //Arrange
+        string project = "ProjectFileDoesNotExist.csproj";
+        _ = Workspace.CreateProject()
+            .Initialize(ProjectKind.SdkStyle, TargetFramework.Net60, LanguageVersion.CSharp10);
+        string[] args = new[] { "using", "globalize", Usings.System, "--proj", project };
+        //Act
+        await RunAsync(args);
+        //Assert
+        Console.VerifyError($"File does not exist: '{project}'.");
+        Result.Verify(ExitCodes.Error);
+    }
+
+    [Fact]
     public async Task Globalize_VisualBasicProject_NotSupported()
     {
         //Arrange

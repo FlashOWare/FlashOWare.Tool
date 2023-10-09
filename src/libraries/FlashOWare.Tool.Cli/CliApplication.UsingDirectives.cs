@@ -14,7 +14,8 @@ public static partial class CliApplication
         var countCommand = new Command("count", "Count and list all top-level using directives of a C# project.");
         var globalizeCommand = new Command("globalize", "Move a top-level using directive to a global using directive in a C# project.");
 
-        var projectOption = new Option<FileInfo>(new[] { "--project", "--proj" }, "The project file to operate on.");
+        var projectOption = new Option<FileInfo>(new[] { "--project", "--proj" }, "The project file to operate on.")
+            .ExistingOnly();
 
         countCommand.Add(projectOption);
         countCommand.SetHandler(async (InvocationContext context) =>

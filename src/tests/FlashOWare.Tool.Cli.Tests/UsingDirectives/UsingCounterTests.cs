@@ -70,6 +70,21 @@ public class UsingCounterTests : IntegrationTests
     }
 
     [Fact]
+    public async Task Count_ProjectFileDoesNotExist_FailsValidation()
+    {
+        //Arrange
+        string project = "ProjectFileDoesNotExist.csproj";
+        _ = Workspace.CreateProject()
+            .Initialize(ProjectKind.SdkStyle, TargetFramework.Net60, LanguageVersion.CSharp10);
+        string[] args = new[] { "using", "count", "--proj", project };
+        //Act
+        await RunAsync(args);
+        //Assert
+        Console.VerifyError($"File does not exist: '{project}'.");
+        Result.Verify(ExitCodes.Error);
+    }
+
+    [Fact]
     public async Task Count_VisualBasicProject_NotSupported()
     {
         //Arrange
