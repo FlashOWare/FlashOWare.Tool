@@ -1,6 +1,7 @@
 using FlashOWare.Tool.Cli.Tests.CommandLine.IO;
 using FlashOWare.Tool.Cli.Tests.Testing;
 using FlashOWare.Tool.Cli.Tests.Workspaces;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
 namespace FlashOWare.Tool.Cli.Tests.UsingDirectives;
@@ -53,11 +54,11 @@ public class UsingGlobalizerTests : IntegrationTests
                 global using System.Threading;
                 """, Names.GlobalUsings, Names.Properties)
             .Initialize(ProjectKind.SdkStyle, TargetFramework.Net60, LanguageVersion.CSharp10);
-        string[] args = CreateArgs(Usings.System, project.File);
+        string[] args = new[] { "using", "globalize", Usings.System, "--project", project.File.FullName };
         //Act
         await RunAsync(args);
         //Assert
-        Console.VerifyOutput($"""
+        Console.Verify($"""
             Project: {Names.Project}
             2 occurrences of Using Directive "System" were globalized to "GlobalUsings.cs".
             """);
@@ -91,7 +92,7 @@ public class UsingGlobalizerTests : IntegrationTests
                 {
                 }
                 """, "MyClass2.cs")
-            .AppendFile(Projects.CreateProject(ProjectKind.SdkStyle, TargetFramework.Net60, LanguageVersion.CSharp10), Names.CSharpProject)
+            .AppendFile(ProjectText.Create(TargetFramework.Net60, LanguageVersion.CSharp10), Names.CSharpProject)
             .AppendFile("""
                 using System.Reflection;
 
@@ -167,11 +168,11 @@ public class UsingGlobalizerTests : IntegrationTests
                 global using System.Threading;
                 """, Names.GlobalUsings, Names.Properties)
             .Initialize(ProjectKind.Classic, TargetFramework.Net472, LanguageVersion.CSharp10);
-        string[] args = CreateArgs(Usings.System, project.File);
+        string[] args = new[] { "using", "globalize", Usings.System, "--project", project.File.FullName };
         //Act
         await RunAsync(args);
         //Assert
-        Console.VerifyOutput($"""
+        Console.Verify($"""
             Project: {Names.Project}
             2 occurrences of Using Directive "System" were globalized to "GlobalUsings.cs".
             """);
@@ -206,7 +207,7 @@ public class UsingGlobalizerTests : IntegrationTests
                 {
                 }
                 """, "MyClass2.cs")
-            .AppendFile(Projects.CreateProject(ProjectKind.Classic, TargetFramework.Net472, LanguageVersion.CSharp10, files), Names.CSharpProject)
+            .AppendFile(ProjectText.CreateNonSdk(TargetFramework.Net472, LanguageVersion.CSharp10, files), Names.CSharpProject)
             .AppendFile($"""
                 using System.Reflection;
                 using System.Runtime.InteropServices;
@@ -236,8 +237,22 @@ public class UsingGlobalizerTests : IntegrationTests
         Result.Verify(ExitCodes.Success);
     }
 
-    private static string[] CreateArgs(string localUsing, FileInfo project)
+    [Fact]
+    public async Task Globalize_VisualBasicProject_NotSupported()
     {
-        return new[] { "using", "globalize", localUsing, "--project", project.FullName };
+        //Arrange
+        var project = Workspace.CreateProject(Language.VisualBasic)
+            .AddDocument("""
+                Public Class Class1
+
+                End Class
+                """, "Class1")
+            .Initialize(ProjectKind.SdkStyle, TargetFramework.Net60);
+        string[] args = new[] { "using", "globalize", Usings.System, "--proj", project.File.FullName };
+        //Act
+        await RunAsync(args);
+        //Assert
+        Console.VerifyContains(null, $"Cannot open project '{project.File}' because the language '{LanguageNames.VisualBasic}' is not supported.");
+        Result.Verify(ExitCodes.Error);
     }
 }

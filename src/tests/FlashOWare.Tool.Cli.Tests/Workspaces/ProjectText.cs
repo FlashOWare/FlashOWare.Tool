@@ -1,46 +1,21 @@
 using FlashOWare.Tool.Cli.Tests.Testing;
 using Microsoft.CodeAnalysis.CSharp;
 using System.CodeDom.Compiler;
-using System.ComponentModel;
 using System.Globalization;
 using System.Text;
 
 namespace FlashOWare.Tool.Cli.Tests.Workspaces;
 
-internal static class Projects
+internal static class ProjectText
 {
-    public static string CreateProject(ProjectKind kind, TargetFramework tfm, LanguageVersion langVersion, params string[] files)
-    {
-        return kind switch
-        {
-            ProjectKind.Classic => CreateNonSdkProject(tfm, langVersion, files),
-            ProjectKind.SdkStyle => CreateSdkStyleProject(tfm),
-            _ => throw new InvalidEnumArgumentException(nameof(kind), (int)kind, typeof(ProjectKind)),
-        };
-    }
-
-    public static string CreateProject(params TargetFramework[] tfms)
-    {
-        return $"""
-            <Project Sdk="Microsoft.NET.Sdk">
-
-              <PropertyGroup>
-                <TargetFrameworks>{tfms.ToMonikerString()}</TargetFrameworks>
-                <Nullable>enable</Nullable>
-                <ImplicitUsings>enable</ImplicitUsings>
-              </PropertyGroup>
-
-            </Project>
-            """;
-    }
-
-    private static string CreateSdkStyleProject(TargetFramework tfm)
+    public static string Create(TargetFramework tfm, LanguageVersion? langVersion = null)
     {
         return $"""
             <Project Sdk="Microsoft.NET.Sdk">
 
               <PropertyGroup>
                 <TargetFramework>{tfm.ToMonikerString()}</TargetFramework>
+                {(langVersion.HasValue ? $"<LangVersion>{langVersion.Value.ToDisplayString()}</LangVersion>" : null)}
                 <Nullable>enable</Nullable>
                 <ImplicitUsings>enable</ImplicitUsings>
               </PropertyGroup>
@@ -49,7 +24,23 @@ internal static class Projects
             """;
     }
 
-    private static string CreateNonSdkProject(TargetFramework targetFrameworkVersion, LanguageVersion langVersion, string[] files)
+    public static string Create(TargetFramework[] tfms, LanguageVersion? langVersion = null)
+    {
+        return $"""
+            <Project Sdk="Microsoft.NET.Sdk">
+
+              <PropertyGroup>
+                <TargetFrameworks>{tfms.ToMonikerString()}</TargetFrameworks>
+                {(langVersion.HasValue ? $"<LangVersion>{langVersion.Value.ToDisplayString()}</LangVersion>" : null)}
+                <Nullable>enable</Nullable>
+                <ImplicitUsings>enable</ImplicitUsings>
+              </PropertyGroup>
+
+            </Project>
+            """;
+    }
+
+    public static string CreateNonSdk(TargetFramework targetFrameworkVersion, LanguageVersion langVersion, string[] files)
     {
         return $"""
             <?xml version="1.0" encoding="utf-8"?>
@@ -124,5 +115,20 @@ internal static class Projects
 
             return stringBuilder.ToString(0, stringBuilder.Length - Environment.NewLine.Length);
         }
+    }
+
+    public static string CreateVisualBasic(TargetFramework tfm, Microsoft.CodeAnalysis.VisualBasic.LanguageVersion? langVersion = null)
+    {
+        return $"""
+            <Project Sdk="Microsoft.NET.Sdk">
+
+              <PropertyGroup>
+                <RootNamespace>{ProjectOptions.Default.RootNamespace}</RootNamespace>
+                <TargetFramework>{tfm.ToMonikerString()}</TargetFramework>
+                {(langVersion.HasValue ? $"<LangVersion>{Microsoft.CodeAnalysis.VisualBasic.LanguageVersionFacts.ToDisplayString(langVersion.Value)}</LangVersion>" : null)}
+              </PropertyGroup>
+
+            </Project>
+            """;
     }
 }

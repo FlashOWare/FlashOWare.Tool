@@ -1,5 +1,6 @@
 using FlashOWare.Tool.Cli.Tests.CommandLine.IO;
 using FlashOWare.Tool.Cli.Tests.Testing;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
 namespace FlashOWare.Tool.Cli.Tests.UsingDirectives;
@@ -52,11 +53,11 @@ public class UsingCounterTests : IntegrationTests
                 global using System.Threading;
                 """, Names.GlobalUsings, Names.Properties)
             .Initialize(ProjectKind.SdkStyle, TargetFramework.Net60, LanguageVersion.CSharp10);
-        string[] args = CreateArgs(project.File);
+        string[] args = new[] { "using", "count", "--project", project.File.FullName };
         //Act
         await RunAsync(args);
         //Assert
-        Console.VerifyOutput($"""
+        Console.Verify($"""
             Project: {Names.Project}
               System: 2
               System.Collections.Generic: 2
@@ -68,8 +69,22 @@ public class UsingCounterTests : IntegrationTests
         Result.Verify(ExitCodes.Success);
     }
 
-    private static string[] CreateArgs(FileInfo project)
+    [Fact]
+    public async Task Count_VisualBasicProject_NotSupported()
     {
-        return new[] { "using", "count", "--project", project.FullName };
+        //Arrange
+        var project = Workspace.CreateProject(Language.VisualBasic)
+            .AddDocument("""
+                Public Class Class1
+
+                End Class
+                """, "Class1")
+            .Initialize(ProjectKind.SdkStyle, TargetFramework.Net60);
+        string[] args = new[] { "using", "count", "--proj", project.File.FullName };
+        //Act
+        await RunAsync(args);
+        //Assert
+        Console.VerifyContains(null, $"Cannot open project '{project.File}' because the language '{LanguageNames.VisualBasic}' is not supported.");
+        Result.Verify(ExitCodes.Error);
     }
 }
