@@ -7,7 +7,7 @@ namespace FlashOWare.Tool.Cli.Tests.UsingDirectives;
 
 public class UsingGlobalizerTests : IntegrationTests
 {
-    [Fact(Skip = "Fix on non Windows")]
+    [Fact]
     public async Task Globalize_SdkStyleProject_ReplacesWithGlobalUsingDirectives()
     {
         //Arrange
@@ -109,7 +109,7 @@ public class UsingGlobalizerTests : IntegrationTests
         Result.Verify(ExitCodes.Success);
     }
 
-    [Fact(Skip = "Fix on non Windows")]
+    [Fact]
     public async Task Globalize_DotNetFrameworkProject_ReplacesWithGlobalUsingDirectives()
     {
         //Arrange
