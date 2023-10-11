@@ -4,6 +4,7 @@ internal static class Names
 {
     public const string Project = "TestProject";
     public const string CSharpProject = "TestProject.csproj";
+    public const string VisualBasicProject = "TestProject.vbproj";
 
     public const string Properties = "Properties";
 
