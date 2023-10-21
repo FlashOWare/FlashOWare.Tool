@@ -70,7 +70,7 @@ public class UsingCounterTests : IntegrationTests
     }
 
     [Fact]
-    public async Task Count_ProjectFileDoesNotExist_FailsValidation()
+    public async Task Count_ExplicitProjectFileDoesNotExist_FailsValidation()
     {
         //Arrange
         string project = "ProjectFileDoesNotExist.csproj";
@@ -100,6 +100,60 @@ public class UsingCounterTests : IntegrationTests
         await RunAsync(args);
         //Assert
         Console.VerifyContains(null, $"Cannot open project '{project.File}' because the language '{LanguageNames.VisualBasic}' is not supported.");
+        Result.Verify(ExitCodes.Error);
+    }
+
+    [Fact]
+    public async Task Count_ImplicitSingleProject_UseCurrentDirectory()
+    {
+        //Arrange
+        _ = Workspace.CreateProject()
+            .AddDocument("""
+                using System;
+
+                namespace ProjectUnderTest.NetCore;
+
+                internal class MyClass1
+                {
+                }
+                """, "MyClass1")
+            .Initialize(ProjectKind.SdkStyle, TargetFramework.Net60, LanguageVersion.CSharp10);
+        string[] args = new[] { "using", "count" };
+        //Act
+        await RunAsync(args);
+        //Assert
+        Console.Verify($"""
+            Project: {Names.Project}
+              System: 1
+            """);
+        Result.Verify(ExitCodes.Success);
+    }
+
+    [Fact]
+    public async Task Count_ImplicitProjectMissing_Error()
+    {
+        //Arrange
+        string[] args = new[] { "using", "count" };
+        //Act
+        await RunAsync(args);
+        //Assert
+        Console.VerifyContains(null, "Specify a project file. The current working directory does not contain a project file.");
+        Result.Verify(ExitCodes.Error);
+    }
+
+    [Fact]
+    public async Task Count_ImplicitMultipleProjects_Ambiguous()
+    {
+        //Arrange
+        _ = Workspace.CreateProject()
+            .Initialize(ProjectKind.SdkStyle, TargetFramework.Net60, LanguageVersion.CSharp10);
+        _ = Workspace.CreateProject().WithProjectName("Ambiguous")
+            .Initialize(ProjectKind.SdkStyle, TargetFramework.Net60, LanguageVersion.CSharp10);
+        string[] args = new[] { "using", "count" };
+        //Act
+        await RunAsync(args);
+        //Assert
+        Console.VerifyContains(null, "Specify which project file to use because this folder contains more than one project file.");
         Result.Verify(ExitCodes.Error);
     }
 }

@@ -1,7 +1,6 @@
 using FlashOWare.Tool.Cli.Tests.IO;
 using FlashOWare.Tool.Cli.Tests.Workspaces;
 using Microsoft.Build.Locator;
-using Microsoft.CodeAnalysis;
 using System.CommandLine.IO;
 using Xunit.Abstractions;
 
@@ -13,6 +12,7 @@ public abstract class IntegrationTests : IDisposable
     private static int s_number = 0;
 
     private readonly DirectoryInfo _scratch;
+    private readonly FileSystemAccessor _fileSystem;
     private readonly RedirectedConsole _system;
 
     protected IntegrationTests()
@@ -31,6 +31,7 @@ public abstract class IntegrationTests : IDisposable
         string name = type.FullName ?? type.Name;
 
         _scratch = FileSystemUtilities.CreateScratchDirectory(Build.Configuration, Build.TFM, name, incremented);
+        _fileSystem = new FileSystemAccessor(_scratch);
         Workspace = new PhysicalWorkspaceProvider(_scratch);
 
         Result = new RunResult();
@@ -50,7 +51,7 @@ public abstract class IntegrationTests : IDisposable
 
     protected async Task RunAsync(params string[] args)
     {
-        int exitCode = await CliApplication.RunAsync(args, Console, MSBuild);
+        int exitCode = await CliApplication.RunAsync(args, Console, MSBuild, _fileSystem);
 
         Result.Set(exitCode);
     }

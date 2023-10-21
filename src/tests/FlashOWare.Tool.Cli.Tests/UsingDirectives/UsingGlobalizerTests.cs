@@ -238,7 +238,7 @@ public class UsingGlobalizerTests : IntegrationTests
     }
 
     [Fact]
-    public async Task Globalize_ProjectFileDoesNotExist_FailsValidation()
+    public async Task Globalize_ExplicitProjectFileDoesNotExist_FailsValidation()
     {
         //Arrange
         string project = "ProjectFileDoesNotExist.csproj";
@@ -268,6 +268,77 @@ public class UsingGlobalizerTests : IntegrationTests
         await RunAsync(args);
         //Assert
         Console.VerifyContains(null, $"Cannot open project '{project.File}' because the language '{LanguageNames.VisualBasic}' is not supported.");
+        Result.Verify(ExitCodes.Error);
+    }
+
+    [Fact]
+    public async Task Globalize_ImplicitSingleProject_UseCurrentDirectory()
+    {
+        //Arrange
+        _ = Workspace.CreateProject()
+            .AddDocument("""
+                using System;
+                using System.Collections.Generic;
+
+                namespace ProjectUnderTest.NetCore;
+
+                internal class MyClass1
+                {
+                }
+                """, "MyClass1")
+            .Initialize(ProjectKind.SdkStyle, TargetFramework.Net60, LanguageVersion.CSharp10);
+        string[] args = new[] { "using", "globalize", Usings.System };
+        //Act
+        await RunAsync(args);
+        //Assert
+        Console.Verify($"""
+            Project: {Names.Project}
+            1 occurrence of Using Directive "System" was globalized to "GlobalUsings.cs".
+            """);
+        Workspace.CreateExpectation()
+            .AppendFile("""
+                global using System;
+
+                """, Names.GlobalUsings)
+            .AppendFile("""
+                using System.Collections.Generic;
+
+                namespace ProjectUnderTest.NetCore;
+
+                internal class MyClass1
+                {
+                }
+                """, "MyClass1.cs")
+            .AppendFile(ProjectText.Create(TargetFramework.Net60, LanguageVersion.CSharp10), Names.CSharpProject)
+            .Verify();
+        Result.Verify(ExitCodes.Success);
+    }
+
+    [Fact]
+    public async Task Globalize_ImplicitProjectMissing_Error()
+    {
+        //Arrange
+        string[] args = new[] { "using", "globalize", Usings.System };
+        //Act
+        await RunAsync(args);
+        //Assert
+        Console.VerifyContains(null, "Specify a project file. The current working directory does not contain a project file.");
+        Result.Verify(ExitCodes.Error);
+    }
+
+    [Fact]
+    public async Task Globalize_ImplicitMultipleProjects_Ambiguous()
+    {
+        //Arrange
+        _ = Workspace.CreateProject()
+            .Initialize(ProjectKind.SdkStyle, TargetFramework.Net60, LanguageVersion.CSharp10);
+        _ = Workspace.CreateProject().WithProjectName("Ambiguous")
+            .Initialize(ProjectKind.SdkStyle, TargetFramework.Net60, LanguageVersion.CSharp10);
+        string[] args = new[] { "using", "globalize", Usings.System };
+        //Act
+        await RunAsync(args);
+        //Assert
+        Console.VerifyContains(null, "Specify which project file to use because this folder contains more than one project file.");
         Result.Verify(ExitCodes.Error);
     }
 }
