@@ -11,12 +11,14 @@ public static partial class CliApplication
     private static void AddUsingCommand(RootCommand rootCommand, MSBuildWorkspace workspace)
     {
         var usingCommand = new Command("using", " Analyze or refactor C# using directives.");
-        var countCommand = new Command("count", "Count and list all top-level using directives of a C# project.");
+        var countCommand = new Command("count", "Count and list the top-level using directives of a C# project.");
         var globalizeCommand = new Command("globalize", "Move a top-level using directive to a global using directive in a C# project.");
 
         var projectOption = new Option<FileInfo>(new[] { "--project", "--proj" }, "The project file to operate on.")
             .ExistingOnly();
 
+        var countArgument = new Argument<string[]>("USINGS", "The names of the top-level using directives to count. If usings are not specified, the command will list all top-level directives.");
+        countCommand.Add(countArgument);
         countCommand.Add(projectOption);
         countCommand.SetHandler(async (InvocationContext context) =>
         {
@@ -26,7 +28,9 @@ public static partial class CliApplication
                 throw new NotImplementedException("Please pass a specific project path via --project.");
             }
 
-            await CountUsingsAsync(workspace, project.FullName, context.Console, context.GetCancellationToken());
+            var usings = context.ParseResult.GetValueForArgument(countArgument);
+
+            await CountUsingsAsync(workspace, project.FullName, usings, context.Console, context.GetCancellationToken());
         });
 
         var usingArgument = new Argument<string>("USING", "The name of the top-level using directive to convert to a global using directive.");
@@ -49,14 +53,14 @@ public static partial class CliApplication
         rootCommand.Add(usingCommand);
     }
 
-    private static async Task CountUsingsAsync(MSBuildWorkspace workspace, string projectFilePath, IConsole console, CancellationToken cancellationToken)
+    private static async Task CountUsingsAsync(MSBuildWorkspace workspace, string projectFilePath, string[] usings, IConsole console, CancellationToken cancellationToken)
     {
         try
         {
             await s_msBuildMutex.WaitAsync(cancellationToken);
             Project project = await workspace.OpenProjectAsync(projectFilePath, null, cancellationToken);
 
-            var result = await UsingCounter.CountAsync(project, cancellationToken);
+            var result = await UsingCounter.CountAsync(project, usings, cancellationToken);
             console.WriteLine($"{nameof(Project)}: {result.ProjectName}");
             foreach (var usingDirective in result.Usings)
             {

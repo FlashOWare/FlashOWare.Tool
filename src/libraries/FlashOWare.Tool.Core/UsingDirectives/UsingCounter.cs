@@ -7,7 +7,7 @@ namespace FlashOWare.Tool.Core.UsingDirectives;
 
 public static class UsingCounter
 {
-    public static async Task<UsingCountResult> CountAsync(Project project, CancellationToken cancellationToken = default)
+    public static async Task<UsingCountResult> CountAsync(Project project, string[] usings, CancellationToken cancellationToken = default)
     {
         RoslynUtilities.ThrowIfNotCSharp(project);
 
@@ -23,6 +23,8 @@ public static class UsingCounter
         {
             return result;
         }
+
+        result.AddRange(usings);
 
         foreach (Document document in project.Documents)
         {
@@ -48,13 +50,13 @@ public static class UsingCounter
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            AggregateUsings(result, compilationUnit);
+            AggregateUsings(result, compilationUnit, usings);
         }
 
         return result;
     }
 
-    private static void AggregateUsings(UsingCountResult result, CompilationUnitSyntax compilationUnit)
+    private static void AggregateUsings(UsingCountResult result, CompilationUnitSyntax compilationUnit, string[] usings)
     {
         foreach (UsingDirectiveSyntax usingNode in compilationUnit.Usings)
         {
@@ -72,7 +74,15 @@ public static class UsingCounter
             }
 
             string identifier = usingNode.Name.ToString();
-            result.IncrementOrAdd(identifier);
+
+            if (usings.Length == 0)
+            {
+                result.IncrementOrAdd(identifier);
+            }
+            else if (usings.Contains(identifier))
+            {
+                result.Increment(identifier);
+            }
         }
     }
 }
