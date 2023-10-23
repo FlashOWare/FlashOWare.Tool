@@ -25,7 +25,7 @@ public static partial class CliApplication
             if (project is null)
             {
                 var currentDirectory = fileSystem.GetCurrentDirectory();
-                var files = currentDirectory.GetFiles("*.csproj");
+                var files = currentDirectory.GetFiles("*.*proj");
 
                 project = files switch
                 {
@@ -48,7 +48,7 @@ public static partial class CliApplication
             if (project is null)
             {
                 var currentDirectory = fileSystem.GetCurrentDirectory();
-                var files = currentDirectory.GetFiles("*.csproj");
+                var files = currentDirectory.GetFiles("*.*proj");
 
                 project = files switch
                 {
