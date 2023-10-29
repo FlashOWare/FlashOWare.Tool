@@ -2,6 +2,7 @@ using FlashOWare.Tool.Core.CodeAnalysis;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.Collections.Immutable;
 using System.Diagnostics;
 
 namespace FlashOWare.Tool.Core.UsingDirectives;
@@ -10,7 +11,17 @@ public static class UsingGlobalizer
 {
     private const string DefaultTargetDocument = "GlobalUsings.cs";
 
-    public static async Task<UsingGlobalizationResult> GlobalizeAsync(Project project, string localUsing, CancellationToken cancellationToken = default)
+    public static Task<UsingGlobalizationResult> GlobalizeAsync(Project project, CancellationToken cancellationToken = default)
+    {
+        return GlobalizeAsync(project, ImmutableArray<string>.Empty, cancellationToken);
+    }
+
+    public static Task<UsingGlobalizationResult> GlobalizeAsync(Project project, string localUsing, CancellationToken cancellationToken = default)
+    {
+        return GlobalizeAsync(project, ImmutableArray.Create(localUsing), cancellationToken);
+    }
+
+    public static async Task<UsingGlobalizationResult> GlobalizeAsync(Project project, ImmutableArray<string> usings, CancellationToken cancellationToken = default)
     {
         RoslynUtilities.ThrowIfNotCSharp(project, LanguageVersion.CSharp10, LanguageFeatures.GlobalUsingDirective);
 
@@ -20,11 +31,12 @@ public static class UsingGlobalizer
             throw new InvalidOperationException($"{nameof(Project)}.{nameof(Project.SupportsCompilation)} = {project.SupportsCompilation} ({project.Name})");
         }
 
-        var usingDirective = new UsingDirective(localUsing);
+        var result = new UsingGlobalizationResult(project, DefaultTargetDocument);
+        result.Initialize(usings);
 
         if (RoslynUtilities.IsGeneratedCode(compilation))
         {
-            return new UsingGlobalizationResult(project, usingDirective, DefaultTargetDocument);
+            return result;
         }
 
         var solution = project.Solution;
@@ -53,64 +65,76 @@ public static class UsingGlobalizer
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            solution = await GlobalizeAsync(solution, project.Id, document, compilationUnit, localUsing, usingDirective, cancellationToken);
+            solution = await GlobalizeAsync(solution, project.Id, document, compilationUnit, usings, result, cancellationToken);
         }
 
         var newProject = solution.GetProject(project.Id);
         Debug.Assert(newProject is not null, $"{nameof(ProjectId)} is not a {nameof(ProjectId)} of a {nameof(Project)} that is part of this {nameof(Solution)}.");
-        return new UsingGlobalizationResult(newProject, usingDirective, DefaultTargetDocument);
+        result.Update(newProject);
+
+        result.Verify();
+        return result;
     }
 
-    private static async Task<Solution> GlobalizeAsync(Solution solution, ProjectId projectId, Document document, CompilationUnitSyntax compilationUnit, string localUsing, UsingDirective result, CancellationToken cancellationToken)
+    private static async Task<Solution> GlobalizeAsync(Solution solution, ProjectId projectId, Document document, CompilationUnitSyntax compilationUnit, ImmutableArray<string> usings, UsingGlobalizationResult result, CancellationToken cancellationToken)
     {
-        var options = await document.GetOptionsAsync(cancellationToken);
-
-        foreach (UsingDirectiveSyntax usingNode in compilationUnit.Usings)
+        var usingNodes = compilationUnit.Usings.Where(IsLocalUsing);
+        if (usings.Length != 0)
         {
-            if (usingNode.Alias is not null ||
-                !usingNode.StaticKeyword.IsKind(SyntaxKind.None) ||
-                !usingNode.GlobalKeyword.IsKind(SyntaxKind.None))
+            usingNodes = usingNodes.Where(usingNode => usings.Contains(usingNode.Name.ToString()));
+        }
+
+        UsingDirectiveSyntax[] globalizedNodes = usingNodes.ToArray();
+        if (globalizedNodes.Length == 0)
+        {
+            return solution;
+        }
+        string[] globalizedIdentifiers = globalizedNodes.Select(static usingNode => usingNode.Name.ToString()).ToArray();
+
+        var newRoot = compilationUnit.RemoveNodes(globalizedNodes, SyntaxRemoveOptions.KeepLeadingTrivia);
+        Debug.Assert(newRoot is not null, "The root node itself is removed.");
+
+        result.Update(globalizedIdentifiers);
+        solution = solution.WithDocumentSyntaxRoot(document.Id, newRoot);
+
+        Project? project = solution.GetProject(projectId);
+        Debug.Assert(project is not null, $"{nameof(ProjectId)} is not a {nameof(ProjectId)} of a {nameof(Project)} that is part of this {nameof(Solution)}.");
+
+        if (project.Documents.SingleOrDefault(static document => document.Name == DefaultTargetDocument && document.Folders.Count == 0) is { } globalUsings)
+        {
+            SyntaxNode? globalUsingsSyntaxRoot = await globalUsings.GetSyntaxRootAsync(cancellationToken);
+            if (globalUsingsSyntaxRoot is null)
             {
-                continue;
+                throw new InvalidOperationException($"{nameof(Document)}.{nameof(Document.SupportsSyntaxTree)} = {globalUsings.SupportsSyntaxTree} ({globalUsings.Name})");
             }
 
-            if (usingNode.Name.ToString() == localUsing)
+            var globalUsingsCompilationUnit = (CompilationUnitSyntax)globalUsingsSyntaxRoot;
+            var existingUsings = globalUsingsCompilationUnit.Usings.Select(static usingDirective => usingDirective.Name.ToString());
+            string[] addedUsings = globalizedIdentifiers.Except(existingUsings, StringComparer.Ordinal).ToArray();
+            if (addedUsings.Length != 0)
             {
-                var newRoot = compilationUnit.RemoveNode(usingNode, SyntaxRemoveOptions.KeepLeadingTrivia);
-                Debug.Assert(newRoot is not null, "The root node itself is removed.");
-
-                solution = solution.WithDocumentSyntaxRoot(document.Id, newRoot);
-
-                Project? project = solution.GetProject(projectId);
-                Debug.Assert(project is not null, $"{nameof(ProjectId)} is not a {nameof(ProjectId)} of a {nameof(Project)} that is part of this {nameof(Solution)}.");
-
-                if (project.Documents.SingleOrDefault(static document => document.Name == DefaultTargetDocument && document.Folders.Count == 0) is { } globalUsings)
-                {
-                    SyntaxNode? globalUsingsSyntaxRoot = await globalUsings.GetSyntaxRootAsync(cancellationToken);
-                    if (globalUsingsSyntaxRoot is null)
-                    {
-                        throw new InvalidOperationException($"{nameof(Document)}.{nameof(Document.SupportsSyntaxTree)} = {globalUsings.SupportsSyntaxTree} ({globalUsings.Name})");
-                    }
-
-                    var globalUsingsCompilationUnit = (CompilationUnitSyntax)globalUsingsSyntaxRoot;
-                    if (!globalUsingsCompilationUnit.Usings.Any(usingDirective => usingDirective.Name.ToString() == localUsing))
-                    {
-                        var node = CSharpSyntaxFactory.GlobalUsingDirective(localUsing, options);
-                        var newUsings = globalUsingsCompilationUnit.Usings.Add(node);
-                        var newGlobalUsingsRoot = globalUsingsCompilationUnit.WithUsings(newUsings);
-                        solution = solution.WithDocumentSyntaxRoot(globalUsings.Id, newGlobalUsingsRoot);
-                    }
-                }
-                else
-                {
-                    var syntaxRoot = CSharpSyntaxFactory.GlobalUsingDirectiveRoot(localUsing, options);
-                    solution = solution.AddDocument(DocumentId.CreateNewId(projectId), DefaultTargetDocument, syntaxRoot);
-                }
-
-                result.Occurrences++;
+                var options = await document.GetOptionsAsync(cancellationToken);
+                var nodes = CSharpSyntaxFactory.GlobalUsingDirectives(addedUsings, options);
+                var newUsings = globalUsingsCompilationUnit.Usings.AddRange(nodes);
+                var newGlobalUsingsRoot = globalUsingsCompilationUnit.WithUsings(newUsings);
+                solution = solution.WithDocumentSyntaxRoot(globalUsings.Id, newGlobalUsingsRoot);
             }
+        }
+        else
+        {
+            var options = await document.GetOptionsAsync(cancellationToken);
+            IEnumerable<string> addedUsings = globalizedIdentifiers.Distinct(StringComparer.Ordinal);
+            var syntaxRoot = CSharpSyntaxFactory.GlobalUsingDirectivesRoot(addedUsings, options);
+            solution = solution.AddDocument(DocumentId.CreateNewId(projectId), DefaultTargetDocument, syntaxRoot);
         }
 
         return solution;
+    }
+
+    private static bool IsLocalUsing(UsingDirectiveSyntax usingNode)
+    {
+        return usingNode.Alias is null
+            && usingNode.StaticKeyword.IsKind(SyntaxKind.None)
+            && usingNode.GlobalKeyword.IsKind(SyntaxKind.None);
     }
 }

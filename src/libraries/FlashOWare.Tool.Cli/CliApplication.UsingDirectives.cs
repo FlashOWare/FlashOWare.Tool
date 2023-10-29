@@ -1,6 +1,7 @@
 using FlashOWare.Tool.Cli.CodeAnalysis;
 using FlashOWare.Tool.Core.UsingDirectives;
 using Microsoft.CodeAnalysis;
+using System.Collections.Immutable;
 using System.CommandLine.IO;
 using System.Diagnostics;
 
@@ -12,7 +13,7 @@ public static partial class CliApplication
     {
         var usingCommand = new Command("using", " Analyze or refactor C# using directives.");
         var countCommand = new Command("count", "Count and list all top-level using directives of a C# project.");
-        var globalizeCommand = new Command("globalize", "Move a top-level using directive to a global using directive in a C# project.");
+        var globalizeCommand = new Command("globalize", "Move top-level using directives to global using directives in a C# project.");
 
         var projectOption = new Option<FileInfo>(new[] { "--project", "--proj" }, "The project file to operate on.")
             .ExistingOnly();
@@ -29,19 +30,27 @@ public static partial class CliApplication
             await CountUsingsAsync(workspace, project.FullName, context.Console, context.GetCancellationToken());
         });
 
-        var usingArgument = new Argument<string>("USING", "The name of the top-level using directive to convert to a global using directive.");
-        globalizeCommand.Add(usingArgument);
+        var globalizeArgument = new Argument<string[]>("USINGS", "The names of the top-level using directives to convert to global using directives. If usings are not specified, the command will globalize all top-level directives.");
+        var forceOption = new Option<bool>("--force", "Forces all top-level using directives to be globalized when no usings are specified.");
+        globalizeCommand.Add(globalizeArgument);
         globalizeCommand.Add(projectOption);
+        globalizeCommand.Add(forceOption);
         globalizeCommand.SetHandler(async (InvocationContext context) =>
         {
-            string localUsing = context.ParseResult.GetValueForArgument(usingArgument);
+            string[] usings = context.ParseResult.GetValueForArgument(globalizeArgument);
             FileInfo? project = context.ParseResult.GetValueForOption(projectOption);
             if (project is null)
             {
                 throw new NotImplementedException("Please pass a specific project path via --project.");
             }
 
-            await GlobalizeUsingsAsync(workspace, project.FullName, localUsing, context.Console, context.GetCancellationToken());
+            bool isForced = context.ParseResult.GetValueForOption(forceOption);
+            if (usings.Length == 0 && !isForced)
+            {
+                throw new InvalidOperationException("No usings specified. To globalize all top-level using directives, run the command with '--force' option.");
+            }
+
+            await GlobalizeUsingsAsync(workspace, project.FullName, usings.ToImmutableArray(), context.Console, context.GetCancellationToken());
         });
 
         usingCommand.Add(countCommand);
@@ -73,7 +82,7 @@ public static partial class CliApplication
         }
     }
 
-    private static async Task GlobalizeUsingsAsync(MSBuildWorkspace workspace, string projectFilePath, string localUsing, IConsole console, CancellationToken cancellationToken)
+    private static async Task GlobalizeUsingsAsync(MSBuildWorkspace workspace, string projectFilePath, ImmutableArray<string> usings, IConsole console, CancellationToken cancellationToken)
     {
         try
         {
@@ -81,7 +90,7 @@ public static partial class CliApplication
             Project project = await workspace.OpenProjectAsync(projectFilePath, null, cancellationToken);
 
             workspace.ThrowIfCannotApplyChanges(ApplyChangesKind.AddDocument, ApplyChangesKind.ChangeDocument);
-            var result = await UsingGlobalizer.GlobalizeAsync(project, localUsing, cancellationToken);
+            var result = await UsingGlobalizer.GlobalizeAsync(project, usings, cancellationToken);
 
             string? oldProject = null;
             if (project.DocumentIds.Count < result.Project.DocumentIds.Count)
@@ -100,17 +109,26 @@ public static partial class CliApplication
 
             console.WriteLine($"{nameof(Project)}: {result.Project.Name}");
 
-            if (result.Using.Occurrences == 0)
+            if (result.Occurrences == 0)
             {
-                console.WriteLine($"""No occurrences of Using Directive "{localUsing}" were globalized.""");
+                string message = result.Usings.Count == 1
+                    ? $"""No occurrences of Using Directive "{result.Usings.Single().Name}" were globalized."""
+                    : $"""No occurrences of {result.Usings.Count} Using Directives were globalized.""";
+                console.WriteLine(message);
             }
-            else if (result.Using.Occurrences == 1)
+            else if (result.Occurrences == 1)
             {
-                console.WriteLine($"""1 occurrence of Using Directive "{localUsing}" was globalized to "{result.TargetDocument}".""");
+                string message = result.Usings.Count == 1
+                    ? $"""1 occurrence of Using Directive "{result.Usings.Single().Name}" was globalized to "{result.TargetDocument}"."""
+                    : $"""1 occurrence of {result.Usings.Count} Using Directives was globalized to "{result.TargetDocument}".""";
+                console.WriteLine(message);
             }
             else
             {
-                console.WriteLine($"""{result.Using.Occurrences} occurrences of Using Directive "{localUsing}" were globalized to "{result.TargetDocument}".""");
+                string message = result.Usings.Count == 1
+                    ? $"""{result.Usings.Single().Occurrences} occurrences of Using Directive "{result.Usings.Single().Name}" were globalized to "{result.TargetDocument}"."""
+                    : $"""{result.Occurrences} occurrences of {result.Usings.Count} Using Directives were globalized to "{result.TargetDocument}".""";
+                console.WriteLine(message);
             }
         }
         catch (OperationCanceledException)

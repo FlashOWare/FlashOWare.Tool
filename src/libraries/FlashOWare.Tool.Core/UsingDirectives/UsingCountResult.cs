@@ -23,7 +23,7 @@ public sealed class UsingCountResult
     {
         if (_usings.TryGetValue(identifier, out UsingDirective? usingDirective))
         {
-            usingDirective.Occurrences++;
+            usingDirective.IncrementOccurrences();
         }
         else
         {

@@ -2,6 +2,7 @@ using FlashOWare.Tool.Core.Tests.Assertions;
 using FlashOWare.Tool.Core.Tests.Testing;
 using FlashOWare.Tool.Core.UsingDirectives;
 using Microsoft.CodeAnalysis.CSharp;
+using System.Collections.Immutable;
 
 namespace FlashOWare.Tool.Core.Tests.UsingDirectives;
 
@@ -42,6 +43,22 @@ public class UsingGlobalizerTests
                     System.Console.WriteLine("Hello, World!");
                 }
             }
+            """);
+        //Act
+        var actualResult = await UsingGlobalizer.GlobalizeAsync(project, "System");
+        //Assert
+        await ToolAssert.AssertAsync(actualResult, expectedProject, "System", 0, DefaultDocumentName);
+    }
+
+    [Fact]
+    public async Task GlobalizeAsync_LocalUsingDirectiveNotFound_NoReplace()
+    {
+        //Arrange
+        var project = await CreateProjectCheckedAsync("""
+            using System.Collections.Generic;
+            """);
+        var expectedProject = await CreateProjectCheckedAsync("""
+            using System.Collections.Generic;
             """);
         //Act
         var actualResult = await UsingGlobalizer.GlobalizeAsync(project, "System");
@@ -554,7 +571,7 @@ public class UsingGlobalizerTests
     }
 
     [Fact]
-    public async Task GlobalizeAsync_Exists_Append()
+    public async Task GlobalizeAsync_DocumentExists_Append()
     {
         //Arrange
         var project = await CreateProjectCheckedAsync("""
@@ -582,6 +599,35 @@ public class UsingGlobalizerTests
     }
 
     [Fact]
+    public async Task GlobalizeAsync_AlreadyGlobalized_DoNotRepeat()
+    {
+        //Arrange
+        var project = await CreateProjectCheckedAsync("""
+            global using System.Linq;
+
+            """, """
+            using System;
+            using System.Collections.Generic;
+            using System.Linq;
+            using System.Text;
+            using System.Threading.Tasks;
+            """).WithDocumentNameAsync(0, DefaultDocumentName);
+        var expectedProject = await CreateProjectCheckedAsync("""
+            global using System.Linq;
+
+            """, """
+            using System;
+            using System.Collections.Generic;
+            using System.Text;
+            using System.Threading.Tasks;
+            """).WithDocumentNameAsync(0, DefaultDocumentName);
+        //Act
+        var actualResult = await UsingGlobalizer.GlobalizeAsync(project, "System.Linq");
+        //Assert
+        await ToolAssert.AssertAsync(actualResult, expectedProject, "System.Linq", 1, DefaultDocumentName);
+    }
+
+    [Fact]
     public async Task GlobalizeAsync_Ambiguous_Throws()
     {
         //Arrange
@@ -593,5 +639,131 @@ public class UsingGlobalizerTests
         var result = () => UsingGlobalizer.GlobalizeAsync(project, "System");
         //Assert
         await Assert.ThrowsAsync<InvalidOperationException>(result);
+    }
+
+    [Fact]
+    public async Task GlobalizeAsync_DuplicateUsings_DeduplicatesUsingDirectives()
+    {
+        //Arrange
+        var project = await CreateProjectCheckedAsync("""
+            using System;
+            using System;
+            """, """
+            using System;
+            using System.Collections.Generic;
+            using System;
+            """);
+        var expectedProject = await CreateProjectCheckedAsync(
+            "",
+            """
+            using System.Collections.Generic;
+
+            """, """
+            global using System;
+
+            """).WithDocumentNameAsync(^1, DefaultDocumentName);
+        //Act
+        var actualResult = await UsingGlobalizer.GlobalizeAsync(project, "System");
+        //Assert
+        await ToolAssert.AssertAsync(actualResult, expectedProject, "System", 4, DefaultDocumentName);
+    }
+
+    [Fact]
+    public async Task GlobalizeAsync_RedundantUsings_DeduplicatesUsings()
+    {
+        //Arrange
+        var project = await CreateProjectCheckedAsync("""
+            using System;
+            """, """
+            using System;
+            using System.Collections.Generic;
+            """);
+        var expectedProject = await CreateProjectCheckedAsync(
+            "",
+            "", """
+            global using System;
+            global using System.Collections.Generic;
+
+            """).WithDocumentNameAsync(^1, DefaultDocumentName);
+        //Act
+        var actualResult = await UsingGlobalizer.GlobalizeAsync(project, ImmutableArray.Create("System", "System.Collections", "System", "System.Collections.Generic", "System"));
+        //Assert
+        await ToolAssert.AssertAsync(actualResult, expectedProject, new UsingDirective[] { new("System", 2), new("System.Collections", 0), new("System.Collections.Generic", 1) }, DefaultDocumentName);
+    }
+
+    [Fact]
+    public async Task GlobalizeAsync_MultipleUsings_ReplacesSpecifiedUsingDirectives()
+    {
+        //Arrange
+        var project = await CreateProjectCheckedAsync("""
+            using System;
+            using System.Collections.Generic;
+            using System.IO;
+            using System.Linq;
+            using System.Net.Http;
+            using System.Text;
+            using System.Threading;
+            using System.Threading.Tasks;
+            """, """
+            using System;
+            using System.Collections.Generic;
+            using System.IO;
+            using System.Linq;
+            using System.Net.Http;
+            using System.Text;
+            using System.Threading;
+            using System.Threading.Tasks;
+            """);
+        var expectedProject = await CreateProjectCheckedAsync("""
+            using System;
+            using System.Collections.Generic;
+            using System.Linq;
+            using System.Text;
+            using System.Threading.Tasks;
+            """, """
+            using System;
+            using System.Collections.Generic;
+            using System.Linq;
+            using System.Text;
+            using System.Threading.Tasks;
+            """, """
+            global using System.IO;
+            global using System.Net.Http;
+            global using System.Threading;
+
+            """).WithDocumentNameAsync(^1, DefaultDocumentName);
+        //Act
+        var actualResult = await UsingGlobalizer.GlobalizeAsync(project, ImmutableArray.Create("System.IO", "System.Net.Http", "System.Threading"));
+        //Assert
+        await ToolAssert.AssertAsync(actualResult, expectedProject, new UsingDirective[] { new("System.IO", 2), new("System.Net.Http", 2), new("System.Threading", 2) }, DefaultDocumentName);
+    }
+
+    [Fact]
+    public async Task GlobalizeAsync_NoUsings_ReplacesAllUsingDirectives()
+    {
+        //Arrange
+        var project = await CreateProjectCheckedAsync("""
+            using System;
+            """, """
+            using System;
+            using System.Text;
+            """, """
+            using System;
+            using System.Text;
+            using System.Threading.Tasks;
+            """);
+        var expectedProject = await CreateProjectCheckedAsync(
+            "",
+            "",
+            "", """
+            global using System;
+            global using System.Text;
+            global using System.Threading.Tasks;
+
+            """).WithDocumentNameAsync(^1, DefaultDocumentName);
+        //Act
+        var actualResult = await UsingGlobalizer.GlobalizeAsync(project, ImmutableArray<string>.Empty);
+        //Assert
+        await ToolAssert.AssertAsync(actualResult, expectedProject, new UsingDirective[] { new("System", 3), new("System.Text", 2), new("System.Threading.Tasks", 1) }, DefaultDocumentName);
     }
 }
