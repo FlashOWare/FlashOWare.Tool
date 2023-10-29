@@ -1,4 +1,5 @@
 using FlashOWare.Tool.Cli.CodeAnalysis;
+using FlashOWare.Tool.Cli.IO;
 using FlashOWare.Tool.Core.UsingDirectives;
 using Microsoft.CodeAnalysis;
 using System.CommandLine.IO;
@@ -8,13 +9,13 @@ namespace FlashOWare.Tool.Cli;
 
 public static partial class CliApplication
 {
-    private static void AddUsingCommand(RootCommand rootCommand, MSBuildWorkspace workspace)
+    private static void AddUsingCommand(RootCommand rootCommand, MSBuildWorkspace workspace, IFileSystemAccessor fileSystem)
     {
         var usingCommand = new Command("using", " Analyze or refactor C# using directives.");
         var countCommand = new Command("count", "Count and list all top-level using directives of a C# project.");
         var globalizeCommand = new Command("globalize", "Move a top-level using directive to a global using directive in a C# project.");
 
-        var projectOption = new Option<FileInfo>(new[] { "--project", "--proj" }, "The project file to operate on.")
+        var projectOption = new Option<FileInfo>(new[] { "--project", "--proj" }, "The path to the project file to operate on (defaults to the current directory if there is only one project).")
             .ExistingOnly();
 
         countCommand.Add(projectOption);
@@ -23,7 +24,15 @@ public static partial class CliApplication
             FileInfo? project = context.ParseResult.GetValueForOption(projectOption);
             if (project is null)
             {
-                throw new NotImplementedException("Please pass a specific project path via --project.");
+                var currentDirectory = fileSystem.GetCurrentDirectory();
+                var files = currentDirectory.GetFiles("*.*proj");
+
+                project = files switch
+                {
+                    [] => throw new InvalidOperationException("Specify a project file. The current working directory does not contain a project file."),
+                    [var file] => file,
+                    [..] => throw new InvalidOperationException("Specify which project file to use because this folder contains more than one project file."),
+                };
             }
 
             await CountUsingsAsync(workspace, project.FullName, context.Console, context.GetCancellationToken());
@@ -38,7 +47,15 @@ public static partial class CliApplication
             FileInfo? project = context.ParseResult.GetValueForOption(projectOption);
             if (project is null)
             {
-                throw new NotImplementedException("Please pass a specific project path via --project.");
+                var currentDirectory = fileSystem.GetCurrentDirectory();
+                var files = currentDirectory.GetFiles("*.*proj");
+
+                project = files switch
+                {
+                    [] => throw new InvalidOperationException("Specify a project file. The current working directory does not contain a project file."),
+                    [var file] => file,
+                    [..] => throw new InvalidOperationException("Specify which project file to use because this folder contains more than one project file."),
+                };
             }
 
             await GlobalizeUsingsAsync(workspace, project.FullName, localUsing, context.Console, context.GetCancellationToken());
