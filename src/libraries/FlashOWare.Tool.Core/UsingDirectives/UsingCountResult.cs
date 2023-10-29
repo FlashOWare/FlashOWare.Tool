@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 
 namespace FlashOWare.Tool.Core.UsingDirectives;
@@ -24,7 +25,7 @@ public sealed class UsingCountResult
         _ = _usings.TryAdd(identifier, new UsingDirective(identifier));
     }
 
-    internal void AddRange(string[] identifiers)
+    internal void AddRange(ImmutableArray<string> identifiers)
     {
         foreach (string identifier in identifiers)
         {

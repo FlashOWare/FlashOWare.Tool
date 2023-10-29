@@ -1,13 +1,12 @@
 using FlashOWare.Tool.Core.Tests.Assertions;
 using FlashOWare.Tool.Core.Tests.Testing;
 using FlashOWare.Tool.Core.UsingDirectives;
+using System.Collections.Immutable;
 
 namespace FlashOWare.Tool.Core.Tests.UsingDirectives;
 
 public class UsingCounterTests
 {
-    private readonly static string[] s_emptyUsings = Array.Empty<string>();
-
     [Fact]
     public async Task CountAsync_Empty_FindsNoOccurrences()
     {
@@ -17,7 +16,7 @@ public class UsingCounterTests
         {
         };
         //Act
-        var actualResult = await UsingCounter.CountAsync(project, s_emptyUsings);
+        var actualResult = await UsingCounter.CountAsync(project);
         //Assert
         ToolAssert.Equal(expectedResult, actualResult);
     }
@@ -39,7 +38,7 @@ public class UsingCounterTests
         {
         };
         //Act
-        var actualResult = await UsingCounter.CountAsync(project, s_emptyUsings);
+        var actualResult = await UsingCounter.CountAsync(project);
         //Assert
         ToolAssert.Equal(expectedResult, actualResult);
     }
@@ -56,7 +55,7 @@ public class UsingCounterTests
             new("System", 1),
         };
         //Act
-        var actualResult = await UsingCounter.CountAsync(project, s_emptyUsings);
+        var actualResult = await UsingCounter.CountAsync(project);
         //Assert
         ToolAssert.Equal(expectedResult, actualResult);
     }
@@ -85,7 +84,7 @@ public class UsingCounterTests
             new("System.Threading.Tasks", 1 ),
         };
         //Act
-        var actualResult = await UsingCounter.CountAsync(project, s_emptyUsings);
+        var actualResult = await UsingCounter.CountAsync(project);
         //Assert
         ToolAssert.Equal(expectedResult, actualResult);
     }
@@ -104,7 +103,7 @@ public class UsingCounterTests
             new("System", 2),
         };
         //Act
-        var actualResult = await UsingCounter.CountAsync(project, s_emptyUsings);
+        var actualResult = await UsingCounter.CountAsync(project);
         //Assert
         ToolAssert.Equal(expectedResult, actualResult);
     }
@@ -143,7 +142,7 @@ public class UsingCounterTests
             new("System.Threading.Tasks", 2),
         };
         //Act
-        var actualResult = await UsingCounter.CountAsync(project, s_emptyUsings);
+        var actualResult = await UsingCounter.CountAsync(project);
         //Assert
         ToolAssert.Equal(expectedResult, actualResult);
     }
@@ -195,7 +194,7 @@ public class UsingCounterTests
             new("System.Threading.Tasks", 1),
         };
         //Act
-        var actualResult = await UsingCounter.CountAsync(project, s_emptyUsings);
+        var actualResult = await UsingCounter.CountAsync(project);
         //Assert
         ToolAssert.Equal(expectedResult, actualResult);
     }
@@ -250,7 +249,7 @@ public class UsingCounterTests
             new("System.Threading.Tasks", 1),
         };
         //Act
-        var actualResult = await UsingCounter.CountAsync(project, s_emptyUsings);
+        var actualResult = await UsingCounter.CountAsync(project);
         //Assert
         ToolAssert.Equal(expectedResult, actualResult);
     }
@@ -267,7 +266,7 @@ public class UsingCounterTests
         {
         };
         //Act
-        var actualResult = await UsingCounter.CountAsync(project, s_emptyUsings);
+        var actualResult = await UsingCounter.CountAsync(project);
         //Assert
         ToolAssert.Equal(expectedResult, actualResult);
     }
@@ -283,7 +282,7 @@ public class UsingCounterTests
         {
         };
         //Act
-        var actualResult = await UsingCounter.CountAsync(project, s_emptyUsings);
+        var actualResult = await UsingCounter.CountAsync(project);
         //Assert
         ToolAssert.Equal(expectedResult, actualResult);
     }
@@ -302,7 +301,53 @@ public class UsingCounterTests
         {
         };
         //Act
-        var actualResult = await UsingCounter.CountAsync(project, s_emptyUsings);
+        var actualResult = await UsingCounter.CountAsync(project);
+        //Assert
+        ToolAssert.Equal(expectedResult, actualResult);
+    }
+
+    [Fact]
+    public async Task CountAsync_SpecificUsing_FindsSpecifiedOccurrences()
+    {
+        //Arrange
+        var project = await CreateProjectCheckedAsync("""
+            using System;
+            using System.Collections.Generic;
+            using System.IO;
+            using System.Linq;
+            using System.Net.Http;
+            using System.Threading;
+            using System.Threading.Tasks;
+            """);
+        var expectedResult = new UsingDirective[]
+        {
+            new("System", 1 ),
+        };
+        //Act
+        var actualResult = await UsingCounter.CountAsync(project, "System");
+        //Assert
+        ToolAssert.Equal(expectedResult, actualResult);
+    }
+
+    [Fact]
+    public async Task CountAsync_SpecificUsingNotFound_ContainsWithoutOccurrences()
+    {
+        //Arrange
+        var project = await CreateProjectCheckedAsync("""
+            using System;
+            using System.Collections.Generic;
+            using System.IO;
+            using System.Linq;
+            using System.Net.Http;
+            using System.Threading;
+            using System.Threading.Tasks;
+            """);
+        var expectedResult = new UsingDirective[]
+        {
+            new("Not.Found", 0),
+        };
+        //Act
+        var actualResult = await UsingCounter.CountAsync(project, "Not.Found");
         //Assert
         ToolAssert.Equal(expectedResult, actualResult);
     }
@@ -328,7 +373,7 @@ public class UsingCounterTests
             new("System.Threading.Tasks", 1 ),
         };
         //Act
-        var actualResult = await UsingCounter.CountAsync(project, new[] { "System", "System.IO", "System.Net.Http", "System.Threading.Tasks" });
+        var actualResult = await UsingCounter.CountAsync(project, ImmutableArray.Create("System", "System.IO", "System.Net.Http", "System.Threading.Tasks"));
         //Assert
         ToolAssert.Equal(expectedResult, actualResult);
     }
@@ -356,7 +401,7 @@ public class UsingCounterTests
             new("System.Threading", 1),
         };
         //Act
-        var actualResult = await UsingCounter.CountAsync(project, new[] { "System.Collections.Generic", "Not.Found", "System.Linq", "Duplicate", "System.Text", "Duplicate", "System.Threading" });
+        var actualResult = await UsingCounter.CountAsync(project, ImmutableArray.Create("System.Collections.Generic", "Not.Found", "System.Linq", "Duplicate", "System.Text", "Duplicate", "System.Threading"));
         //Assert
         ToolAssert.Equal(expectedResult, actualResult);
     }
@@ -381,7 +426,7 @@ public class UsingCounterTests
         {
         };
         //Act
-        var actualResult = await UsingCounter.CountAsync(project, s_emptyUsings);
+        var actualResult = await UsingCounter.CountAsync(project);
         //Assert
         ToolAssert.Equal(expectedResult, actualResult);
     }
@@ -403,7 +448,7 @@ public class UsingCounterTests
             new("System.IO", 1),
         };
         //Act
-        var actualResult = await UsingCounter.CountAsync(project, s_emptyUsings);
+        var actualResult = await UsingCounter.CountAsync(project);
         //Assert
         ToolAssert.Equal(expectedResult, actualResult);
     }
@@ -437,7 +482,7 @@ public class UsingCounterTests
             new("System.Threading", 1),
         };
         //Act
-        var actualResult = await UsingCounter.CountAsync(project, s_emptyUsings);
+        var actualResult = await UsingCounter.CountAsync(project);
         //Assert
         ToolAssert.Equal(expectedResult, actualResult);
     }
@@ -448,7 +493,7 @@ public class UsingCounterTests
         //Arrange
         var project = CreateProjectUnchecked("Hello, World!");
         //Act
-        var result = () => UsingCounter.CountAsync(project, s_emptyUsings);
+        var result = () => UsingCounter.CountAsync(project);
         //Assert
         await Assert.ThrowsAsync<InvalidOperationException>(result);
     }
@@ -462,7 +507,7 @@ public class UsingCounterTests
             """);
         var cancellationToken = new CancellationToken(true);
         //Act
-        var result = () => UsingCounter.CountAsync(project, s_emptyUsings, cancellationToken);
+        var result = () => UsingCounter.CountAsync(project, cancellationToken);
         //Assert
         await Assert.ThrowsAsync<OperationCanceledException>(result);
     }
@@ -481,7 +526,7 @@ public class UsingCounterTests
             End Module
             """));
         //Act
-        var result = () => UsingCounter.CountAsync(project, s_emptyUsings);
+        var result = () => UsingCounter.CountAsync(project);
         //Assert
         await Assert.ThrowsAsync<InvalidOperationException>(result);
     }

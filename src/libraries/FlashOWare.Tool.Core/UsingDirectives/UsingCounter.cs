@@ -2,12 +2,23 @@ using FlashOWare.Tool.Core.CodeAnalysis;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.Collections.Immutable;
 
 namespace FlashOWare.Tool.Core.UsingDirectives;
 
 public static class UsingCounter
 {
-    public static async Task<UsingCountResult> CountAsync(Project project, string[] usings, CancellationToken cancellationToken = default)
+    public static Task<UsingCountResult> CountAsync(Project project, CancellationToken cancellationToken = default)
+    {
+        return CountAsync(project, ImmutableArray<string>.Empty, cancellationToken);
+    }
+
+    public static Task<UsingCountResult> CountAsync(Project project, string localUsing, CancellationToken cancellationToken = default)
+    {
+        return CountAsync(project, ImmutableArray.Create(localUsing), cancellationToken);
+    }
+
+    public static async Task<UsingCountResult> CountAsync(Project project, ImmutableArray<string> usings, CancellationToken cancellationToken = default)
     {
         RoslynUtilities.ThrowIfNotCSharp(project);
 
@@ -18,13 +29,12 @@ public static class UsingCounter
         }
 
         var result = new UsingCountResult(project.Name);
+        result.AddRange(usings);
 
         if (RoslynUtilities.IsGeneratedCode(compilation))
         {
             return result;
         }
-
-        result.AddRange(usings);
 
         foreach (Document document in project.Documents)
         {
@@ -56,19 +66,13 @@ public static class UsingCounter
         return result;
     }
 
-    private static void AggregateUsings(UsingCountResult result, CompilationUnitSyntax compilationUnit, string[] usings)
+    private static void AggregateUsings(UsingCountResult result, CompilationUnitSyntax compilationUnit, ImmutableArray<string> usings)
     {
         foreach (UsingDirectiveSyntax usingNode in compilationUnit.Usings)
         {
-            if (usingNode.Alias is not null)
-            {
-                continue;
-            }
-            if (!usingNode.StaticKeyword.IsKind(SyntaxKind.None))
-            {
-                continue;
-            }
-            if (!usingNode.GlobalKeyword.IsKind(SyntaxKind.None))
+            if (usingNode.Alias is not null ||
+                !usingNode.StaticKeyword.IsKind(SyntaxKind.None) ||
+                !usingNode.GlobalKeyword.IsKind(SyntaxKind.None))
             {
                 continue;
             }

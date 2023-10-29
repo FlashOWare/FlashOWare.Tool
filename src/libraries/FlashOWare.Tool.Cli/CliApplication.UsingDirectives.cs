@@ -2,6 +2,7 @@ using FlashOWare.Tool.Cli.CodeAnalysis;
 using FlashOWare.Tool.Cli.IO;
 using FlashOWare.Tool.Core.UsingDirectives;
 using Microsoft.CodeAnalysis;
+using System.Collections.Immutable;
 using System.CommandLine.IO;
 using System.Diagnostics;
 
@@ -23,6 +24,7 @@ public static partial class CliApplication
         countCommand.Add(projectOption);
         countCommand.SetHandler(async (InvocationContext context) =>
         {
+            string[] usings = context.ParseResult.GetValueForArgument(countArgument);
             FileInfo? project = context.ParseResult.GetValueForOption(projectOption);
             if (project is null)
             {
@@ -37,9 +39,7 @@ public static partial class CliApplication
                 };
             }
 
-            var usings = context.ParseResult.GetValueForArgument(countArgument);
-
-            await CountUsingsAsync(workspace, project.FullName, usings, context.Console, context.GetCancellationToken());
+            await CountUsingsAsync(workspace, project.FullName, usings.ToImmutableArray(), context.Console, context.GetCancellationToken());
         });
 
         var usingArgument = new Argument<string>("USING", "The name of the top-level using directive to convert to a global using directive.");
@@ -70,7 +70,7 @@ public static partial class CliApplication
         rootCommand.Add(usingCommand);
     }
 
-    private static async Task CountUsingsAsync(MSBuildWorkspace workspace, string projectFilePath, string[] usings, IConsole console, CancellationToken cancellationToken)
+    private static async Task CountUsingsAsync(MSBuildWorkspace workspace, string projectFilePath, ImmutableArray<string> usings, IConsole console, CancellationToken cancellationToken)
     {
         try
         {
