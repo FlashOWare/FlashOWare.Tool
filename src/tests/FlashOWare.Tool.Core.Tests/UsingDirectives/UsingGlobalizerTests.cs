@@ -762,7 +762,7 @@ public class UsingGlobalizerTests
 
             """).WithDocumentNameAsync(^1, DefaultDocumentName);
         //Act
-        var actualResult = await UsingGlobalizer.GlobalizeAsync(project, ImmutableArray<string>.Empty);
+        var actualResult = await UsingGlobalizer.GlobalizeAsync(project);
         //Assert
         await ToolAssert.AssertAsync(actualResult, expectedProject, new UsingDirective[] { new("System", 3), new("System.Text", 2), new("System.Threading.Tasks", 1) }, DefaultDocumentName);
     }
