@@ -71,8 +71,7 @@ internal sealed class PhysicalProjectBuilder
 
         foreach (PhysicalDocument document in _documents)
         {
-            Directory.CreateDirectory(document.Directory);
-            File.WriteAllText(document.FullName, document.Text);
+            document.Write();
         }
 
         PhysicalProject project = PhysicalProject.Create(_directory, _projectName, _language);
@@ -87,7 +86,7 @@ internal sealed class PhysicalProjectBuilder
                 ? ProjectText.CreateNonSdk(tfm, langVersion.DefaultIfNull(tfm), files)
                 : ProjectText.Create(tfm, langVersion);
 
-            File.WriteAllText(project.File.FullName, projectText);
+            project.Write(projectText);
         }
         else
         {
@@ -97,7 +96,7 @@ internal sealed class PhysicalProjectBuilder
                 ? throw new NotImplementedException($"{Language.VisualBasic} non-SDK .NET Framework project is not implemented.")
                 : ProjectText.CreateVisualBasic(tfm, langVersion.HasValue ? throw new NotImplementedException($"{Language.VisualBasic} {nameof(Microsoft.CodeAnalysis.VisualBasic.LanguageVersion)} is not implemented.") : null);
 
-            File.WriteAllText(project.File.FullName, projectText);
+            project.Write(projectText);
         }
 
         return project;

@@ -26,4 +26,9 @@ public sealed class PhysicalWorkspaceProvider
     {
         return new FileSystemExpectation(_directory, language);
     }
+
+    internal string GetDirectoryName()
+    {
+        return _directory.FullName;
+    }
 }
