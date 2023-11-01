@@ -70,6 +70,37 @@ public class UsingCounterTests : IntegrationTests
     }
 
     [Fact]
+    public async Task Count_SpecifyUsings_FindSpecifiedOccurrences()
+    {
+        //Arrange
+        var project = Workspace.CreateProject()
+            .AddDocument("""
+                using System;
+                using System.Collections.Generic;
+                using System.Linq;
+                using System.Text;
+                using System.Threading.Tasks;
+
+                namespace ProjectUnderTest.NetCore;
+
+                internal class MyClass1
+                {
+                }
+                """, "MyClass1")
+            .Initialize(ProjectKind.SdkStyle, TargetFramework.Net60, LanguageVersion.CSharp10);
+        string[] args = new[] { "using", "count", Usings.System, Usings.System_Linq, "--project", project.File.FullName };
+        //Act
+        await RunAsync(args);
+        //Assert
+        Console.Verify($"""
+            Project: {Names.Project}
+              System: 1
+              System.Linq: 1
+            """);
+        Result.Verify(ExitCodes.Success);
+    }
+
+    [Fact]
     public async Task Count_ExplicitProjectFileDoesNotExist_FailsValidation()
     {
         //Arrange
