@@ -36,7 +36,7 @@ public sealed class UsingCountResult
     internal void Increment(string identifier)
     {
         UsingDirective usingDirective = _usings[identifier];
-        usingDirective.Occurrences++;
+        usingDirective.IncrementOccurrences();
     }
 
     internal void IncrementOrAdd(string identifier)
