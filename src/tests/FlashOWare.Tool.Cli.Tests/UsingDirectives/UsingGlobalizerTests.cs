@@ -60,7 +60,7 @@ public class UsingGlobalizerTests : IntegrationTests
         //Assert
         Console.Verify($"""
             Project: {Names.Project}
-            2 occurrences of Using Directive "System" were globalized to "GlobalUsings.cs".
+            2 occurrences of Using Directive "{Usings.System}" were globalized to "GlobalUsings.cs".
             """);
         Workspace.CreateExpectation()
             .AppendFile("""
@@ -174,7 +174,7 @@ public class UsingGlobalizerTests : IntegrationTests
         //Assert
         Console.Verify($"""
             Project: {Names.Project}
-            2 occurrences of Using Directive "System" were globalized to "GlobalUsings.cs".
+            2 occurrences of Using Directive "{Usings.System}" were globalized to "GlobalUsings.cs".
             """);
         string[] files = { Names.GlobalUsings, "MyClass1.cs", "MyClass2.cs", Path.Combine(Names.Properties, Names.AssemblyInfo), Path.Combine(Names.Properties, Names.GlobalUsings) };
         Workspace.CreateExpectation()
@@ -378,7 +378,7 @@ public class UsingGlobalizerTests : IntegrationTests
                 }
                 """, "MyClass2")
             .Initialize(ProjectKind.SdkStyle, TargetFramework.Net60, LanguageVersion.CSharp10);
-        string[] args = new[] { "using", "globalize", "System.Collections.Generic", "System.Linq", "--project", project.File.FullName };
+        string[] args = new[] { "using", "globalize", Usings.System_Collections_Generic, Usings.System_Linq, "--project", project.File.FullName };
         //Act
         await RunAsync(args);
         //Assert
@@ -479,7 +479,7 @@ public class UsingGlobalizerTests : IntegrationTests
         //Assert
         Console.Verify($"""
             Project: {Names.Project}
-            1 occurrence of Using Directive "System" was globalized to "GlobalUsings.cs".
+            1 occurrence of Using Directive "{Usings.System}" was globalized to "GlobalUsings.cs".
             """);
         Workspace.CreateExpectation()
             .AppendFile("""
