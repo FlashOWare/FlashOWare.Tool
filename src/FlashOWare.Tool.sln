@@ -19,7 +19,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FlashOWare.Tool.Cli.Tests",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FlashOWare.Tool.Core.Tests", "tests\FlashOWare.Tool.Core.Tests\FlashOWare.Tool.Core.Tests.csproj", "{0DF40A5B-DFBE-4ADE-8177-08C0B4043CFD}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "_build", "build\_build.csproj", "{5AAF5B0D-B9C9-4315-B8FD-7C62455CB144}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FlashOWare.Tool.Build", "build\FlashOWare.Tool.Build\FlashOWare.Tool.Build.csproj", "{5AAF5B0D-B9C9-4315-B8FD-7C62455CB144}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
