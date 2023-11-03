@@ -22,7 +22,12 @@ public sealed partial class UsingDirective
     }
 
     public required string Name { get; init; }
-    public int Occurrences { get; internal set; }
+    public int Occurrences { get; private set; }
+
+    internal void IncrementOccurrences()
+    {
+        Occurrences++;
+    }
 
     public override string ToString()
     {

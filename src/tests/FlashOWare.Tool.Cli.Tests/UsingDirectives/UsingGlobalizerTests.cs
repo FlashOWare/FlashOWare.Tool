@@ -60,7 +60,7 @@ public class UsingGlobalizerTests : IntegrationTests
         //Assert
         Console.Verify($"""
             Project: {Names.Project}
-            2 occurrences of Using Directive "System" were globalized to "GlobalUsings.cs".
+            2 occurrences of Using Directive "{Usings.System}" were globalized to "GlobalUsings.cs".
             """);
         Workspace.CreateExpectation()
             .AppendFile("""
@@ -174,7 +174,7 @@ public class UsingGlobalizerTests : IntegrationTests
         //Assert
         Console.Verify($"""
             Project: {Names.Project}
-            2 occurrences of Using Directive "System" were globalized to "GlobalUsings.cs".
+            2 occurrences of Using Directive "{Usings.System}" were globalized to "GlobalUsings.cs".
             """);
         string[] files = { Names.GlobalUsings, "MyClass1.cs", "MyClass2.cs", Path.Combine(Names.Properties, Names.AssemblyInfo), Path.Combine(Names.Properties, Names.GlobalUsings) };
         Workspace.CreateExpectation()
@@ -238,6 +238,192 @@ public class UsingGlobalizerTests : IntegrationTests
     }
 
     [Fact]
+    public async Task Globalize_NoSpecificUsingsWithForce_ReplacesAllUsingDirectives()
+    {
+        //Arrange
+        var project = Workspace.CreateProject()
+            .AddDocument("""
+                using System;
+                using System.Collections.Generic;
+                using System.IO;
+                using System.Linq;
+                using System.Net.Http;
+                using System.Text;
+                using System.Threading;
+                using System.Threading.Tasks;
+
+                namespace ProjectUnderTest.NetCore
+                {
+                    internal class MyClass1
+                    {
+                    }
+                }
+                """, "MyClass1")
+            .AddDocument("""
+                using System;
+                using System.Collections.Generic;
+                using System.Linq;
+                using System.Text;
+                using System.Threading.Tasks;
+
+                namespace ProjectUnderTest.NetCore;
+
+                internal class MyClass2
+                {
+                }
+                """, "MyClass2")
+            .Initialize(ProjectKind.SdkStyle, TargetFramework.Net60, LanguageVersion.CSharp10);
+        string[] args = new[] { "using", "globalize", "--project", project.File.FullName, "--force" };
+        //Act
+        await RunAsync(args);
+        //Assert
+        Console.Verify($"""
+            Project: {Names.Project}
+            13 occurrences of 8 Using Directives were globalized to "GlobalUsings.cs".
+            """);
+        Workspace.CreateExpectation()
+            .AppendFile("""
+                global using System;
+                global using System.Collections.Generic;
+                global using System.IO;
+                global using System.Linq;
+                global using System.Net.Http;
+                global using System.Text;
+                global using System.Threading;
+                global using System.Threading.Tasks;
+
+                """, Names.GlobalUsings)
+            .AppendFile("""
+
+                namespace ProjectUnderTest.NetCore
+                {
+                    internal class MyClass1
+                    {
+                    }
+                }
+                """, "MyClass1.cs")
+            .AppendFile("""
+
+                namespace ProjectUnderTest.NetCore;
+
+                internal class MyClass2
+                {
+                }
+                """, "MyClass2.cs")
+            .AppendFile(ProjectText.Create(TargetFramework.Net60, LanguageVersion.CSharp10), Names.CSharpProject)
+            .Verify();
+        Result.Verify(ExitCodes.Success);
+    }
+
+    [Fact]
+    public async Task Globalize_NoSpecificUsingsWithoutForce_ForceIsRequired()
+    {
+        //Arrange
+        var project = Workspace.CreateProject()
+            .AddDocument("""
+                using System;
+                using System.Collections.Generic;
+                using System.Linq;
+                using System.Text;
+                using System.Threading.Tasks;
+
+                namespace ProjectUnderTest.NetCore;
+
+                internal class MyClass1
+                {
+                }
+                """, "MyClass1")
+            .Initialize(ProjectKind.SdkStyle, TargetFramework.Net60, LanguageVersion.CSharp10);
+        string[] args = new[] { "using", "globalize", "--project", project.File.FullName };
+        //Act
+        await RunAsync(args);
+        //Assert
+        Console.VerifyContains(null, "No usings specified. To globalize all top-level using directives, run the command with '--force' option.");
+        Result.Verify(ExitCodes.Error);
+    }
+
+    [Fact]
+    public async Task Globalize_ManySpecificUsings_ReplacesSpecifiedUsingDirectives()
+    {
+        //Arrange
+        var project = Workspace.CreateProject()
+            .AddDocument("""
+                using System;
+                using System.Collections.Generic;
+                using System.IO;
+                using System.Linq;
+                using System.Net.Http;
+                using System.Text;
+                using System.Threading;
+                using System.Threading.Tasks;
+
+                namespace ProjectUnderTest.NetCore
+                {
+                    internal class MyClass1
+                    {
+                    }
+                }
+                """, "MyClass1")
+            .AddDocument("""
+                using System;
+                using System.Collections.Generic;
+                using System.Linq;
+                using System.Text;
+                using System.Threading.Tasks;
+
+                namespace ProjectUnderTest.NetCore;
+
+                internal class MyClass2
+                {
+                }
+                """, "MyClass2")
+            .Initialize(ProjectKind.SdkStyle, TargetFramework.Net60, LanguageVersion.CSharp10);
+        string[] args = new[] { "using", "globalize", Usings.System_Collections_Generic, Usings.System_Linq, "--project", project.File.FullName };
+        //Act
+        await RunAsync(args);
+        //Assert
+        Console.Verify($"""
+            Project: {Names.Project}
+            4 occurrences of 2 Using Directives were globalized to "GlobalUsings.cs".
+            """);
+        Workspace.CreateExpectation()
+            .AppendFile("""
+                global using System.Collections.Generic;
+                global using System.Linq;
+
+                """, Names.GlobalUsings)
+            .AppendFile("""
+                using System;
+                using System.IO;
+                using System.Net.Http;
+                using System.Text;
+                using System.Threading;
+                using System.Threading.Tasks;
+
+                namespace ProjectUnderTest.NetCore
+                {
+                    internal class MyClass1
+                    {
+                    }
+                }
+                """, "MyClass1.cs")
+            .AppendFile("""
+                using System;
+                using System.Text;
+                using System.Threading.Tasks;
+
+                namespace ProjectUnderTest.NetCore;
+
+                internal class MyClass2
+                {
+                }
+                """, "MyClass2.cs")
+            .AppendFile(ProjectText.Create(TargetFramework.Net60, LanguageVersion.CSharp10), Names.CSharpProject)
+            .Verify();
+        Result.Verify(ExitCodes.Success);
+    }
+
+    [Fact]
     public async Task Globalize_ExplicitProjectFileDoesNotExist_FailsValidation()
     {
         //Arrange
@@ -293,7 +479,7 @@ public class UsingGlobalizerTests : IntegrationTests
         //Assert
         Console.Verify($"""
             Project: {Names.Project}
-            1 occurrence of Using Directive "System" was globalized to "GlobalUsings.cs".
+            1 occurrence of Using Directive "{Usings.System}" was globalized to "GlobalUsings.cs".
             """);
         Workspace.CreateExpectation()
             .AppendFile("""
