@@ -1,4 +1,5 @@
 using FlashOWare.Tool.Cli.CommandLine;
+using FlashOWare.Tool.Cli.IO;
 using Microsoft.Build.Locator;
 using Microsoft.CodeAnalysis;
 using System.Collections.Immutable;
@@ -9,9 +10,10 @@ public static partial class CliApplication
 {
     private static readonly SemaphoreSlim s_msBuildMutex = new(1, 1);
 
-    public static async Task<int> RunAsync(string[] args, IConsole? console = null, VisualStudioInstance? msBuild = null)
+    public static async Task<int> RunAsync(string[] args, IConsole? console = null, VisualStudioInstance? msBuild = null, IFileSystemAccessor? fileSystem = null)
     {
         msBuild ??= MSBuildLocator.RegisterDefaults();
+        fileSystem ??= FileSystemAccessor.System;
 
         var properties = ImmutableDictionary<string, string>.Empty.Add("Configuration", "Release");
         using var workspace = MSBuildWorkspace.Create(properties);
@@ -40,7 +42,7 @@ public static partial class CliApplication
             }
         });
 
-        AddUsingCommand(rootCommand, workspace);
+        AddUsingCommand(rootCommand, workspace, fileSystem);
 
         int exitCode = await rootCommand.InvokeAsync(args, console);
         workspace.WorkspaceFailed -= OnWorkspaceFailed;

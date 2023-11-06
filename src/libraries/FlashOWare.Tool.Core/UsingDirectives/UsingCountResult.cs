@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 
 namespace FlashOWare.Tool.Core.UsingDirectives;
@@ -19,11 +20,30 @@ public sealed class UsingCountResult
     public required string ProjectName { get; init; }
     public IReadOnlyCollection<UsingDirective> Usings => _usings.Values;
 
+    internal void Add(string identifier)
+    {
+        _ = _usings.TryAdd(identifier, new UsingDirective(identifier));
+    }
+
+    internal void AddRange(ImmutableArray<string> identifiers)
+    {
+        foreach (string identifier in identifiers)
+        {
+            Add(identifier);
+        }
+    }
+
+    internal void Increment(string identifier)
+    {
+        UsingDirective usingDirective = _usings[identifier];
+        usingDirective.IncrementOccurrences();
+    }
+
     internal void IncrementOrAdd(string identifier)
     {
         if (_usings.TryGetValue(identifier, out UsingDirective? usingDirective))
         {
-            usingDirective.Occurrences++;
+            usingDirective.IncrementOccurrences();
         }
         else
         {

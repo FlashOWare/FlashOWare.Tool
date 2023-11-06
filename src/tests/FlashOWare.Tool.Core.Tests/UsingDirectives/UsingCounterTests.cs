@@ -1,6 +1,7 @@
 using FlashOWare.Tool.Core.Tests.Assertions;
 using FlashOWare.Tool.Core.Tests.Testing;
 using FlashOWare.Tool.Core.UsingDirectives;
+using System.Collections.Immutable;
 
 namespace FlashOWare.Tool.Core.Tests.UsingDirectives;
 
@@ -301,6 +302,106 @@ public class UsingCounterTests
         };
         //Act
         var actualResult = await UsingCounter.CountAsync(project);
+        //Assert
+        ToolAssert.Equal(expectedResult, actualResult);
+    }
+
+    [Fact]
+    public async Task CountAsync_SpecificUsing_FindsSpecifiedOccurrences()
+    {
+        //Arrange
+        var project = await CreateProjectCheckedAsync("""
+            using System;
+            using System.Collections.Generic;
+            using System.IO;
+            using System.Linq;
+            using System.Net.Http;
+            using System.Threading;
+            using System.Threading.Tasks;
+            """);
+        var expectedResult = new UsingDirective[]
+        {
+            new("System", 1 ),
+        };
+        //Act
+        var actualResult = await UsingCounter.CountAsync(project, "System");
+        //Assert
+        ToolAssert.Equal(expectedResult, actualResult);
+    }
+
+    [Fact]
+    public async Task CountAsync_SpecificUsingNotFound_ContainsWithoutOccurrences()
+    {
+        //Arrange
+        var project = await CreateProjectCheckedAsync("""
+            using System;
+            using System.Collections.Generic;
+            using System.IO;
+            using System.Linq;
+            using System.Net.Http;
+            using System.Threading;
+            using System.Threading.Tasks;
+            """);
+        var expectedResult = new UsingDirective[]
+        {
+            new("Not.Found", 0),
+        };
+        //Act
+        var actualResult = await UsingCounter.CountAsync(project, "Not.Found");
+        //Assert
+        ToolAssert.Equal(expectedResult, actualResult);
+    }
+
+    [Fact]
+    public async Task CountAsync_SpecificUsings_FindsSpecifiedOccurrences()
+    {
+        //Arrange
+        var project = await CreateProjectCheckedAsync("""
+            using System;
+            using System.Collections.Generic;
+            using System.IO;
+            using System.Linq;
+            using System.Net.Http;
+            using System.Threading;
+            using System.Threading.Tasks;
+            """);
+        var expectedResult = new UsingDirective[]
+        {
+            new("System", 1 ),
+            new("System.IO", 1 ),
+            new("System.Net.Http", 1 ),
+            new("System.Threading.Tasks", 1 ),
+        };
+        //Act
+        var actualResult = await UsingCounter.CountAsync(project, ImmutableArray.Create("System", "System.IO", "System.Net.Http", "System.Threading.Tasks"));
+        //Assert
+        ToolAssert.Equal(expectedResult, actualResult);
+    }
+
+    [Fact]
+    public async Task CountAsync_SpecificUsingsNotFound_ContainsWithoutOccurrences()
+    {
+        //Arrange
+        var project = await CreateProjectCheckedAsync("""
+            using System;
+            using System.Collections.Generic;
+            using System.IO;
+            using System.Linq;
+            using System.Net.Http;
+            using System.Threading;
+            using System.Threading.Tasks;
+            """);
+        var expectedResult = new UsingDirective[]
+        {
+            new("System.Collections.Generic", 1),
+            new("Not.Found", 0),
+            new("System.Linq", 1),
+            new("Duplicate", 0),
+            new("System.Text", 0),
+            new("System.Threading", 1),
+        };
+        //Act
+        var actualResult = await UsingCounter.CountAsync(project, ImmutableArray.Create("System.Collections.Generic", "Not.Found", "System.Linq", "Duplicate", "System.Text", "Duplicate", "System.Threading"));
         //Assert
         ToolAssert.Equal(expectedResult, actualResult);
     }

@@ -13,7 +13,7 @@ public class RootCommandTests : IntegrationTests
         //Act
         await RunAsync(args);
         //Assert
-        Console.VerifyOutput("2code ^ !2code...that is the question!");
+        Console.Verify("2code ^ !2code...that is the question!");
         Result.Verify(ExitCodes.Success);
 
     }
@@ -26,7 +26,7 @@ public class RootCommandTests : IntegrationTests
         //Act
         await RunAsync(args);
         //Assert
-        Console.VerifyOutput($"MSBuild ({MSBuild.DiscoveryType}): {MSBuild.Name} {MSBuild.Version}");
+        Console.Verify($"MSBuild ({MSBuild.DiscoveryType}): {MSBuild.Name} {MSBuild.Version}");
         Result.Verify(ExitCodes.Success);
     }
 }

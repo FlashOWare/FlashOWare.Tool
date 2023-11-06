@@ -1,6 +1,7 @@
 using DiffPlex.DiffBuilder;
 using DiffPlex.DiffBuilder.Model;
 using FlashOWare.Tool.Cli.Tests.Testing;
+using System.Runtime.CompilerServices;
 using System.Text;
 using Xunit.Sdk;
 
@@ -19,9 +20,11 @@ internal sealed class FileSystemExpectation
         _language = language;
     }
 
-    public FileSystemExpectation AppendFile(string text, string name)
+    public FileSystemExpectation AppendFile(string text, string filePath)
     {
-        var file = (text, name);
+        ThrowIfDuplicateFilePath(filePath);
+
+        var file = (text, filePath);
         _files.Add(file);
         return this;
     }
@@ -32,17 +35,21 @@ internal sealed class FileSystemExpectation
         path.AppendJoin(Path.DirectorySeparatorChar, folders);
         path.Append(Path.DirectorySeparatorChar);
         path.Append(name);
+        string filePath = path.ToString();
 
-        var file = (text, path.ToString());
+        ThrowIfDuplicateFilePath(filePath, null);
+
+        var file = (text, filePath);
         _files.Add(file);
         return this;
     }
-    public FileSystemExpectation AppendDocument(string text, string name)
+
+    public FileSystemExpectation AppendDocument(string text, string filePath)
     {
         string extension = _language.GetDocumentExtension(true);
-        name = PathUtilities.WithExtension(extension, name);
+        filePath = PathUtilities.WithExtension(extension, filePath);
 
-        return AppendFile(text, name);
+        return AppendFile(text, filePath);
     }
 
     public FileSystemExpectation AppendDocument(string text, string name, params string[] folders)
@@ -53,12 +60,12 @@ internal sealed class FileSystemExpectation
         return AppendFile(text, name, folders);
     }
 
-    public FileSystemExpectation AppendProject(string text, string name)
+    public FileSystemExpectation AppendProject(string text, string filePath)
     {
         string extension = _language.GetProjectExtension(true);
-        name = PathUtilities.WithExtension(extension, name);
+        filePath = PathUtilities.WithExtension(extension, filePath);
 
-        return AppendFile(text, name);
+        return AppendFile(text, filePath);
     }
 
     public FileSystemExpectation AppendProject(string text, string name, params string[] folders)
@@ -71,14 +78,18 @@ internal sealed class FileSystemExpectation
 
     public void Verify()
     {
-        FileInfo[] files = GetFiles();
+        FileInfo[] actualFiles = GetFiles();
 
-        AssertFileSystemTree(files);
+        AssertFileSystemTree(actualFiles);
 
         for (int i = 0; i < _files.Count; i++)
         {
             var expectedFile = _files[i];
-            var actualFile = files[i];
+            var actualFile = actualFiles.First(actualFile =>
+            {
+                string relativePath = Path.GetRelativePath(_directory.FullName, actualFile.FullName);
+                return relativePath == expectedFile.FilePath;
+            });
 
             var expectedText = expectedFile.Text;
             var actualText = File.ReadAllText(actualFile.FullName);
@@ -100,40 +111,49 @@ internal sealed class FileSystemExpectation
         }
     }
 
+    private void ThrowIfDuplicateFilePath(string filePath, [CallerArgumentExpression(nameof(filePath))] string? paramName = null)
+    {
+        if (_files.Any(file => file.FilePath == filePath))
+        {
+            var file = _files.Single(file => file.FilePath == filePath);
+            throw new ArgumentException($"A file with the same path has already been added. FilePath: {file.FilePath}", paramName);
+        }
+    }
+
     private FileInfo[] GetFiles()
     {
         return _directory.EnumerateFiles("*", SearchOption.AllDirectories)
-            .Where((file) =>
+            .Where((FileInfo file) =>
             {
-                string path = Path.GetRelativePath(_directory.FullName, file.FullName);
-                return !path.StartsWith($"bin{Path.DirectorySeparatorChar}") && !path.StartsWith($"obj{Path.DirectorySeparatorChar}");
+                string relativePath = Path.GetRelativePath(_directory.FullName, file.FullName);
+                return !relativePath.StartsWith($"bin{Path.DirectorySeparatorChar}") && !relativePath.StartsWith($"obj{Path.DirectorySeparatorChar}");
             })
             .ToArray();
     }
 
-    private void AssertFileSystemTree(FileInfo[] actual)
+    private void AssertFileSystemTree(FileInfo[] actualFiles)
     {
-        if (_files.Count != actual.Length || !IsFileSystemTreeEqual(actual))
+        if (_files.Count != actualFiles.Length || !IsFileSystemTreeEqual(actualFiles))
         {
             StringBuilder message = new($"""
                 Expected: {(_files.Count == 1 ? $"{_files.Count} file" : $"{_files.Count} files")}
-                Actual:   {(actual.Length == 1 ? $"{actual.Length} file" : $"{actual.Length} files")}
+                Actual:   {(actualFiles.Length == 1 ? $"{actualFiles.Length} file" : $"{actualFiles.Length} files")}
                 Hierarchy did not match. Diff shown with expected as baseline:
 
 
                 """);
 
             StringBuilder actualText = new();
-            foreach (var info in actual)
+            foreach (var actualFile in actualFiles)
             {
-                string path = Path.GetRelativePath(_directory.FullName, info.FullName);
-                actualText.AppendLine(path);
+                string relativePath = Path.GetRelativePath(_directory.FullName, actualFile.FullName);
+                actualText.AppendLine(relativePath);
             }
 
             StringBuilder expectedText = new();
-            foreach (var file in _files)
+            foreach (var expectedFile in _files)
             {
-                expectedText.AppendLine(file.FilePath);
+                expectedText.AppendLine(expectedFile.FilePath);
             }
 
             Diff(expectedText.ToString(), actualText.ToString(), message);
@@ -142,9 +162,9 @@ internal sealed class FileSystemExpectation
         }
     }
 
-    private bool IsFileSystemTreeEqual(FileInfo[] files)
+    private bool IsFileSystemTreeEqual(FileInfo[] actualFiles)
     {
-        return !files
+        return !actualFiles
             .Select(actualFile => Path.GetRelativePath(_directory.FullName, actualFile.FullName))
             .Except(_files.Select(static expectedFile => expectedFile.FilePath))
             .Any();

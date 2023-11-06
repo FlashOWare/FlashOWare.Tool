@@ -9,23 +9,34 @@ internal static class ToolAssert
     public static void Equal(UsingDirective[] expected, UsingCountResult actual)
     {
         Assert.Equal("TestProject", actual.ProjectName);
+        Equal(expected, actual.Usings);
+    }
 
-        if (!expected.SequenceEqual(actual.Usings, UsingDirectiveEqualityComparer.Instance))
+    public static Task AssertAsync(UsingGlobalizationResult actual, Project project, string localUsing, int occurrences, string targetDocument)
+    {
+        return AssertAsync(actual, project, new UsingDirective[] { new(localUsing, occurrences) }, targetDocument);
+    }
+
+    public static async Task AssertAsync(UsingGlobalizationResult actual, Project project, UsingDirective[] usings, string targetDocument)
+    {
+        int occurrences = usings.Aggregate(0, static (sum, directive) => sum + directive.Occurrences);
+
+        await RoslynAssert.EqualAsync(project, actual.Project);
+        Equal(usings, actual.Usings);
+        Assert.Equal(targetDocument, actual.TargetDocument);
+        Assert.Equal(occurrences, actual.Occurrences);
+    }
+
+    private static void Equal(UsingDirective[] expected, IReadOnlyCollection<UsingDirective> actual)
+    {
+        if (!expected.SequenceEqual(actual, UsingDirectiveEqualityComparer.Instance))
         {
             string message = $"""
                 Expected: [{String.Join<UsingDirective>(", ", expected)}]
-                Actual:   [{String.Join<UsingDirective>(", ", actual.Usings)}]
+                Actual:   [{String.Join<UsingDirective>(", ", actual)}]
                 """;
             throw new XunitException(message);
         }
-    }
-
-    public static async Task AssertAsync(UsingGlobalizationResult actual, Project project, string localUsing, int occurrences, string targetDocument)
-    {
-        await RoslynAssert.EqualAsync(project, actual.Project);
-        Assert.Equal(localUsing, actual.Using.Name);
-        Assert.Equal(occurrences, actual.Using.Occurrences);
-        Assert.Equal(targetDocument, actual.TargetDocument);
     }
 }
 

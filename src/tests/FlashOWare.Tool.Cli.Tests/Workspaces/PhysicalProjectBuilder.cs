@@ -1,5 +1,8 @@
+using FlashOWare.Tool.Cli.Tests.CodeAnalysis;
 using FlashOWare.Tool.Cli.Tests.Testing;
 using Microsoft.CodeAnalysis.CSharp;
+using System.ComponentModel;
+using System.Diagnostics;
 
 namespace FlashOWare.Tool.Cli.Tests.Workspaces;
 
@@ -15,10 +18,11 @@ internal sealed class PhysicalProjectBuilder
 
     public PhysicalProjectBuilder(DirectoryInfo directory, Language language)
     {
-        if (language is Language.VisualBasic)
+        if (!Enum.IsDefined(language))
         {
-            throw new NotSupportedException("Visual Basic is not supported.");
+            throw new InvalidEnumArgumentException(nameof(language), (int)language, typeof(Language));
         }
+
         if (language is Language.FSharp)
         {
             throw new NotSupportedException("F# is not a supported compile target for the Roslyn compiler.");
@@ -58,12 +62,16 @@ internal sealed class PhysicalProjectBuilder
         return this;
     }
 
-    public PhysicalProject Initialize(ProjectKind kind, TargetFramework tfm, LanguageVersion langVersion)
+    public PhysicalProject Initialize(ProjectKind kind, TargetFramework tfm, LanguageVersion? langVersion = null)
     {
+        if (!Enum.IsDefined(kind))
+        {
+            throw new InvalidEnumArgumentException(nameof(kind), (int)kind, typeof(ProjectKind));
+        }
+
         foreach (PhysicalDocument document in _documents)
         {
-            Directory.CreateDirectory(document.Directory);
-            File.WriteAllText(document.FullName, document.Text);
+            document.Write();
         }
 
         PhysicalProject project = PhysicalProject.Create(_directory, _projectName, _language);
@@ -72,7 +80,24 @@ internal sealed class PhysicalProjectBuilder
             ? _documents.Select((PhysicalDocument document) => Path.GetRelativePath(_directory.FullName, document.FullName)).ToArray()
             : Array.Empty<string>();
 
-        File.WriteAllText(project.File.FullName, Projects.CreateProject(kind, tfm, langVersion, files));
+        if (_language is Language.CSharp)
+        {
+            string projectText = kind is ProjectKind.Classic
+                ? ProjectText.CreateNonSdk(tfm, langVersion.DefaultIfNull(tfm), files)
+                : ProjectText.Create(tfm, langVersion);
+
+            project.Write(projectText);
+        }
+        else
+        {
+            Debug.Assert(_language is Language.VisualBasic, $"Expected: {Language.VisualBasic}, Actual: {_language}");
+
+            string projectText = kind is ProjectKind.Classic
+                ? throw new NotImplementedException($"{Language.VisualBasic} non-SDK .NET Framework project is not implemented.")
+                : ProjectText.CreateVisualBasic(tfm, langVersion.HasValue ? throw new NotImplementedException($"{Language.VisualBasic} {nameof(Microsoft.CodeAnalysis.VisualBasic.LanguageVersion)} is not implemented.") : null);
+
+            project.Write(projectText);
+        }
 
         return project;
     }
