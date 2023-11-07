@@ -18,34 +18,50 @@
     <IsPackable>true</IsPackable>
   </PropertyGroup>
 
-  <PropertyGroup Label="Package">
-    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+  <PropertyGroup>
+    <NeutralLanguage>en</NeutralLanguage>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <PackageId>FlashOWare.Tool</PackageId>
-    <Authors>FlashOWare,Flash0ver,MerelyEva</Authors>
+    <Title>FlashOWare.Tool</Title>
+    <Authors>FlashOWare;Flash0ver;MerelyEva</Authors>
     <Company>FlashOWare</Company>
     <Product>FlashOWare.Tool</Product>
     <Description>A .NET tool that facilitates development workflows.</Description>
     <Copyright>© FlashOWare</Copyright>
     <PackageProjectUrl>https://github.com/FlashOWare/FlashOWare.Tool</PackageProjectUrl>
-    <PackageIconUrl>https://raw.githubusercontent.com/FlashOWare/FlashOWare.Tool/main/resources/F0.Tool-Preview.png</PackageIconUrl>
     <PackageIcon>Icon.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/FlashOWare/FlashOWare.Tool.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageTags>FlashOWare;Tool;Roslyn;CodeAnalysis</PackageTags>
-    <PackageReleaseNotes>Initial pre-release.</PackageReleaseNotes>
+    <PackageTags>FlashOWare;f[0];F0;Tool;Roslyn;CodeAnalysis;CSharp</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(VersionSuffix)' != '' ">
+    <PackageIconUrl>https://raw.githubusercontent.com/FlashOWare/FlashOWare.Tool/main/resources/FlashOWare.Tool-Prerelease.png</PackageIconUrl>
+    <PackageReleaseNotes>https://github.com/FlashOWare/FlashOWare.Tool/blob/main/docs/CHANGELOG-Prerelease.md</PackageReleaseNotes>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(VersionSuffix)' == '' ">
+    <PackageIconUrl>https://raw.githubusercontent.com/FlashOWare/FlashOWare.Tool/main/resources/FlashOWare.Tool.png</PackageIconUrl>
+    <PackageReleaseNotes>https://github.com/FlashOWare/FlashOWare.Tool/blob/main/docs/CHANGELOG.md</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\libraries\FlashOWare.Tool.Cli\FlashOWare.Tool.Cli.csproj" />
+    <ProjectReference Include="..\..\libraries\FlashOWare.Tool.Cli\FlashOWare.Tool.Cli.csproj" PrivateAssets="all" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(Configuration)' == 'Debug'">
-    <None Include="..\..\..\resources\FlashOWare.Tool-Preview.png" Pack="true" PackagePath="Icon.png" Visible="false" />
+  <ItemGroup>
+    <None Include="..\..\..\resources\README.md" Pack="true" PackagePath="README.md" Visible="false" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(Configuration)' == 'Release'">
+  <ItemGroup Condition=" '$(VersionSuffix)' != '' ">
+    <None Include="..\..\..\resources\FlashOWare.Tool-Prerelease.png" Pack="true" PackagePath="Icon.png" Visible="false" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(VersionSuffix)' == '' ">
     <None Include="..\..\..\resources\FlashOWare.Tool.png" Pack="true" PackagePath="Icon.png" Visible="false" />
   </ItemGroup>
 
