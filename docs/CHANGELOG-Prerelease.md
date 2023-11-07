@@ -1,7 +1,7 @@
 # FlashOWare.Tool
 Prerelease Changelog
 
-[goto Release_Changelog](./CHANGELOG.md);
+[goto Release_Changelog;](./CHANGELOG.md)
 
 ## [vNext]
 
