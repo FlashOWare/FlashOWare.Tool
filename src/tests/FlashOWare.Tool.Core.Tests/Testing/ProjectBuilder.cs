@@ -32,6 +32,15 @@ internal sealed partial class ProjectBuilder
         return this;
     }
 
+    public ProjectBuilder AddDocument(string name, string text, params string[] folders)
+    {
+        string directoryPath = folders.Aggregate(String.Empty, static (accumulate, folder) => Path.Combine(accumulate, folder));
+        string filePath = Path.Combine(directoryPath, name);
+        var documentId = DocumentId.CreateNewId(_projectId, $"Test-Document-Id: {name}");
+        _solution = _solution.AddDocument(documentId, name, text, folders, filePath);
+        return this;
+    }
+
     public Project BuildUnchecked()
     {
         Project? project = _solution.GetProject(_projectId);
