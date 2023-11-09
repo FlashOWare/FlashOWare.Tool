@@ -7,19 +7,19 @@ Prerelease Changelog
 ### Tool
 - **Added** optional `<USINGS>` arguments to `flashoware using count` command to count and list only specified top-level using directives instead of all.
 - **Added** `--force` option to `flashoware using globalize` command to enable globalizing all top-level using directives when no `<USINGS>` arguments are specified.
-- **Changed** _project_ option alias from `-p` to `--proj`! (BREAKING CHANGE)
-- **Changed** _project_ option to validate that project file is existing.
-- **Changed** _project_ option to be optional
-  - Searches the current working directory for a single project file if not specified
+- **Changed** all _project_ option aliases from `-p` to `--proj`! **(BREAKING CHANGE)**
+- **Changed** all _project_ options to validate that project file is existing.
+- **Changed** all _project_ options to be optional
+  - searches the current working directory for a single project file if not specified
 - **Changed** `<USING>` argument of `flashoware using globalize` command to be optional.
 - **Changed** `<USING>` argument of `flashoware using globalize` command to `<USINGS>` arguments globalizing one or more top-level using directives.
 - **Fixed** `flashoware using globalize` command only globalizing the last of duplicate top-level using directives
-  - Now removes all duplicates as well to match the count of the result
+  - now removes all duplicate top-level using directives when globalized to match the count of the result
 
 ### Package
 - **Added** `README.md` file.
-- **Changed** `Icon.png` dark from light if pre-release.
-- **Changed** Release Notes linking to stable or pre-release `CHANGELOG.md`.
+- **Changed** `Icon.png` from dark theme to light theme if pre-release.
+- **Changed** Release Notes linking to either the stable or the pre-release `CHANGELOG.md`.
 
 ## [1.0.0-prerelease0] - 2023-09-13
 ### Tool
