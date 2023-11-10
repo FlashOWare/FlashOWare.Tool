@@ -17,7 +17,7 @@ dotnet tool install --global FlashOWare.Tool --prerelease
 - supports the [.NET 7.0](https://dotnet.microsoft.com/download/dotnet/7.0) SDK
 
 ## Documentation
-[Index.md](./docs/Index.md)
+[README.md](./docs/README.md)
 
 ## Changelogs
 - [Release Changelog](./docs/CHANGELOG.md)

@@ -4,6 +4,8 @@ Prerelease Changelog
 [goto Release_Changelog;](./CHANGELOG.md)
 
 ## [vNext]
+
+## [1.0.0-prerelease1] - 2023-11-11
 ### Tool
 - **Added** optional `<USINGS>` arguments to `flashoware using count` command to count and list only specified top-level using directives instead of all.
 - **Added** `--force` option to `flashoware using globalize` command to enable globalizing all top-level using directives when no `<USINGS>` arguments are specified.
@@ -41,5 +43,6 @@ Prerelease Changelog
 ### Package
 - **Added** .NET tool targeting _.NET 6.0_ and _.NET 7.0_.
 
-[vnext]: https://github.com/FlashOWare/FlashOWare.Tool/compare/v1.0.0-prerelease0...HEAD
+[vnext]: https://github.com/FlashOWare/FlashOWare.Tool/compare/v1.0.0-prerelease1...HEAD
+[1.0.0-prerelease1]: https://github.com/FlashOWare/FlashOWare.Tool/compare/v1.0.0-prerelease0...v1.0.0-prerelease1
 [1.0.0-prerelease0]: https://github.com/FlashOWare/FlashOWare.Tool/releases/tag/v1.0.0-prerelease0
