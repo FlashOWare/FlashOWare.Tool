@@ -25,7 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\tools\FlashOWare.Tool\FlashOWare.Tool.csproj" />
+    <ProjectReference Include="..\..\libraries\FlashOWare.Tool.Cli\FlashOWare.Tool.Cli.csproj" />
   </ItemGroup>
 
 </Project>

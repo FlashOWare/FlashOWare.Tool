@@ -28,13 +28,7 @@ using static Nuke.Common.Tools.DotNet.DotNetTasks;
         ImportSecrets = new[] { nameof(NuGetApiKey) })]
 class Build : NukeBuild
 {
-    /// Support plugins are available for:
-    ///   - JetBrains ReSharper        https://nuke.build/resharper
-    ///   - JetBrains Rider            https://nuke.build/rider
-    ///   - Microsoft VisualStudio     https://nuke.build/visualstudio
-    ///   - Microsoft VSCode           https://nuke.build/vscode
-
-    public static int Main () => Execute<Build>(x => x.Compile);
+    public static int Main() => Execute<Build>(x => x.Compile);
 
     [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
     readonly Configuration Configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;
@@ -55,11 +49,12 @@ class Build : NukeBuild
 
     [Solution] readonly Solution Solution;
 
-    [Parameter] readonly string Version;
+    [Parameter] readonly string VersionPrefix;
+    [Parameter] readonly string VersionSuffix;
 
     [Parameter] readonly string NuGetSource;
 
-    [Parameter] [Secret] readonly string NuGetApiKey;
+    [Parameter][Secret] readonly string NuGetApiKey;
 
     Target Restore => _ => _
         .Executes(() =>
@@ -86,16 +81,17 @@ class Build : NukeBuild
         .DependsOn(Compile)
         .Executes(() =>
         {
-           DotNetTest(_ => _
-               .SetProjectFile(Solution)
-               .SetConfiguration(Configuration)
-               .SetNoBuild(FinishedTargets.Contains(Compile))
-               .SetResultsDirectory(TestResultsDirectory));
+            DotNetTest(_ => _
+                .SetProjectFile(Solution)
+                .SetConfiguration(Configuration)
+                .SetNoBuild(FinishedTargets.Contains(Compile))
+                .SetResultsDirectory(TestResultsDirectory));
         });
 
     Target Pack => _ => _
         .DependsOn(Compile)
-        .Requires(() => Version)
+        .Requires(() => VersionPrefix)
+        .Requires(() => VersionSuffix)
         .Executes(() =>
         {
             DotNetPack(_ => _
@@ -103,7 +99,8 @@ class Build : NukeBuild
                 .SetConfiguration(Configuration)
                 .SetNoBuild(FinishedTargets.Contains(Compile))
                 .EnableNoLogo()
-                .SetVersion(Version)
+                .SetVersionPrefix(VersionPrefix)
+                .SetVersionSuffix(VersionSuffix)
                 .SetOutputDirectory(PackageDirectory)
                 .SetProcessExitHandler(p => p.ExitCode switch
                 {
