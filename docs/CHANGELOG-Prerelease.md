@@ -5,7 +5,7 @@ Prerelease Changelog
 
 ## [vNext]
 
-## [1.0.0-prerelease1] - 2023-11-11
+## [1.0.0-prerelease1] - 2023-11-12
 ### Tool
 - **Added** optional `<USINGS>` arguments to `flashoware using count` command to count and list only specified top-level using directives instead of all.
 - **Added** `--force` option to `flashoware using globalize` command to enable globalizing all top-level using directives when no `<USINGS>` arguments are specified.
