@@ -4,6 +4,13 @@ Prerelease Changelog
 [goto Release_Changelog;](./CHANGELOG.md)
 
 ## [vNext]
+### Tool
+- **Added** `flashoware interceptor` command
+  - with `-?|-h|--help` option to get help and usage information
+- **Added** `flashoware interceptor list` command to find and list interceptors
+  - with `--proj|--project <project>` option to set the project file to operate on
+    - if not specified, searches the current working directory for a single project file
+  - with `-?|-h|--help` option to get help and usage information
 
 ## [1.0.0-prerelease1] - 2023-11-12
 ### Tool

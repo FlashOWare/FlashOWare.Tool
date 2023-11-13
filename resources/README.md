@@ -5,6 +5,8 @@ A .NET tool that facilitates development workflows.
 
 ## Commands
 - [flashoware](https://github.com/FlashOWare/FlashOWare.Tool/blob/main/docs/commands/flashoware.md)
+- [flashoware interceptor](https://github.com/FlashOWare/FlashOWare.Tool/blob/main/docs/commands/flashoware-interceptor.md)
+  - [flashoware interceptor list](https://github.com/FlashOWare/FlashOWare.Tool/blob/main/docs/commands/flashoware-interceptor-list.md)
 - [flashoware using](https://github.com/FlashOWare/FlashOWare.Tool/blob/main/docs/commands/flashoware-using.md)
   - [flashoware using count](https://github.com/FlashOWare/FlashOWare.Tool/blob/main/docs/commands/flashoware-using-count.md)
   - [flashoware using globalize](https://github.com/FlashOWare/FlashOWare.Tool/blob/main/docs/commands/flashoware-using-globalize.md)
