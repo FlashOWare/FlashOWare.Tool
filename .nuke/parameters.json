@@ -2,6 +2,6 @@
   "$schema": "./build.schema.json",
   "Solution": "src/FlashOWare.Tool.sln",
   "VersionPrefix": "1.0.0",
-  "VersionSuffix": "prerelease0",
+  "VersionSuffix": "prerelease1",
   "NuGetSource": "https://api.nuget.org/v3/index.json"
 }
