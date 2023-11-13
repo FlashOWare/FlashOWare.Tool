@@ -8,8 +8,6 @@ namespace FlashOWare.Tool.Cli;
 
 public static partial class CliApplication
 {
-    private static readonly SemaphoreSlim s_msBuildMutex = new(1, 1);
-
     public static async Task<int> RunAsync(string[] args, IConsole? console = null, VisualStudioInstance? msBuild = null, IFileSystemAccessor? fileSystem = null)
     {
         msBuild ??= MSBuildLocator.RegisterDefaults();
@@ -42,6 +40,7 @@ public static partial class CliApplication
             }
         });
 
+        AddInterceptorCommand(rootCommand, workspace, fileSystem);
         AddUsingCommand(rootCommand, workspace, fileSystem);
 
         int exitCode = await rootCommand.InvokeAsync(args, console);

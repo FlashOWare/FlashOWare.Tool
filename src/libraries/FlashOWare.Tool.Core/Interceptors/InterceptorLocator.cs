@@ -1,91 +1,98 @@
+using FlashOWare.Tool.Core.CodeAnalysis;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
-using System.Text;
+using System.Diagnostics;
 
 namespace FlashOWare.Tool.Core.Interceptors;
 
 public static class InterceptorLocator
 {
-    //TODO
-    // display which methods are intercepted
-    // display by which method these are intercepted
-
     public static async Task<InterceptorList> ListAsync(Project project, CancellationToken cancellationToken = default)
     {
-        StringBuilder result = new();
+        RoslynUtilities.ThrowIfNotCSharp(project);
 
-        Dictionary<string, List<InterceptorInfo>> interceptors = await FindInterceptorsAsync(project, cancellationToken);
+        Compilation compilation = await RoslynUtilities.GetCompilationAsync(project, cancellationToken);
 
-        foreach (var item in interceptors.Values.SelectMany(static list => list))
-        {
-            result.AppendLine(item.ToString());
-        }
+        RoslynUtilities.ThrowIfContainsError(compilation);
 
-        //TODO: naive
-        foreach (Document document in project.Documents)
-        {
-            if (!interceptors.TryGetValue(document.FilePath, out List<InterceptorInfo>? list))
-            {
-                continue;
-            }
+        cancellationToken.ThrowIfCancellationRequested();
 
-            foreach (InterceptorInfo interceptor in list)
-            {
-                SyntaxNode? syntaxRoot = await document.GetSyntaxRootAsync();
+        List<InterceptorInfo> interceptors = await FindInterceptorsAsync(project, compilation, cancellationToken);
+        InterceptorList result = await FindInterceptedCallsAsync(project, compilation, interceptors, cancellationToken);
 
-                SourceText text = await document.GetTextAsync();
-                TextLine line = text.Lines[interceptor.Line - 1];
-
-                TextSpan span = new(line.Start + interceptor.Character - 1, 0);
-                SyntaxNode node = syntaxRoot.FindNode(span);
-
-                result.AppendLine(node.ToString());
-            }
-        }
-
-        return new InterceptorList(result.ToString());
+        return result;
     }
 
-    private static async Task<Dictionary<string, List<InterceptorInfo>>> FindInterceptorsAsync(Project project, CancellationToken cancellationToken)
+    private static async Task<List<InterceptorInfo>> FindInterceptorsAsync(Project project, Compilation compilation, CancellationToken cancellationToken)
     {
-        Dictionary<string, List<InterceptorInfo>> interceptors = new();
+        List<InterceptorInfo> interceptors = new();
 
         foreach (Document document in project.Documents)
         {
-            //TODO: defensive ... does the path actually exist?
-            if (Path.GetExtension(document.FilePath).ToLower() != ".cs")
+            SyntaxTree syntaxTree = await RoslynUtilities.GetSyntaxTreeAsync(document, cancellationToken);
+            string filePath = RoslynUtilities.GetInterceptorFilePath(syntaxTree, compilation);
+
+            if (!Path.GetExtension(filePath).Equals(".cs", StringComparison.OrdinalIgnoreCase))
             {
                 continue;
             }
 
-            SemanticModel? semanticModel = await document.GetSemanticModelAsync();
-            InterceptorWalker walker = new(semanticModel);
-            SyntaxNode? syntaxRoot = await document.GetSyntaxRootAsync();
-            var compilationUnit = (CompilationUnitSyntax)syntaxRoot;
+            SemanticModel semanticModel = await RoslynUtilities.GetSemanticModelAsync(document, cancellationToken);
+            InterceptorWalker walker = new(compilation, semanticModel, cancellationToken);
+
+            CompilationUnitSyntax compilationUnit = RoslynUtilities.GetCompilationUnitRoot(syntaxTree, cancellationToken);
             walker.VisitCompilationUnit(compilationUnit);
 
-            foreach (InterceptorInfo interceptor in walker.Interceptors)
-            {
-                //TODO: Linq-ify
-                if (interceptors.TryGetValue(interceptor.FilePath, out List<InterceptorInfo>? list))
-                {
-                    list.Add(interceptor);
-                }
-                else
-                {
-                    list = new List<InterceptorInfo>
-                    {
-                        interceptor
-                    };
-                    interceptors.Add(interceptor.FilePath, list);
-                }
-            }
-
-            //interceptors.Add(document.FilePath!, );
+            interceptors.AddRange(walker.Interceptors);
         }
 
         return interceptors;
+    }
+
+    private static async Task<InterceptorList> FindInterceptedCallsAsync(Project project, Compilation compilation, List<InterceptorInfo> interceptors, CancellationToken cancellationToken)
+    {
+        foreach (InterceptorInfo interceptor in interceptors)
+        {
+            foreach (InterceptionInfo interception in interceptor.Interceptions)
+            {
+                foreach (SyntaxTree syntaxTree in compilation.SyntaxTrees)
+                {
+                    string filePath = RoslynUtilities.GetInterceptorFilePath(syntaxTree, compilation);
+
+                    if (interception.Attribute.FilePath == filePath)
+                    {
+                        SourceText text = await syntaxTree.GetTextAsync(cancellationToken);
+
+                        TextLine line = text.Lines[interception.Attribute.Line - 1];
+                        TextSpan span = new(line.Start + interception.Attribute.Character - 1, 0);
+
+                        SyntaxNode syntaxRoot = await syntaxTree.GetRootAsync(cancellationToken);
+                        SyntaxNode node = syntaxRoot.FindNode(span);
+
+                        SemanticModel semanticModel = compilation.GetSemanticModel(syntaxTree);
+                        SymbolInfo info = semanticModel.GetSymbolInfo(node, cancellationToken);
+                        ISymbol? symbol = info.Symbol;
+                        Debug.Assert(symbol is IMethodSymbol, $"Expected {nameof(ISymbol)} '{symbol}' to be of type {nameof(IMethodSymbol)}. Actual type is {symbol.GetType()}.");
+                        var method = (IMethodSymbol)symbol;
+
+                        InterceptedCallSiteInfo callSite = new(method.ToDisplayString());
+                        interception.Bind(callSite);
+
+                        break;
+                    }
+                }
+
+                cancellationToken.ThrowIfCancellationRequested();
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+        }
+
+        InterceptorList result = new(project.Name);
+        result.AddRange(interceptors);
+
+        return result;
     }
 }

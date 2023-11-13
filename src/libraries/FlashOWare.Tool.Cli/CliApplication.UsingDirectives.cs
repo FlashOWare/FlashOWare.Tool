@@ -16,28 +16,14 @@ public static partial class CliApplication
         var countCommand = new Command("count", "Count and list the top-level using directives of a C# project.");
         var globalizeCommand = new Command("globalize", "Move top-level using directives to global using directives in a C# project.");
 
-        var projectOption = new Option<FileInfo>(new[] { "--project", "--proj" }, "The path to the project file to operate on (defaults to the current directory if there is only one project).")
-            .ExistingOnly();
-
         var countArgument = new Argument<string[]>("USINGS", "The names of the top-level using directives to count. If usings are not specified, the command will list all top-level directives.");
         countCommand.Add(countArgument);
-        countCommand.Add(projectOption);
+        countCommand.Add(Options.Project);
         countCommand.SetHandler(async (InvocationContext context) =>
         {
             string[] usings = context.ParseResult.GetValueForArgument(countArgument);
-            FileInfo? project = context.ParseResult.GetValueForOption(projectOption);
-            if (project is null)
-            {
-                var currentDirectory = fileSystem.GetCurrentDirectory();
-                var files = currentDirectory.GetFiles("*.*proj");
-
-                project = files switch
-                {
-                    [] => throw new InvalidOperationException("Specify a project file. The current working directory does not contain a project file."),
-                    [var file] => file,
-                    [..] => throw new InvalidOperationException("Specify which project file to use because this folder contains more than one project file."),
-                };
-            }
+            FileInfo? project = context.ParseResult.GetValueForOption(Options.Project);
+            project ??= fileSystem.GetSingleProject();
 
             await CountUsingsAsync(workspace, project.FullName, usings.ToImmutableArray(), context.Console, context.GetCancellationToken());
         });
@@ -45,24 +31,13 @@ public static partial class CliApplication
         var globalizeArgument = new Argument<string[]>("USINGS", "The names of the top-level using directives to convert to global using directives. If usings are not specified, the command will globalize all top-level directives.");
         var forceOption = new Option<bool>("--force", "Forces all top-level using directives to be globalized when no usings are specified.");
         globalizeCommand.Add(globalizeArgument);
-        globalizeCommand.Add(projectOption);
+        globalizeCommand.Add(Options.Project);
         globalizeCommand.Add(forceOption);
         globalizeCommand.SetHandler(async (InvocationContext context) =>
         {
             string[] usings = context.ParseResult.GetValueForArgument(globalizeArgument);
-            FileInfo? project = context.ParseResult.GetValueForOption(projectOption);
-            if (project is null)
-            {
-                var currentDirectory = fileSystem.GetCurrentDirectory();
-                var files = currentDirectory.GetFiles("*.*proj");
-
-                project = files switch
-                {
-                    [] => throw new InvalidOperationException("Specify a project file. The current working directory does not contain a project file."),
-                    [var file] => file,
-                    [..] => throw new InvalidOperationException("Specify which project file to use because this folder contains more than one project file."),
-                };
-            }
+            FileInfo? project = context.ParseResult.GetValueForOption(Options.Project);
+            project ??= fileSystem.GetSingleProject();
 
             bool isForced = context.ParseResult.GetValueForOption(forceOption);
             if (usings.Length == 0 && !isForced)
@@ -82,7 +57,7 @@ public static partial class CliApplication
     {
         try
         {
-            await s_msBuildMutex.WaitAsync(cancellationToken);
+            await Context.MSBuildMutex.WaitAsync(cancellationToken);
             Project project = await workspace.OpenProjectAsync(projectFilePath, null, cancellationToken);
 
             var result = await UsingCounter.CountAsync(project, usings, cancellationToken);
@@ -98,7 +73,7 @@ public static partial class CliApplication
         }
         finally
         {
-            s_msBuildMutex.Release();
+            Context.MSBuildMutex.Release();
         }
     }
 
@@ -106,7 +81,7 @@ public static partial class CliApplication
     {
         try
         {
-            await s_msBuildMutex.WaitAsync(cancellationToken);
+            await Context.MSBuildMutex.WaitAsync(cancellationToken);
             Project project = await workspace.OpenProjectAsync(projectFilePath, null, cancellationToken);
 
             workspace.ThrowIfCannotApplyChanges(ApplyChangesKind.AddDocument, ApplyChangesKind.ChangeDocument);
@@ -157,7 +132,7 @@ public static partial class CliApplication
         }
         finally
         {
-            s_msBuildMutex.Release();
+            Context.MSBuildMutex.Release();
         }
     }
 
