@@ -20,6 +20,7 @@ using static Nuke.Common.Tools.DotNet.DotNetTasks;
         GitHubActionsImage.MacOs12,
         GitHubActionsImage.Ubuntu2204,
         GitHubActionsImage.WindowsServer2022,
+        AutoGenerate = false,
         OnPushBranches = new[] { "main" },
         OnPullRequestBranches = new[] { "main" },
         FetchDepth = 1,
@@ -27,6 +28,7 @@ using static Nuke.Common.Tools.DotNet.DotNetTasks;
 [GitHubActions(
     "publish",
         GitHubActionsImage.Ubuntu2204,
+        AutoGenerate = false,
         OnPushBranches = new[] { "publish" },
         FetchDepth = 1,
         InvokedTargets = new[] { nameof(Publish) },
