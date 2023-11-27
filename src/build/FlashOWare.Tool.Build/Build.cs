@@ -35,10 +35,23 @@ class Build : NukeBuild
 {
     public static int Main() => Execute<Build>(x => x.Compile);
 
+    [GitRepository] readonly GitRepository GitRepository;
+
+    [Solution] readonly Solution Solution;
+
     [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
     readonly Configuration Configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;
 
-    [GitRepository] readonly GitRepository GitRepository;
+    [Parameter] readonly string VersionPrefix;
+    [Parameter] readonly string VersionSuffix;
+
+    [Parameter] readonly string NuGetSource;
+
+    [Parameter][Secret] readonly string NuGetApiKey;
+
+    AbsolutePath ArtifactsDirectory => RootDirectory / "artifacts";
+    AbsolutePath TestResultsDirectory => ArtifactsDirectory / "test-results";
+    AbsolutePath PackageDirectory => ArtifactsDirectory / "package";
 
     Target Clean => _ => _
         .Before(Restore)
@@ -51,15 +64,6 @@ class Build : NukeBuild
 
             ArtifactsDirectory.DeleteDirectory();
         });
-
-    [Solution] readonly Solution Solution;
-
-    [Parameter] readonly string VersionPrefix;
-    [Parameter] readonly string VersionSuffix;
-
-    [Parameter] readonly string NuGetSource;
-
-    [Parameter][Secret] readonly string NuGetApiKey;
 
     Target Restore => _ => _
         .Executes(() =>
@@ -77,10 +81,6 @@ class Build : NukeBuild
                 .SetConfiguration(Configuration)
                 .SetNoRestore(FinishedTargets.Contains(Restore)));
         });
-
-    AbsolutePath ArtifactsDirectory => RootDirectory / "artifacts";
-    AbsolutePath TestResultsDirectory => ArtifactsDirectory / "test-results";
-    AbsolutePath PackageDirectory => ArtifactsDirectory / "package";
 
     Target Test => _ => _
         .DependsOn(Compile)
