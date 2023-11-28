@@ -54,6 +54,7 @@ class Build : NukeBuild
     AbsolutePath ArtifactsDirectory => RootDirectory / "artifacts";
     AbsolutePath TestResultsDirectory => ArtifactsDirectory / "test-results";
     AbsolutePath PackageDirectory => ArtifactsDirectory / "package";
+    AbsolutePath NuGetConfigFile => RootDirectory / "nuget.config";
 
     Target Clean => _ => _
         .Before(Restore)
@@ -71,7 +72,9 @@ class Build : NukeBuild
         .Executes(() =>
         {
             DotNetRestore(_ => _
-                .SetProjectFile(Solution));
+                .SetProjectFile(Solution)
+                .SetConfigFile(NuGetConfigFile)
+                .SetNoCache(IsServerBuild));
         });
 
     Target Compile => _ => _
@@ -81,7 +84,8 @@ class Build : NukeBuild
             DotNetBuild(_ => _
                 .SetProjectFile(Solution)
                 .SetConfiguration(Configuration)
-                .SetNoRestore(FinishedTargets.Contains(Restore)));
+                .SetNoRestore(FinishedTargets.Contains(Restore))
+                .EnableNoLogo());
         });
 
     Target Test => _ => _
@@ -92,6 +96,7 @@ class Build : NukeBuild
                 .SetProjectFile(Solution)
                 .SetConfiguration(Configuration)
                 .SetNoBuild(FinishedTargets.Contains(Compile))
+                .EnableNoLogo()
                 .SetResultsDirectory(TestResultsDirectory));
         });
 
