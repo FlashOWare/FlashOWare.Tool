@@ -4,6 +4,8 @@ Prerelease Changelog
 [goto Release_Changelog;](./CHANGELOG.md)
 
 ## [vNext]
+### Package
+- **Added** _.NET 8.0_ tool target.
 
 ## [1.0.0-prerelease1] - 2023-11-12
 ### Tool

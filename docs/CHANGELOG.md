@@ -27,6 +27,6 @@ Release Changelog
   - with `-?|-h|--help` option to get help and usage information
 
 ### Package
-- **Added** .NET tool targeting _.NET 6.0_ and _.NET 7.0_.
+- **Added** .NET tool targeting _.NET 6.0_ and _.NET 7.0_ and _.NET 8.0_.
 
 [vnext]: https://github.com/FlashOWare/FlashOWare.Tool/commits/main
