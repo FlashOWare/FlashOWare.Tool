@@ -1,12 +1,17 @@
 using System;
 using System.Linq;
 using Nuke.Common;
+using Nuke.Common.CI;
 using Nuke.Common.CI.GitHubActions;
+using Nuke.Common.Execution;
 using Nuke.Common.Git;
 using Nuke.Common.IO;
 using Nuke.Common.ProjectModel;
 using Nuke.Common.Tooling;
 using Nuke.Common.Tools.DotNet;
+using Nuke.Common.Utilities.Collections;
+using static Nuke.Common.EnvironmentInfo;
+using static Nuke.Common.IO.FileSystemTasks;
 using static Nuke.Common.IO.PathConstruction;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 
@@ -15,6 +20,7 @@ using static Nuke.Common.Tools.DotNet.DotNetTasks;
         GitHubActionsImage.MacOs12,
         GitHubActionsImage.Ubuntu2204,
         GitHubActionsImage.WindowsServer2022,
+        AutoGenerate = false,
         OnPushBranches = new[] { "main" },
         OnPullRequestBranches = new[] { "main" },
         FetchDepth = 1,
@@ -22,6 +28,7 @@ using static Nuke.Common.Tools.DotNet.DotNetTasks;
 [GitHubActions(
     "publish",
         GitHubActionsImage.Ubuntu2204,
+        AutoGenerate = false,
         OnPushBranches = new[] { "publish" },
         FetchDepth = 1,
         InvokedTargets = new[] { nameof(Publish) },
@@ -30,10 +37,24 @@ class Build : NukeBuild
 {
     public static int Main() => Execute<Build>(x => x.Compile);
 
+    [GitRepository] readonly GitRepository GitRepository;
+
+    [Solution] readonly Solution Solution;
+
     [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
     readonly Configuration Configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;
 
-    [GitRepository] readonly GitRepository GitRepository;
+    [Parameter] readonly string VersionPrefix;
+    [Parameter] readonly string VersionSuffix;
+
+    [Parameter] readonly string NuGetSource;
+
+    [Parameter][Secret] readonly string NuGetApiKey;
+
+    AbsolutePath ArtifactsDirectory => RootDirectory / "artifacts";
+    AbsolutePath TestResultsDirectory => ArtifactsDirectory / "test-results";
+    AbsolutePath PackageDirectory => ArtifactsDirectory / "package";
+    AbsolutePath NuGetConfigFile => RootDirectory / "nuget.config";
 
     Target Clean => _ => _
         .Before(Restore)
@@ -47,20 +68,13 @@ class Build : NukeBuild
             ArtifactsDirectory.DeleteDirectory();
         });
 
-    [Solution] readonly Solution Solution;
-
-    [Parameter] readonly string VersionPrefix;
-    [Parameter] readonly string VersionSuffix;
-
-    [Parameter] readonly string NuGetSource;
-
-    [Parameter][Secret] readonly string NuGetApiKey;
-
     Target Restore => _ => _
         .Executes(() =>
         {
             DotNetRestore(_ => _
-                .SetProjectFile(Solution));
+                .SetProjectFile(Solution)
+                .SetConfigFile(NuGetConfigFile)
+                .SetNoCache(IsServerBuild));
         });
 
     Target Compile => _ => _
@@ -70,12 +84,9 @@ class Build : NukeBuild
             DotNetBuild(_ => _
                 .SetProjectFile(Solution)
                 .SetConfiguration(Configuration)
-                .SetNoRestore(FinishedTargets.Contains(Restore)));
+                .SetNoRestore(FinishedTargets.Contains(Restore))
+                .EnableNoLogo());
         });
-
-    AbsolutePath ArtifactsDirectory => RootDirectory / "artifacts";
-    AbsolutePath TestResultsDirectory => ArtifactsDirectory / "test-results";
-    AbsolutePath PackageDirectory => ArtifactsDirectory / "package";
 
     Target Test => _ => _
         .DependsOn(Compile)
@@ -85,6 +96,7 @@ class Build : NukeBuild
                 .SetProjectFile(Solution)
                 .SetConfiguration(Configuration)
                 .SetNoBuild(FinishedTargets.Contains(Compile))
+                .EnableNoLogo()
                 .SetResultsDirectory(TestResultsDirectory));
         });
 

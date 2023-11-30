@@ -12,6 +12,9 @@ Prerelease Changelog
     - if not specified, searches the current working directory for a single project file
   - with `-?|-h|--help` option to get help and usage information
 
+### Package
+- **Added** _.NET 8.0_ tool target.
+
 ## [1.0.0-prerelease1] - 2023-11-12
 ### Tool
 - **Added** optional `<USINGS>` arguments to `flashoware using count` command to count and list only specified top-level using directives instead of all.

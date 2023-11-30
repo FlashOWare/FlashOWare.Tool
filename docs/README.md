@@ -16,3 +16,4 @@ Documentation
 ## Compatibility
 - requires the [.NET 6.0](https://dotnet.microsoft.com/download/dotnet/6.0) SDK
 - supports the [.NET 7.0](https://dotnet.microsoft.com/download/dotnet/7.0) SDK
+- supports the [.NET 8.0](https://dotnet.microsoft.com/download/dotnet/8.0) SDK
