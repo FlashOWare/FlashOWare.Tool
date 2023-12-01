@@ -19,7 +19,7 @@ internal static class LanguageVersionExtensions
             TargetFramework.NetStandard20 => LanguageVersion.CSharp7_3,
             TargetFramework.Net60 => LanguageVersion.CSharp10,
             TargetFramework.Net70 => LanguageVersion.CSharp11,
-            TargetFramework.Net80 => (LanguageVersion)1200,
+            TargetFramework.Net80 => LanguageVersion.CSharp12,
             TargetFramework.Latest => LanguageVersion.Latest,
             _ => throw new InvalidEnumArgumentException(nameof(tfm), (int)tfm, typeof(TargetFramework)),
         };

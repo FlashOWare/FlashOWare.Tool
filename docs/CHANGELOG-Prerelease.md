@@ -15,6 +15,11 @@ Prerelease Changelog
 ### Package
 - **Added** _.NET 8.0_ tool target.
 
+### Dependencies
+- `Microsoft.Build.Locator`: `1.5.5` --> `1.6.10`
+- `Microsoft.CodeAnalysis.CSharp.Workspaces`: `4.5.0` --> `4.8.0`
+- `Microsoft.CodeAnalysis.Workspaces.MSBuild`: `4.5.0` --> `4.8.0`
+
 ## [1.0.0-prerelease1] - 2023-11-12
 ### Tool
 - **Added** optional `<USINGS>` arguments to `flashoware using count` command to count and list only specified top-level using directives instead of all.
@@ -52,6 +57,12 @@ Prerelease Changelog
 
 ### Package
 - **Added** .NET tool targeting _.NET 6.0_ and _.NET 7.0_.
+
+### Dependencies
+- `Microsoft.Build.Locator`: `1.5.5`
+- `Microsoft.CodeAnalysis.CSharp.Workspaces`: `4.5.0`
+- `Microsoft.CodeAnalysis.Workspaces.MSBuild`: `4.5.0`
+- `System.CommandLine`: `2.0.0-beta4.22272.1`
 
 [vnext]: https://github.com/FlashOWare/FlashOWare.Tool/compare/v1.0.0-prerelease1...HEAD
 [1.0.0-prerelease1]: https://github.com/FlashOWare/FlashOWare.Tool/compare/v1.0.0-prerelease0...v1.0.0-prerelease1
