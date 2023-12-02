@@ -19,4 +19,9 @@
     <PackageReference Include="Nuke.Common" Version="7.0.6" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Azure.Identity" Version="1.10.2" />
+    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="6.0.3" />
+  </ItemGroup>
+
 </Project>

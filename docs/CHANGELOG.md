@@ -36,9 +36,10 @@ Release Changelog
 - **Added** .NET tool targeting _.NET 6.0_ and _.NET 7.0_ and _.NET 8.0_.
 
 ### Dependencies
-- `Microsoft.Build.Locator`: `1.6.10`
-- `Microsoft.CodeAnalysis.CSharp.Workspaces`: `4.8.0`
-- `Microsoft.CodeAnalysis.Workspaces.MSBuild`: `4.8.0`
-- `System.CommandLine`: `2.0.0-beta4.22272.1`
+- **Added** `Microsoft.Build.Locator`: `1.6.10`
+- **Added** `Microsoft.CodeAnalysis.CSharp.Workspaces`: `4.8.0`
+- **Added** `Microsoft.CodeAnalysis.Workspaces.MSBuild`: `4.8.0`
+  - **Security** `System.Drawing.Common`: `4.7.0` --> `4.7.2`
+- **Added** `System.CommandLine`: `2.0.0-beta4.22272.1`
 
 [vnext]: https://github.com/FlashOWare/FlashOWare.Tool/commits/main
