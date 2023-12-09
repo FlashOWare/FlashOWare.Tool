@@ -1,4 +1,5 @@
 using FlashOWare.Tool.Cli.Tests.IO;
+using FlashOWare.Tool.Cli.Tests.Sdk;
 using FlashOWare.Tool.Cli.Tests.Workspaces;
 using Microsoft.Build.Locator;
 using System.CommandLine.IO;
@@ -33,6 +34,7 @@ public abstract class IntegrationTests : IDisposable
         _scratch = FileSystemUtilities.CreateScratchDirectory(Build.Configuration, Build.TFM, name, incremented);
         _fileSystem = new FileSystemAccessor(_scratch);
         Workspace = new PhysicalWorkspaceProvider(_scratch);
+        DotNet = new DotNet(_scratch);
 
         Result = new RunResult();
 
@@ -46,6 +48,8 @@ public abstract class IntegrationTests : IDisposable
     protected TestConsole Console { get; }
 
     protected PhysicalWorkspaceProvider Workspace { get; }
+
+    protected DotNet DotNet { get; }
 
     protected RunResult Result { get; }
 

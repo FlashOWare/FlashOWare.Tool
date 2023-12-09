@@ -29,7 +29,9 @@ public static class InterceptorLocator
     {
         List<InterceptorInfo> interceptors = new();
 
-        foreach (Document document in project.Documents)
+        IEnumerable<SourceGeneratedDocument> generated = await project.GetSourceGeneratedDocumentsAsync(cancellationToken);
+
+        foreach (Document document in project.Documents.Concat(generated))
         {
             SyntaxTree syntaxTree = await RoslynUtilities.GetSyntaxTreeAsync(document, cancellationToken);
             string filePath = RoslynUtilities.GetInterceptorFilePath(syntaxTree, compilation);

@@ -12,6 +12,7 @@ internal sealed class PhysicalProject
     }
 
     public FileInfo File { get; }
+    public string Name => Path.GetFileNameWithoutExtension(File.Name);
 
     public static PhysicalProject Create(DirectoryInfo directory, string name, Language language)
     {

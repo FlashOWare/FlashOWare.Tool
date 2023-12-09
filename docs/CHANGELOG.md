@@ -15,6 +15,8 @@ Release Changelog
 - **Added** `flashoware interceptor list` command to find and list interceptors
   - with `--proj|--project <project>` option to set the project file to operate on
     - if not specified, searches the current working directory for a single project file
+  - with `--group|--group-by-interceptors` option to group the result by interceptors
+    - if not specified, group the result by the intercepted locations
   - with `-?|-h|--help` option to get help and usage information
 - **Added** `flashoware using` command
   - with `-?|-h|--help` option to get help and usage information

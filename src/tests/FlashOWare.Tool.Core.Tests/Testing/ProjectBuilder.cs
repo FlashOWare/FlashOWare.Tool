@@ -1,5 +1,7 @@
 using Basic.Reference.Assemblies;
+using FlashOWare.Tool.Core.Tests.Diagnostics;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Diagnostics;
 using System.Diagnostics;
 
 namespace FlashOWare.Tool.Core.Tests.Testing;
@@ -11,7 +13,7 @@ internal sealed partial class ProjectBuilder
     private readonly ProjectId _projectId;
 
     private readonly CompilationOptions _compilationOptions;
-    private readonly ParseOptions _parseOptions;
+    private ParseOptions _parseOptions;
 
     private ProjectBuilder(string language, CompilationOptions compilationOptions, ParseOptions parseOptions)
     {
@@ -38,6 +40,36 @@ internal sealed partial class ProjectBuilder
         string filePath = Path.Combine(directoryPath, name);
         var documentId = DocumentId.CreateNewId(_projectId, $"Test-Document-Id: {name}");
         _solution = _solution.AddDocument(documentId, name, text, folders, filePath);
+        return this;
+    }
+
+    public ProjectBuilder AddAnalyzer<TAnalyzer>()
+        where TAnalyzer : DiagnosticAnalyzer, new()
+    {
+        DiagnosticAnalyzer analyzer = new TAnalyzer();
+        AnalyzerReference analyzerReference = new AdhocAnalyzerReference(analyzer);
+
+        _solution = _solution.AddAnalyzerReference(_projectId, analyzerReference);
+        return this;
+    }
+
+    public ProjectBuilder AddGenerator<TGenerator>()
+        where TGenerator : IIncrementalGenerator, new()
+    {
+        IIncrementalGenerator generator = new TGenerator();
+        AnalyzerReference analyzerReference = new AdhocAnalyzerReference(generator);
+
+        _solution = _solution.AddAnalyzerReference(_projectId, analyzerReference);
+        return this;
+    }
+
+    public ProjectBuilder WithFeature(string key, string value)
+    {
+        Dictionary<string, string> features = new(1)
+        {
+            { key, value },
+        };
+        _parseOptions = _parseOptions.WithFeatures(features);
         return this;
     }
 

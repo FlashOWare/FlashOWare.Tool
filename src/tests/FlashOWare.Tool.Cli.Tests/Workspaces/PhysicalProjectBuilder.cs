@@ -1,6 +1,7 @@
 using FlashOWare.Tool.Cli.Tests.CodeAnalysis;
 using FlashOWare.Tool.Cli.Tests.Testing;
 using Microsoft.CodeAnalysis.CSharp;
+using NuGet.Packaging;
 using System.ComponentModel;
 using System.Diagnostics;
 
@@ -9,6 +10,7 @@ namespace FlashOWare.Tool.Cli.Tests.Workspaces;
 internal sealed class PhysicalProjectBuilder
 {
     private readonly List<PhysicalDocument> _documents = new();
+    private readonly List<PackageReference> _packages = new();
     private string _projectName;
 
     private readonly DirectoryInfo _directory;
@@ -62,6 +64,12 @@ internal sealed class PhysicalProjectBuilder
         return this;
     }
 
+    public PhysicalProjectBuilder AddPackage(PackageReference package)
+    {
+        _packages.Add(package);
+        return this;
+    }
+
     public PhysicalProject Initialize(ProjectKind kind, TargetFramework tfm, LanguageVersion? langVersion = null)
     {
         if (!Enum.IsDefined(kind))
@@ -83,8 +91,8 @@ internal sealed class PhysicalProjectBuilder
         if (_language is Language.CSharp)
         {
             string projectText = kind is ProjectKind.Classic
-                ? ProjectText.CreateNonSdk(tfm, langVersion.DefaultIfNull(tfm), files)
-                : ProjectText.Create(tfm, langVersion);
+                ? ProjectText.CreateNonSdk(tfm, langVersion.DefaultIfNull(tfm), files, _packages)
+                : ProjectText.Create(tfm, langVersion, _packages);
 
             project.Write(projectText);
         }
@@ -94,7 +102,7 @@ internal sealed class PhysicalProjectBuilder
 
             string projectText = kind is ProjectKind.Classic
                 ? throw new NotImplementedException($"{Language.VisualBasic} non-SDK .NET Framework project is not implemented.")
-                : ProjectText.CreateVisualBasic(tfm, langVersion.HasValue ? throw new NotImplementedException($"{Language.VisualBasic} {nameof(Microsoft.CodeAnalysis.VisualBasic.LanguageVersion)} is not implemented.") : null);
+                : ProjectText.CreateVisualBasic(tfm, langVersion.HasValue ? throw new NotImplementedException($"{Language.VisualBasic} {nameof(Microsoft.CodeAnalysis.VisualBasic.LanguageVersion)} is not implemented.") : null, _packages);
 
             project.Write(projectText);
         }

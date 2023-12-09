@@ -1,14 +1,16 @@
+using FlashOWare.Tool.Cli.Tests.Packaging;
 using FlashOWare.Tool.Cli.Tests.Testing;
 using Microsoft.CodeAnalysis.CSharp;
+using NuGet.Packaging;
 using System.CodeDom.Compiler;
 using System.Globalization;
 using System.Text;
 
 namespace FlashOWare.Tool.Cli.Tests.Workspaces;
 
-internal static class ProjectText
+internal static partial class ProjectText
 {
-    public static string Create(TargetFramework tfm, LanguageVersion? langVersion = null)
+    public static string Create(TargetFramework tfm, LanguageVersion? langVersion = null, IReadOnlyCollection<PackageReference>? packages = null)
     {
         return $"""
             <Project Sdk="Microsoft.NET.Sdk">
@@ -19,12 +21,12 @@ internal static class ProjectText
                 <Nullable>enable</Nullable>
                 <ImplicitUsings>enable</ImplicitUsings>
               </PropertyGroup>
-
+            {CreatePackageItems("  ", packages)}
             </Project>
             """;
     }
 
-    public static string Create(TargetFramework[] tfms, LanguageVersion? langVersion = null)
+    public static string Create(TargetFramework[] tfms, LanguageVersion? langVersion = null, IReadOnlyCollection<PackageReference>? packages = null)
     {
         return $"""
             <Project Sdk="Microsoft.NET.Sdk">
@@ -35,13 +37,18 @@ internal static class ProjectText
                 <Nullable>enable</Nullable>
                 <ImplicitUsings>enable</ImplicitUsings>
               </PropertyGroup>
-
+            {CreatePackageItems("  ", packages)}
             </Project>
             """;
     }
 
-    public static string CreateNonSdk(TargetFramework targetFrameworkVersion, LanguageVersion langVersion, string[] files)
+    public static string CreateNonSdk(TargetFramework targetFrameworkVersion, LanguageVersion langVersion, string[] files, IReadOnlyCollection<PackageReference>? packages = null)
     {
+        if (packages is not null && packages.Count != 0)
+        {
+            throw new NotImplementedException("NuGet 'packages.config' is not implemented.");
+        }
+
         return $"""
             <?xml version="1.0" encoding="utf-8"?>
             <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
@@ -95,29 +102,9 @@ internal static class ProjectText
               <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
             </Project>
             """;
-
-        static string CreateCompileItems(string tabString, string[] files)
-        {
-            if (files.Length == 0)
-            {
-                throw new ArgumentException("At least 1 'Compile Item' required.", nameof(files));
-            }
-
-            StringBuilder stringBuilder = new();
-            using TextWriter writer = new StringWriter(stringBuilder, CultureInfo.InvariantCulture);
-            using IndentedTextWriter items = new(writer, tabString);
-
-            items.Indent++;
-            foreach (var file in files)
-            {
-                items.WriteLine($"""<Compile Include="{file}" />""");
-            }
-
-            return stringBuilder.ToString(0, stringBuilder.Length - Environment.NewLine.Length);
-        }
     }
 
-    public static string CreateVisualBasic(TargetFramework tfm, Microsoft.CodeAnalysis.VisualBasic.LanguageVersion? langVersion = null)
+    public static string CreateVisualBasic(TargetFramework tfm, Microsoft.CodeAnalysis.VisualBasic.LanguageVersion? langVersion = null, IReadOnlyCollection<PackageReference>? packages = null)
     {
         return $"""
             <Project Sdk="Microsoft.NET.Sdk">
@@ -127,8 +114,56 @@ internal static class ProjectText
                 <TargetFramework>{tfm.ToMonikerString()}</TargetFramework>
                 {(langVersion.HasValue ? $"<LangVersion>{Microsoft.CodeAnalysis.VisualBasic.LanguageVersionFacts.ToDisplayString(langVersion.Value)}</LangVersion>" : null)}
               </PropertyGroup>
-
+            {CreatePackageItems("  ", packages)}
             </Project>
             """;
+    }
+}
+
+internal static partial class ProjectText
+{
+    private static string? CreatePackageItems(string tabString, IReadOnlyCollection<PackageReference>? packages)
+    {
+        if (packages is null || packages.Count == 0)
+        {
+            return null;
+        }
+
+        StringBuilder stringBuilder = new();
+        using TextWriter writer = new StringWriter(stringBuilder, CultureInfo.InvariantCulture);
+        using IndentedTextWriter items = new(writer, tabString);
+
+        items.Indent++;
+        items.WriteLine();
+        items.WriteLine("<ItemGroup>");
+        items.Indent++;
+        foreach (PackageReference package in packages)
+        {
+            items.WriteLine(package.ToProjectString());
+        }
+        items.Indent--;
+        items.WriteLine("</ItemGroup>");
+
+        return stringBuilder.ToString();
+    }
+
+    private static string CreateCompileItems(string tabString, string[] files)
+    {
+        if (files.Length == 0)
+        {
+            throw new ArgumentException("At least 1 'Compile Item' required.", nameof(files));
+        }
+
+        StringBuilder stringBuilder = new();
+        using TextWriter writer = new StringWriter(stringBuilder, CultureInfo.InvariantCulture);
+        using IndentedTextWriter items = new(writer, tabString);
+
+        items.Indent++;
+        foreach (var file in files)
+        {
+            items.WriteLine($"""<Compile Include="{file}" />""");
+        }
+
+        return stringBuilder.ToString(0, stringBuilder.Length - Environment.NewLine.Length);
     }
 }

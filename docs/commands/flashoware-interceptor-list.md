@@ -18,6 +18,9 @@ Find and list experimental interceptors in a C# project.
 - `--proj|--project <project>`  
 The path to the project file to operate on (defaults to the current directory if there is only one project).
 
+- `--group|--group-by-interceptors`  
+Group the result by interceptors instead of the intercepted locations.
+
 - `-?|-h|--help`  
 Show help and usage information.
 

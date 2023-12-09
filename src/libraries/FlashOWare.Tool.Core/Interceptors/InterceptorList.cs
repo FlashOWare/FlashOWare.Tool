@@ -32,6 +32,14 @@ public sealed class InterceptorList
 
     public override string ToString()
     {
-        return $"{nameof(Project)} {ProjectName} contains {_interceptors.Count} {(_interceptors.Count == 1 ? "interceptor" : "interceptors")}";
+        int interceptions = _interceptors.SelectMany(static interceptor => interceptor.Interceptions).Count();
+        if (interceptions == 0)
+        {
+            return $"{nameof(Project)} {ProjectName} contains no interceptors";
+        }
+        else
+        {
+            return $"{nameof(Project)} {ProjectName} contains {_interceptors.Count} {(_interceptors.Count == 1 ? "interceptor" : "interceptors")} with {interceptions} {(interceptions == 1 ? "interception" : "interceptions")}";
+        }
     }
 }
