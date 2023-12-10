@@ -1,7 +1,7 @@
 using FlashOWare.Tool.Cli.Tests.IO;
+using FlashOWare.Tool.Cli.Tests.MSBuild;
 using FlashOWare.Tool.Cli.Tests.Sdk;
 using FlashOWare.Tool.Cli.Tests.Workspaces;
-using Microsoft.Build.Locator;
 using System.CommandLine.IO;
 using Xunit.Abstractions;
 
@@ -9,7 +9,6 @@ namespace FlashOWare.Tool.Cli.Tests.Testing;
 
 public abstract class IntegrationTests : IDisposable
 {
-    private static readonly Lazy<VisualStudioInstance> s_msBuildInstance = new(MSBuildLocator.RegisterDefaults);
     private static int s_number = 0;
 
     private readonly DirectoryInfo _scratch;
@@ -23,6 +22,7 @@ public abstract class IntegrationTests : IDisposable
 
     protected IntegrationTests(ITestOutputHelper? output)
     {
+        MSBuild = MSBuildInfo.Create();
         Output = output;
         Console = new TestConsole();
 
@@ -41,7 +41,7 @@ public abstract class IntegrationTests : IDisposable
         _system = new RedirectedConsole();
     }
 
-    protected static VisualStudioInstance MSBuild => s_msBuildInstance.Value;
+    protected MSBuildInfo MSBuild { get; }
 
     protected ITestOutputHelper? Output { get; }
 
@@ -55,7 +55,7 @@ public abstract class IntegrationTests : IDisposable
 
     protected async Task RunAsync(params string[] args)
     {
-        int exitCode = await CliApplication.RunAsync(args, Console, MSBuild, _fileSystem);
+        int exitCode = await CliApplication.RunAsync(args, Console, MSBuild.Instance, _fileSystem);
 
         Result.Set(exitCode);
     }
@@ -70,6 +70,6 @@ public abstract class IntegrationTests : IDisposable
         _system.AssertEmpty();
         _system.Dispose();
 
-        Output?.WriteLine("MSBuild ({0}): {1} {2}", MSBuild.DiscoveryType, MSBuild.Name, MSBuild.Version);
+        Output?.WriteLine("MSBuild ({0}): {1} {2}", MSBuild.Instance.DiscoveryType, MSBuild.Instance.Name, MSBuild.Instance.Version);
     }
 }

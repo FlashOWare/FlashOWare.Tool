@@ -8,11 +8,23 @@ namespace FlashOWare.Tool.Cli;
 
 public static partial class CliApplication
 {
-    public static async Task<int> RunAsync(string[] args, IConsole? console = null, VisualStudioInstance? msBuild = null, IFileSystemAccessor? fileSystem = null)
+    public static Task<int> RunAsync(string[] args)
     {
-        msBuild ??= MSBuildLocator.RegisterDefaults();
-        fileSystem ??= FileSystemAccessor.System;
+        VisualStudioInstance msBuild = MSBuildLocator.RegisterDefaults();
+        IFileSystemAccessor fileSystem = FileSystemAccessor.System;
 
+        CliContext.InitializeApp(msBuild);
+        return RunAsync(args, null, fileSystem);
+    }
+
+    public static Task<int> RunAsync(string[] args, IConsole console, VisualStudioInstance msBuild, IFileSystemAccessor fileSystem)
+    {
+        CliContext.InitializeTest(msBuild);
+        return RunAsync(args, console, fileSystem);
+    }
+
+    private static async Task<int> RunAsync(string[] args, IConsole? console, IFileSystemAccessor fileSystem)
+    {
         var properties = ImmutableDictionary<string, string>.Empty.Add("Configuration", "Release");
         using var workspace = MSBuildWorkspace.Create(properties);
         workspace.WorkspaceFailed += OnWorkspaceFailed;
@@ -36,7 +48,7 @@ public static partial class CliApplication
 
             if (context.BindingContext.ParseResult.GetValueForOption(infoOption))
             {
-                context.Console.WriteLine(ConsoleColor.Green, $"MSBuild ({msBuild.DiscoveryType}): {msBuild.Name} {msBuild.Version}");
+                context.Console.WriteLine(ConsoleColor.Green, $"MSBuild ({CliContext.MSBuild.DiscoveryType}): {CliContext.MSBuild.Name} {CliContext.MSBuild.Version}");
             }
         });
 
@@ -45,6 +57,7 @@ public static partial class CliApplication
 
         int exitCode = await rootCommand.InvokeAsync(args, console);
         workspace.WorkspaceFailed -= OnWorkspaceFailed;
+        CliContext.Dispose();
         return exitCode;
     }
 

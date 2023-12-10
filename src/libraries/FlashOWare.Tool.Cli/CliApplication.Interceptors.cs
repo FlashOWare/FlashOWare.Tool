@@ -12,11 +12,11 @@ public static partial class CliApplication
         var listCommand = new Command("list", "Find and list experimental interceptors in a C# project.");
 
         var groupOption = new Option<bool>(new[] { "--group-by-interceptors", "--group" }, "Group the result by interceptors instead of the intercepted locations.");
-        listCommand.Add(Options.Project);
+        listCommand.Add(CliOptions.Project);
         listCommand.Add(groupOption);
         listCommand.SetHandler(async (InvocationContext context) =>
         {
-            FileInfo? project = context.ParseResult.GetValueForOption(Options.Project);
+            FileInfo? project = context.ParseResult.GetValueForOption(CliOptions.Project);
             project ??= fileSystem.GetSingleProject();
 
             bool groupByInterceptors = context.ParseResult.GetValueForOption(groupOption);
@@ -32,7 +32,7 @@ public static partial class CliApplication
     {
         try
         {
-            await Context.MSBuildMutex.WaitAsync(cancellationToken);
+            await CliContext.MSBuildMutex.WaitAsync(cancellationToken);
             Project project = await workspace.OpenProjectAsync(projectFile.FullName, null, cancellationToken);
 
             var result = await InterceptorLocator.ListAsync(project, cancellationToken);
@@ -55,7 +55,7 @@ public static partial class CliApplication
         }
         finally
         {
-            Context.MSBuildMutex.Release();
+            CliContext.MSBuildMutex.Release();
         }
 
         static void ListByIntercepted(InterceptorList result, Project project, IConsole console)

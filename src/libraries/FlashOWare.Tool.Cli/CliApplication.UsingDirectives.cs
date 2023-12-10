@@ -18,11 +18,11 @@ public static partial class CliApplication
 
         var countArgument = new Argument<string[]>("USINGS", "The names of the top-level using directives to count. If usings are not specified, the command will list all top-level directives.");
         countCommand.Add(countArgument);
-        countCommand.Add(Options.Project);
+        countCommand.Add(CliOptions.Project);
         countCommand.SetHandler(async (InvocationContext context) =>
         {
             string[] usings = context.ParseResult.GetValueForArgument(countArgument);
-            FileInfo? project = context.ParseResult.GetValueForOption(Options.Project);
+            FileInfo? project = context.ParseResult.GetValueForOption(CliOptions.Project);
             project ??= fileSystem.GetSingleProject();
 
             await CountUsingsAsync(workspace, project.FullName, usings.ToImmutableArray(), context.Console, context.GetCancellationToken());
@@ -31,12 +31,12 @@ public static partial class CliApplication
         var globalizeArgument = new Argument<string[]>("USINGS", "The names of the top-level using directives to convert to global using directives. If usings are not specified, the command will globalize all top-level directives.");
         var forceOption = new Option<bool>("--force", "Forces all top-level using directives to be globalized when no usings are specified.");
         globalizeCommand.Add(globalizeArgument);
-        globalizeCommand.Add(Options.Project);
+        globalizeCommand.Add(CliOptions.Project);
         globalizeCommand.Add(forceOption);
         globalizeCommand.SetHandler(async (InvocationContext context) =>
         {
             string[] usings = context.ParseResult.GetValueForArgument(globalizeArgument);
-            FileInfo? project = context.ParseResult.GetValueForOption(Options.Project);
+            FileInfo? project = context.ParseResult.GetValueForOption(CliOptions.Project);
             project ??= fileSystem.GetSingleProject();
 
             bool isForced = context.ParseResult.GetValueForOption(forceOption);
@@ -57,7 +57,7 @@ public static partial class CliApplication
     {
         try
         {
-            await Context.MSBuildMutex.WaitAsync(cancellationToken);
+            await CliContext.MSBuildMutex.WaitAsync(cancellationToken);
             Project project = await workspace.OpenProjectAsync(projectFilePath, null, cancellationToken);
 
             var result = await UsingCounter.CountAsync(project, usings, cancellationToken);
@@ -73,7 +73,7 @@ public static partial class CliApplication
         }
         finally
         {
-            Context.MSBuildMutex.Release();
+            CliContext.MSBuildMutex.Release();
         }
     }
 
@@ -81,7 +81,7 @@ public static partial class CliApplication
     {
         try
         {
-            await Context.MSBuildMutex.WaitAsync(cancellationToken);
+            await CliContext.MSBuildMutex.WaitAsync(cancellationToken);
             Project project = await workspace.OpenProjectAsync(projectFilePath, null, cancellationToken);
 
             workspace.ThrowIfCannotApplyChanges(ApplyChangesKind.AddDocument, ApplyChangesKind.ChangeDocument);
@@ -132,7 +132,7 @@ public static partial class CliApplication
         }
         finally
         {
-            Context.MSBuildMutex.Release();
+            CliContext.MSBuildMutex.Release();
         }
     }
 
