@@ -2,12 +2,18 @@ using FlashOWare.Tool.Cli.Tests.CommandLine.IO;
 using FlashOWare.Tool.Cli.Tests.Sdk;
 using FlashOWare.Tool.Cli.Tests.Testing;
 using Microsoft.CodeAnalysis.CSharp;
+using Xunit.Abstractions;
 
 namespace FlashOWare.Tool.Cli.Tests.Interceptors;
 
 public class InterceptorLocatorTests : IntegrationTests
 {
     private static readonly char DirectorySeparator = Path.DirectorySeparatorChar;
+
+    public InterceptorLocatorTests(ITestOutputHelper output)
+        : base(output)
+    {
+    }
 
     [Fact]
     public async Task List_WithoutInterceptors_Empty()
