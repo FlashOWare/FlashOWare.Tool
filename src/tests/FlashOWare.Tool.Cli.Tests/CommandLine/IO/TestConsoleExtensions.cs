@@ -1,5 +1,6 @@
 using System.CommandLine.IO;
 using System.Diagnostics;
+using Xunit.Abstractions;
 
 namespace FlashOWare.Tool.Cli.Tests.CommandLine.IO;
 
@@ -11,8 +12,12 @@ internal static class TestConsoleExtensions
         throw new UnreachableException();
     }
 
-    internal static void Verify(this TestConsole console, string? output = null, string? error = null)
+    internal static void Verify(this TestConsole console, string? output = null, string? error = null, ITestOutputHelper? test = null)
     {
+        if (error != console.Error.ToString()!.TrimEnd())
+        {
+            test?.WriteLine(console.Error.ToString()!.TrimEnd());
+        }
         Assert.Multiple(
             () => Assert.Equal(output ?? "", console.Out.ToString()!.TrimEnd()),
             () => Assert.Equal(error ?? "", console.Error.ToString()!.TrimEnd()));
