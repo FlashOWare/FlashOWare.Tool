@@ -45,14 +45,14 @@ public class InterceptorLocatorTests : IntegrationTests
             Console.Verify($"""
                 Warning: Interceptors are an experimental feature, currently available in preview mode.
                 Project {project.Name} contains no interceptors.
-                """, null, this.Output);
+                """, null);
             Result.Verify(ExitCodes.Success);
         }
         else
         {
             Console.Verify(null, $"""
                 The 'interceptors' experimental feature is not supported in .NET SDK {MSBuild.Instance.Version}.
-                """, this.Output);
+                """);
             Result.Verify(ExitCodes.Success);
         }
     }
@@ -104,14 +104,14 @@ public class InterceptorLocatorTests : IntegrationTests
                   at location MyEnum.cs:11:36
                   Interceptor FlashOWare.Generated.EnumInterceptors.GetName0(System.StringComparison)
                   at location FlashOWare.Generators{DirectorySeparator}FlashOWare.Generators.Enumerations.EnumInterceptorGenerator{DirectorySeparator}FlashOWare.Generated.EnumInterceptors.g.cs:34:27
-                """, null, this.Output);
+                """, null);
             Result.Verify(ExitCodes.Success);
         }
         else
         {
             Console.Verify(null, $"""
                 The 'interceptors' experimental feature is not supported in .NET SDK {MSBuild.Instance.Version}.
-                """, this.Output);
+                """);
             Result.Verify(ExitCodes.Success);
         }
     }
@@ -143,14 +143,14 @@ public class InterceptorLocatorTests : IntegrationTests
                   intercepts 1 method invocation:
                   - Microsoft.AspNetCore.Routing.IEndpointRouteBuilder.MapGet(string, System.Delegate)
                     - Program.cs:22:10
-                """, null, this.Output);
+                """, null);
             Result.Verify(ExitCodes.Success);
         }
         else
         {
             Console.Verify(null, $"""
-                The 'interceptors' experimental feature is not supported in .NET_ SDK {MSBuild.Instance.Version}.
-                """, this.Output);
+                The 'interceptors' experimental feature is not supported in .NET SDK {MSBuild.Instance.Version}.
+                """);
             Result.Verify(ExitCodes.Success);
         }
     }
