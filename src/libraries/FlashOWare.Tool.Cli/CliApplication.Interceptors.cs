@@ -1,6 +1,7 @@
 using FlashOWare.Tool.Cli.IO;
 using FlashOWare.Tool.Core.Interceptors;
 using Microsoft.CodeAnalysis;
+using System.CommandLine.IO;
 
 namespace FlashOWare.Tool.Cli;
 
@@ -30,6 +31,12 @@ public static partial class CliApplication
 
     private static async Task ListInterceptorAsync(MSBuildWorkspace workspace, FileInfo projectFile, bool groupByInterceptors, IConsole console, CancellationToken cancellationToken)
     {
+        if (CliContext.MSBuild.Version is { Major: < 8 } and not { Major: 7, Minor: > 0 } and not { Major: 7, Minor: 0, Build: >= 400 })
+        {
+            console.Error.WriteLine($"The 'interceptors' experimental feature is not supported in .NET SDK {CliContext.MSBuild.Version}.");
+            return;
+        }
+
         try
         {
             await CliContext.MSBuildMutex.WaitAsync(cancellationToken);
