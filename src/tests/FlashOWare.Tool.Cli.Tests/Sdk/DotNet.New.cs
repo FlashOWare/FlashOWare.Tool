@@ -1,4 +1,4 @@
-using NuGet.Packaging;
+using FlashOWare.Tool.Cli.Tests.Diagnostics;
 using System.ComponentModel;
 using System.Diagnostics;
 
@@ -20,27 +20,9 @@ public partial class DotNet
     {
         string project = "WebApiAotProject";
 
-        ProcessStartInfo startInfo = new("dotnet");
-        startInfo.ArgumentList.AddRange(new[] { "new", "webapiaot", "--name", project, "--output", _directory.FullName, "--language", "C#", "--framework", "net8.0", "--exclude-launch-settings" });
-        startInfo.WorkingDirectory = _directory.FullName;
-        startInfo.CreateNoWindow = true;
-        startInfo.RedirectStandardOutput = true;
+        using Process process = StartProcess("dotnet", "new", "webapiaot", "--name", project, "--output", _directory.FullName, "--language", "C#", "--framework", "net8.0", "--exclude-launch-settings");
 
-        using var process = Process.Start(startInfo);
-        if (process is null)
-        {
-            throw new InvalidOperationException("No process resource is started.");
-        }
-
-        using CancellationTokenSource timeout = new(TimeSpan.FromSeconds(15));
-
-        await process.WaitForExitAsync(timeout.Token);
-
-        if (process.ExitCode != 0)
-        {
-            string output = await process.StandardOutput.ReadToEndAsync(timeout.Token);
-            throw new InvalidOperationException($"{nameof(Process.ExitCode)}: {process.ExitCode}{Environment.NewLine}{output}");
-        }
+        await process.WaitForSuccessfulExitAsync(TimeSpan.FromSeconds(15));
 
         return project;
     }
