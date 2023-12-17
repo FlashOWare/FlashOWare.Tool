@@ -7,6 +7,8 @@ namespace FlashOWare.Tool.Cli.Tests.Interceptors;
 
 public class InterceptorLocatorTests : IntegrationTests
 {
+    private static readonly char DirectorySeparator = Path.DirectorySeparatorChar;
+
     [Fact]
     public async Task List_WithoutInterceptors_Empty()
     {
@@ -91,11 +93,11 @@ public class InterceptorLocatorTests : IntegrationTests
                 - intercepted System.Enum.IsDefined<System.StringComparison>(System.StringComparison)
                   at location MyEnum.cs:9:18
                   Interceptor FlashOWare.Generated.EnumInterceptors.IsDefined0(System.StringComparison)
-                  at location FlashOWare.Generators\FlashOWare.Generators.Enumerations.EnumInterceptorGenerator\FlashOWare.Generated.EnumInterceptors.g.cs:23:24
+                  at location FlashOWare.Generators{DirectorySeparator}FlashOWare.Generators.Enumerations.EnumInterceptorGenerator{DirectorySeparator}FlashOWare.Generated.EnumInterceptors.g.cs:23:24
                 - intercepted System.Enum.GetName<System.StringComparison>(System.StringComparison)
                   at location MyEnum.cs:11:36
                   Interceptor FlashOWare.Generated.EnumInterceptors.GetName0(System.StringComparison)
-                  at location FlashOWare.Generators\FlashOWare.Generators.Enumerations.EnumInterceptorGenerator\FlashOWare.Generated.EnumInterceptors.g.cs:34:27
+                  at location FlashOWare.Generators{DirectorySeparator}FlashOWare.Generators.Enumerations.EnumInterceptorGenerator{DirectorySeparator}FlashOWare.Generated.EnumInterceptors.g.cs:34:27
                 """, null);
             Result.Verify(ExitCodes.Success);
         }
@@ -126,12 +128,12 @@ public class InterceptorLocatorTests : IntegrationTests
 
                 2 Interceptors
                 - Interceptor: Microsoft.AspNetCore.Http.Generated.GeneratedRouteBuilderExtensionsCore.MapGet0(Microsoft.AspNetCore.Routing.IEndpointRouteBuilder, string, System.Delegate)
-                  at location: Microsoft.AspNetCore.Http.RequestDelegateGenerator\Microsoft.AspNetCore.Http.RequestDelegateGenerator.RequestDelegateGenerator\GeneratedRouteBuilderExtensions.g.cs:62:45
+                  at location: Microsoft.AspNetCore.Http.RequestDelegateGenerator{DirectorySeparator}Microsoft.AspNetCore.Http.RequestDelegateGenerator.RequestDelegateGenerator{DirectorySeparator}GeneratedRouteBuilderExtensions.g.cs:62:45
                   intercepts 1 method invocation:
                   - Microsoft.AspNetCore.Routing.IEndpointRouteBuilder.MapGet(string, System.Delegate)
                     - Program.cs:21:10
                 - Interceptor: Microsoft.AspNetCore.Http.Generated.GeneratedRouteBuilderExtensionsCore.MapGet1(Microsoft.AspNetCore.Routing.IEndpointRouteBuilder, string, System.Delegate)
-                  at location: Microsoft.AspNetCore.Http.RequestDelegateGenerator\Microsoft.AspNetCore.Http.RequestDelegateGenerator.RequestDelegateGenerator\GeneratedRouteBuilderExtensions.g.cs:144:45
+                  at location: Microsoft.AspNetCore.Http.RequestDelegateGenerator{DirectorySeparator}Microsoft.AspNetCore.Http.RequestDelegateGenerator.RequestDelegateGenerator{DirectorySeparator}GeneratedRouteBuilderExtensions.g.cs:144:45
                   intercepts 1 method invocation:
                   - Microsoft.AspNetCore.Routing.IEndpointRouteBuilder.MapGet(string, System.Delegate)
                     - Program.cs:22:10
