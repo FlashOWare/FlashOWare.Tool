@@ -19,6 +19,11 @@ public class InterceptorLocatorTests : IntegrationTests
     [Fact]
     public async Task List_WithoutInterceptors_Empty()
     {
+        if (MSBuild.IsLessThan(6, 0, 100))
+        {
+            return;
+        }
+
         //Arrange
         var project = Workspace.CreateProject()
             .AddDocument("""

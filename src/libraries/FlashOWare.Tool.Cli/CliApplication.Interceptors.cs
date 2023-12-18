@@ -1,5 +1,6 @@
 using FlashOWare.Tool.Cli.IO;
 using FlashOWare.Tool.Core.Interceptors;
+using Microsoft.Build.Locator;
 using Microsoft.CodeAnalysis;
 using System.CommandLine.IO;
 
@@ -10,7 +11,15 @@ public static partial class CliApplication
     private static void AddInterceptorCommand(RootCommand rootCommand, MSBuildWorkspace workspace, IFileSystemAccessor fileSystem)
     {
         var interceptorCommand = new Command("interceptor", "Discover experimental C# interceptors.");
+        var checkCommand = new Command("check", "Show whether experimental interceptors are supported or not by discovered .NET SDKs.");
         var listCommand = new Command("list", "Find and list experimental interceptors in a C# project.");
+
+        checkCommand.SetHandler((InvocationContext context) =>
+        {
+            IEnumerable<VisualStudioInstance> instances = MSBuildLocator.QueryVisualStudioInstances();
+
+            CheckInterceptors(instances, context.Console);
+        });
 
         var groupOption = new Option<bool>(new[] { "--group-by-interceptors", "--group" }, "Group the result by interceptors instead of the intercepted locations.");
         listCommand.Add(CliOptions.Project);
@@ -22,14 +31,42 @@ public static partial class CliApplication
 
             bool groupByInterceptors = context.ParseResult.GetValueForOption(groupOption);
 
-            await ListInterceptorAsync(workspace, project, groupByInterceptors, context.Console, context.GetCancellationToken());
+            await ListInterceptorsAsync(workspace, project, groupByInterceptors, context.Console, context.GetCancellationToken());
         });
 
+        interceptorCommand.Add(checkCommand);
         interceptorCommand.Add(listCommand);
         rootCommand.Add(interceptorCommand);
     }
 
-    private static async Task ListInterceptorAsync(MSBuildWorkspace workspace, FileInfo projectFile, bool groupByInterceptors, IConsole console, CancellationToken cancellationToken)
+    private static void CheckInterceptors(IEnumerable<VisualStudioInstance> instances, IConsole console)
+    {
+        console.WriteLine(".NET SDKs:");
+
+        IOrderedEnumerable<VisualStudioInstance> enumerable = instances
+            .Where(static instance => (VisualStudioInstanceQueryOptions.Default.DiscoveryTypes & instance.DiscoveryType) == instance.DiscoveryType)
+            .OrderBy(static instance => instance.Version);
+
+        foreach (VisualStudioInstance instance in enumerable)
+        {
+            if (instance.Version.Major == 8)
+            {
+                console.WriteLine($"> {instance.Version} supports the 'interceptors' experimental feature by adding '<InterceptorsPreviewNamespaces>$(InterceptorsPreviewNamespaces);MyNamespace</InterceptorsPreviewNamespaces>' to your project.");
+            }
+            else if (instance.Version.Major == 7 && ((instance.Version.Minor == 0 && instance.Version.Build >= 400) || instance.Version.Minor > 0))
+            {
+                console.WriteLine($"> {instance.Version} supports the 'interceptors' experimental feature by adding '<Features>InterceptorsPreview</Features>' to your project.");
+            }
+            else
+            {
+                console.WriteLine($"> {instance.Version} does not support the 'interceptors' experimental feature.");
+            }
+        }
+
+        console.WriteLine($"Current: {CliContext.MSBuild.Version}");
+    }
+
+    private static async Task ListInterceptorsAsync(MSBuildWorkspace workspace, FileInfo projectFile, bool groupByInterceptors, IConsole console, CancellationToken cancellationToken)
     {
         if (CliContext.MSBuild.Version is { Major: < 8 } and not { Major: 7, Minor: > 0 } and not { Major: 7, Minor: 0, Build: >= 400 })
         {

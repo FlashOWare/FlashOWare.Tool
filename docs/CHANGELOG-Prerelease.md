@@ -7,6 +7,8 @@ Prerelease Changelog
 ### Tool
 - **Added** `flashoware interceptor` command
   - with `-?|-h|--help` option to get help and usage information
+- **Added** `flashoware interceptor check` command to show whether interceptors are supported
+  - with `-?|-h|--help` option to get help and usage information
 - **Added** `flashoware interceptor list` command to find and list interceptors
   - with `--proj|--project <project>` option to set the project file to operate on
     - if not specified, searches the current working directory for a single project file

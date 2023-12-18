@@ -41,4 +41,24 @@ internal static class TestConsoleExtensions
     {
         Assert.Equal(error, console.Error.ToString()!.TrimEnd());
     }
+
+    internal static void VerifyStartsWithOutput(this TestConsole console, string output)
+    {
+        Assert.StartsWith(output, console.Out.ToString()!.TrimEnd());
+    }
+
+    internal static void VerifyStartsWithError(this TestConsole console, string error)
+    {
+        Assert.StartsWith(error, console.Error.ToString()!.TrimEnd());
+    }
+
+    internal static void VerifyEndsWithOutput(this TestConsole console, string output)
+    {
+        Assert.EndsWith(output, console.Out.ToString()!.TrimEnd());
+    }
+
+    internal static void VerifyEndsWithError(this TestConsole console, string error)
+    {
+        Assert.EndsWith(error, console.Error.ToString()!.TrimEnd());
+    }
 }
