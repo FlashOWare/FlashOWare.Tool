@@ -1,4 +1,5 @@
 using FlashOWare.Tool.Cli.Tests.CommandLine.IO;
+using FlashOWare.Tool.Cli.Tests.MSBuild;
 using FlashOWare.Tool.Cli.Tests.Sdk;
 using FlashOWare.Tool.Cli.Tests.Testing;
 using Microsoft.CodeAnalysis.CSharp;
@@ -36,7 +37,7 @@ public class InterceptorLocatorTests : IntegrationTests
                     }
                 }
                 """, "MyEnum.cs")
-            .Initialize(ProjectKind.SdkStyle, TargetFramework.Net80, LanguageVersion.CSharp12);
+            .Initialize(ProjectKind.SdkStyle, MSBuild.GetLatestTargetFramework(), MSBuild.GetLatestLanguageVersion());
         //Act
         await RunAsync("interceptor", "list");
         //Assert
