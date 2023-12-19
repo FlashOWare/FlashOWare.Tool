@@ -33,6 +33,7 @@ Show help and usage information.
 
 | Command | Description |
 | --- | --- |
+| [flashoware interceptor](./flashoware-interceptor.md) | Discover experimental C# interceptors. |
 | [flashoware using](./flashoware-using.md) | Analyze or refactor C# using directives. |
 
 [v1.0.0]: ../CHANGELOG.md#vNext

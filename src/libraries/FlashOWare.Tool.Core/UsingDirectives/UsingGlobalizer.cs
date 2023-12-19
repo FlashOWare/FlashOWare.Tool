@@ -25,11 +25,7 @@ public static class UsingGlobalizer
     {
         RoslynUtilities.ThrowIfNotCSharp(project, LanguageVersion.CSharp10, LanguageFeatures.GlobalUsingDirective);
 
-        Compilation? compilation = await project.GetCompilationAsync(cancellationToken);
-        if (compilation is null)
-        {
-            throw new InvalidOperationException($"{nameof(Project)}.{nameof(Project.SupportsCompilation)} = {project.SupportsCompilation} ({project.Name})");
-        }
+        Compilation compilation = await RoslynUtilities.GetCompilationAsync(project, cancellationToken);
 
         var result = new UsingGlobalizationResult(project, DefaultTargetDocument);
         result.Initialize(usings);
@@ -48,12 +44,7 @@ public static class UsingGlobalizer
                 continue;
             }
 
-            SyntaxNode? syntaxRoot = await document.GetSyntaxRootAsync(cancellationToken);
-            if (syntaxRoot is null)
-            {
-                throw new InvalidOperationException($"{nameof(Document)}.{nameof(Document.SupportsSyntaxTree)} = {document.SupportsSyntaxTree} ({document.Name})");
-            }
-
+            SyntaxNode syntaxRoot = await RoslynUtilities.GetSyntaxRootAsync(document, cancellationToken);
             var compilationUnit = (CompilationUnitSyntax)syntaxRoot;
 
             RoslynUtilities.ThrowIfContainsError(compilationUnit);
@@ -102,13 +93,9 @@ public static class UsingGlobalizer
 
         if (project.Documents.SingleOrDefault(static document => document.Name == DefaultTargetDocument && document.Folders.Count == 0) is { } globalUsings)
         {
-            SyntaxNode? globalUsingsSyntaxRoot = await globalUsings.GetSyntaxRootAsync(cancellationToken);
-            if (globalUsingsSyntaxRoot is null)
-            {
-                throw new InvalidOperationException($"{nameof(Document)}.{nameof(Document.SupportsSyntaxTree)} = {globalUsings.SupportsSyntaxTree} ({globalUsings.Name})");
-            }
-
+            SyntaxNode globalUsingsSyntaxRoot = await RoslynUtilities.GetSyntaxRootAsync(globalUsings, cancellationToken);
             var globalUsingsCompilationUnit = (CompilationUnitSyntax)globalUsingsSyntaxRoot;
+
             var existingUsings = globalUsingsCompilationUnit.Usings.Select(static usingDirective => usingDirective.Name.ToString());
             string[] addedUsings = globalizedIdentifiers.Except(existingUsings, StringComparer.Ordinal).ToArray();
             if (addedUsings.Length != 0)

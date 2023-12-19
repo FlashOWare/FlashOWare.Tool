@@ -3,6 +3,9 @@ Documentation
 
 ## Commands
 - [flashoware](./commands/flashoware.md)
+- [flashoware interceptor](./commands/flashoware-interceptor.md)
+  - [flashoware interceptor check](./commands/flashoware-interceptor-check.md)
+  - [flashoware interceptor list](./commands/flashoware-interceptor-list.md)
 - [flashoware using](./commands/flashoware-using.md)
   - [flashoware using count](./commands/flashoware-using-count.md)
   - [flashoware using globalize](./commands/flashoware-using-globalize.md)

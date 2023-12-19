@@ -22,11 +22,7 @@ public static class UsingCounter
     {
         RoslynUtilities.ThrowIfNotCSharp(project);
 
-        Compilation? compilation = await project.GetCompilationAsync(cancellationToken);
-        if (compilation is null)
-        {
-            throw new InvalidOperationException($"{nameof(Project)}.{nameof(Project.SupportsCompilation)} = {project.SupportsCompilation} ({project.Name})");
-        }
+        Compilation compilation = await RoslynUtilities.GetCompilationAsync(project, cancellationToken);
 
         var result = new UsingCountResult(project.Name);
         result.AddRange(usings);
@@ -43,12 +39,7 @@ public static class UsingCounter
                 continue;
             }
 
-            SyntaxNode? syntaxRoot = await document.GetSyntaxRootAsync(cancellationToken);
-            if (syntaxRoot is null)
-            {
-                throw new InvalidOperationException($"{nameof(Document)}.{nameof(Document.SupportsSyntaxTree)} = {document.SupportsSyntaxTree} ({document.Name})");
-            }
-
+            SyntaxNode syntaxRoot = await RoslynUtilities.GetSyntaxRootAsync(document, cancellationToken);
             var compilationUnit = (CompilationUnitSyntax)syntaxRoot;
 
             RoslynUtilities.ThrowIfContainsError(compilationUnit);

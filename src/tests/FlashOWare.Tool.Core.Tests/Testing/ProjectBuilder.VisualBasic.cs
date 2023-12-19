@@ -10,9 +10,19 @@ internal sealed partial class ProjectBuilder
         return VisualBasic(LanguageVersion.VisualBasic16_9);
     }
 
+    public static ProjectBuilder VisualBasic(OutputKind outputKind)
+    {
+        return VisualBasic(outputKind, LanguageVersion.VisualBasic16_9);
+    }
+
     public static ProjectBuilder VisualBasic(LanguageVersion languageVersion)
     {
-        CompilationOptions compilationOptions = new VisualBasicCompilationOptions(OutputKind.DynamicallyLinkedLibrary);
+        return VisualBasic(OutputKind.DynamicallyLinkedLibrary, languageVersion);
+    }
+
+    public static ProjectBuilder VisualBasic(OutputKind outputKind, LanguageVersion languageVersion)
+    {
+        CompilationOptions compilationOptions = new VisualBasicCompilationOptions(outputKind);
         ParseOptions parseOptions = new VisualBasicParseOptions(languageVersion);
 
         return new ProjectBuilder(LanguageNames.VisualBasic, compilationOptions, parseOptions);

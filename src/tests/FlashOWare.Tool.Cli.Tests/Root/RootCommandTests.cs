@@ -26,7 +26,7 @@ public class RootCommandTests : IntegrationTests
         //Act
         await RunAsync(args);
         //Assert
-        Console.Verify($"MSBuild ({MSBuild.DiscoveryType}): {MSBuild.Name} {MSBuild.Version}");
+        Console.Verify($"MSBuild ({MSBuild.Instance.DiscoveryType}): {MSBuild.Instance.Name} {MSBuild.Instance.Version}");
         Result.Verify(ExitCodes.Success);
     }
 }
