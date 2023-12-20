@@ -25,7 +25,7 @@ public static class UsingCounter
 
         Compilation compilation = await RoslynUtilities.GetCompilationAsync(project, cancellationToken);
 
-        var result = new UsingCountResult(project.Name);
+        UsingCountResult result = new(project.Name);
         result.AddRange(usings);
 
         if (RoslynUtilities.IsGeneratedCode(compilation))

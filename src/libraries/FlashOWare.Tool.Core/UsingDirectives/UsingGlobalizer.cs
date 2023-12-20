@@ -27,7 +27,7 @@ public static class UsingGlobalizer
 
         Compilation compilation = await RoslynUtilities.GetCompilationAsync(project, cancellationToken);
 
-        var result = new UsingGlobalizationResult(project, DefaultTargetDocument);
+        UsingGlobalizationResult result = new(project, DefaultTargetDocument);
         result.Initialize(usings);
 
         if (RoslynUtilities.IsGeneratedCode(compilation))
