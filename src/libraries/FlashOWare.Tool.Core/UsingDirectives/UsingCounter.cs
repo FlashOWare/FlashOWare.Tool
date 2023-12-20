@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Immutable;
+using System.Diagnostics;
 
 namespace FlashOWare.Tool.Core.UsingDirectives;
 
@@ -24,7 +25,7 @@ public static class UsingCounter
 
         Compilation compilation = await RoslynUtilities.GetCompilationAsync(project, cancellationToken);
 
-        var result = new UsingCountResult(project.Name);
+        UsingCountResult result = new(project.Name);
         result.AddRange(usings);
 
         if (RoslynUtilities.IsGeneratedCode(compilation))
@@ -68,6 +69,7 @@ public static class UsingCounter
                 continue;
             }
 
+            Debug.Assert(usingNode.Name is not null, $"Using Directive '{usingNode}' does not point at a name.");
             string identifier = usingNode.Name.ToString();
 
             if (usings.Length == 0)

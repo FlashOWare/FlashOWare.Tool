@@ -400,6 +400,56 @@ public class UsingGlobalizerTests
     }
 
     [Fact]
+    public async Task GlobalizeAsync_WithUsingTypeAlias_HasNoName()
+    {
+        //Arrange
+        var project = await ProjectBuilder.CSharp(LanguageVersion.CSharp12)
+            .AddDocument("MyDocument.cs", """
+                using System;
+                using System.Collections.Generic;
+                """)
+            .AddDocument("MyDocument.cs", """
+                using PredefinedTypeAlias = int;
+                using ValueTupleAlias = (int Number, string Text);
+                //using unsafe PointerAlias = int*;
+                """)
+            .AddDocument("MyDocument.cs", """
+                global using GlobalPredefinedTypeAlias = int;
+                global using GlobalValueTupleAlias = (int Number, string Text);
+                //global using unsafe GlobalPointerAlias = int*;
+                """)
+            .AddDocument(DefaultDocumentName, """
+                global using MyAlias = int;
+
+                """)
+            .BuildCheckedAsync();
+        var expectedProject = await ProjectBuilder.CSharp(LanguageVersion.CSharp12)
+            .AddDocument("MyDocument.cs", """
+                using System.Collections.Generic;
+                """)
+            .AddDocument("MyDocument.cs", """
+                using PredefinedTypeAlias = int;
+                using ValueTupleAlias = (int Number, string Text);
+                //using unsafe PointerAlias = int*;
+                """)
+            .AddDocument("MyDocument.cs", """
+                global using GlobalPredefinedTypeAlias = int;
+                global using GlobalValueTupleAlias = (int Number, string Text);
+                //global using unsafe GlobalPointerAlias = int*;
+                """)
+            .AddDocument(DefaultDocumentName, """
+                global using MyAlias = int;
+                global using System;
+
+                """)
+            .BuildCheckedAsync();
+        //Act
+        var actualResult = await UsingGlobalizer.GlobalizeAsync(project, "System");
+        //Assert
+        await ToolAssert.AssertAsync(actualResult, expectedProject, "System", 1, DefaultDocumentName);
+    }
+
+    [Fact]
     public async Task GlobalizeAsync_GeneratedCodeAttribute_Ignore()
     {
         //Arrange
