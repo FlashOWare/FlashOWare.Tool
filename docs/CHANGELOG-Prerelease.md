@@ -4,6 +4,8 @@ Prerelease Changelog
 [goto Release_Changelog;](./CHANGELOG.md)
 
 ## [vNext]
+
+## [1.0.0-prerelease2] - 2023-12-20
 ### Tool
 - **Added** `flashoware interceptor` command
   - with `-?|-h|--help` option to get help and usage information
@@ -70,6 +72,7 @@ Prerelease Changelog
 - **Added** `Microsoft.CodeAnalysis.Workspaces.MSBuild`: `4.5.0`
 - **Added** `System.CommandLine`: `2.0.0-beta4.22272.1`
 
-[vnext]: https://github.com/FlashOWare/FlashOWare.Tool/compare/v1.0.0-prerelease1...HEAD
+[vnext]: https://github.com/FlashOWare/FlashOWare.Tool/compare/v1.0.0-prerelease2...HEAD
+[1.0.0-prerelease2]: https://github.com/FlashOWare/FlashOWare.Tool/compare/v1.0.0-prerelease1...v1.0.0-prerelease2
 [1.0.0-prerelease1]: https://github.com/FlashOWare/FlashOWare.Tool/compare/v1.0.0-prerelease0...v1.0.0-prerelease1
 [1.0.0-prerelease0]: https://github.com/FlashOWare/FlashOWare.Tool/releases/tag/v1.0.0-prerelease0
