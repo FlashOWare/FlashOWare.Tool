@@ -4,7 +4,7 @@ Available since [v1.0.0].
 
 ## Synopsis
 ```console
-flashoware interceptor list [--proj|--project <project>]
+flashoware interceptor list [--proj|--project <project>] [--group|--group-by-interceptors]
 
 flashoware interceptor list -?|-h|--help
 ```

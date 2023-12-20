@@ -15,6 +15,7 @@ Prerelease Changelog
   - with `--group|--group-by-interceptors` option to group the result by interceptors
     - if not specified, group the result by the intercepted locations
   - with `-?|-h|--help` option to get help and usage information
+- **Fixed** `NullReferenceException` in `flashoware using globalize` command when existing `GlobalUsings.cs` contains a _C# 12.0_ _using type alias_ and a _global using directive_ is added
 
 ### Package
 - **Added** _.NET 8.0_ tool target.

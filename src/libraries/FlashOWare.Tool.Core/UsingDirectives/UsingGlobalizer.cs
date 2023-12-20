@@ -72,7 +72,7 @@ public static class UsingGlobalizer
         var usingNodes = compilationUnit.Usings.Where(IsLocalUsing);
         if (usings.Length != 0)
         {
-            usingNodes = usingNodes.Where(usingNode => usings.Contains(usingNode.Name.ToString()));
+            usingNodes = usingNodes.Where(usingNode => usings.Contains(usingNode.Name!.ToString()));
         }
 
         UsingDirectiveSyntax[] globalizedNodes = usingNodes.ToArray();
@@ -80,7 +80,7 @@ public static class UsingGlobalizer
         {
             return solution;
         }
-        string[] globalizedIdentifiers = globalizedNodes.Select(static usingNode => usingNode.Name.ToString()).ToArray();
+        string[] globalizedIdentifiers = globalizedNodes.Select(static usingNode => usingNode.Name!.ToString()).ToArray();
 
         var newRoot = compilationUnit.RemoveNodes(globalizedNodes, SyntaxRemoveOptions.KeepLeadingTrivia);
         Debug.Assert(newRoot is not null, "The root node itself is removed.");
@@ -96,7 +96,9 @@ public static class UsingGlobalizer
             SyntaxNode globalUsingsSyntaxRoot = await RoslynUtilities.GetSyntaxRootAsync(globalUsings, cancellationToken);
             var globalUsingsCompilationUnit = (CompilationUnitSyntax)globalUsingsSyntaxRoot;
 
-            var existingUsings = globalUsingsCompilationUnit.Usings.Select(static usingDirective => usingDirective.Name.ToString());
+            var existingUsings = globalUsingsCompilationUnit.Usings
+                .Where(static usingDirective => usingDirective.Name is not null)
+                .Select(static usingDirective => usingDirective.Name!.ToString());
             string[] addedUsings = globalizedIdentifiers.Except(existingUsings, StringComparer.Ordinal).ToArray();
             if (addedUsings.Length != 0)
             {

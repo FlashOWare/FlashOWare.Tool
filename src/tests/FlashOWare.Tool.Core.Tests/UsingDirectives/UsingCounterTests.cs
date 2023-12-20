@@ -1,6 +1,7 @@
 using FlashOWare.Tool.Core.Tests.Assertions;
 using FlashOWare.Tool.Core.Tests.Testing;
 using FlashOWare.Tool.Core.UsingDirectives;
+using Microsoft.CodeAnalysis.CSharp;
 using System.Collections.Immutable;
 
 namespace FlashOWare.Tool.Core.Tests.UsingDirectives;
@@ -300,6 +301,29 @@ public class UsingCounterTests
         var expectedResult = new UsingDirective[]
         {
         };
+        //Act
+        var actualResult = await UsingCounter.CountAsync(project);
+        //Assert
+        ToolAssert.Equal(expectedResult, actualResult);
+    }
+
+    [Fact]
+    public async Task CountAsync_WithUsingTypeAliases_DoNotInclude()
+    {
+        //Arrange
+        var project = await ProjectBuilder.CSharp(LanguageVersion.CSharp12)
+            .AddDocument("UsingAlias.cs", """
+                using PredefinedTypeAlias = int;
+                using ValueTupleAlias = (int Number, string Text);
+                //using unsafe PointerAlias = int*;
+                """)
+            .AddDocument("GlobalUsings.cs", """
+                global using GlobalPredefinedTypeAlias = int;
+                global using GlobalValueTupleAlias = (int Number, string Text);
+                //global using unsafe GlobalPointerAlias = int*;
+                """)
+            .BuildCheckedAsync();
+        UsingDirective[] expectedResult = [];
         //Act
         var actualResult = await UsingCounter.CountAsync(project);
         //Assert
