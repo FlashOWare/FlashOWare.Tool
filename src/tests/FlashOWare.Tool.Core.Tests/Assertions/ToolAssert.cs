@@ -51,7 +51,7 @@ internal static partial class ToolAssert
 
     public static Task AssertAsync(UsingGlobalizationResult actual, Project project, string localUsing, int occurrences, string targetDocument)
     {
-        return AssertAsync(actual, project, new UsingDirective[] { new(localUsing, occurrences) }, targetDocument);
+        return AssertAsync(actual, project, [new(localUsing, occurrences)], targetDocument);
     }
 
     public static async Task AssertAsync(UsingGlobalizationResult actual, Project project, UsingDirective[] usings, string targetDocument)

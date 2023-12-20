@@ -65,9 +65,9 @@ public class ExitCodesTests
 
     private sealed class FieldInfoValueEqualityComparer : IEqualityComparer<FieldInfo>
     {
-        private FieldInfoValueEqualityComparer() { }
-
         public static FieldInfoValueEqualityComparer Instance { get; } = new FieldInfoValueEqualityComparer();
+
+        private FieldInfoValueEqualityComparer() { }
 
         public bool Equals(FieldInfo? x, FieldInfo? y)
         {

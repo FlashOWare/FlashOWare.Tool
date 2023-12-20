@@ -5,7 +5,7 @@ namespace FlashOWare.Tool.Core.Interceptors;
 
 public sealed class InterceptorList
 {
-    private readonly List<InterceptorInfo> _interceptors = new();
+    private readonly List<InterceptorInfo> _interceptors = [];
 
     internal InterceptorList()
     {

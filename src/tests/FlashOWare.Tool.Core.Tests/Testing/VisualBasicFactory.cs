@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.VisualBasic;
 using Microsoft.CodeAnalysis.VisualBasic.Syntax;
 using System.Diagnostics;
+using TextFile = (string Name, string Text);
 
 namespace FlashOWare.Tool.Core.Tests.Testing;
 
@@ -30,7 +31,7 @@ internal static partial class VisualBasicFactory
         return CreateProjectCheckedAsync(documents.Select(text => ($"TestDocument{index++}.cs", text)).ToArray());
     }
 
-    public static Project CreateProjectUnchecked(params (string Name, string Text)[] documents)
+    public static Project CreateProjectUnchecked(params TextFile[] documents)
     {
         using var workspace = new AdhocWorkspace();
         var solution = workspace.CurrentSolution;
@@ -38,7 +39,7 @@ internal static partial class VisualBasicFactory
         var projectId = ProjectId.CreateNewId("Test-Project-Id");
         solution = solution.AddProject(projectId, "TestProject", "TestAssembly", LanguageNames.VisualBasic);
 
-        foreach (var document in documents)
+        foreach (TextFile document in documents)
         {
             var documentId = DocumentId.CreateNewId(projectId, $"Test-Document-Id: {document.Name}");
             solution = solution.AddDocument(documentId, document.Name, document.Text);
@@ -53,7 +54,7 @@ internal static partial class VisualBasicFactory
         return project;
     }
 
-    public static async Task<Project> CreateProjectCheckedAsync(params (string Name, string Text)[] documents)
+    public static async Task<Project> CreateProjectCheckedAsync(params TextFile[] documents)
     {
         Project project = CreateProjectUnchecked(documents);
         await RoslynFactory.CheckAsync(project);
