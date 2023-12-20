@@ -6,21 +6,25 @@ internal static class ConsoleExtensions
 {
     public static ConsoleColor GetBackgroundColor(this IConsole console)
     {
+        _ = console;
         return Console.BackgroundColor;
     }
 
     public static void SetBackgroundColor(this IConsole console, ConsoleColor color)
     {
+        _ = console;
         Console.BackgroundColor = color;
     }
 
     public static ConsoleColor GetForegroundColor(this IConsole console)
     {
+        _ = console;
         return Console.ForegroundColor;
     }
 
     public static void SetForegroundColor(this IConsole console, ConsoleColor color)
     {
+        _ = console;
         Console.ForegroundColor = color;
     }
 

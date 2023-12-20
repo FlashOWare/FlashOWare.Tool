@@ -7,7 +7,7 @@ namespace FlashOWare.Tool.Core.UsingDirectives;
 
 public sealed class UsingGlobalizationResult
 {
-    private readonly Dictionary<string, UsingDirective> _usings = new();
+    private readonly Dictionary<string, UsingDirective> _usings = [];
 
     internal UsingGlobalizationResult(Project project)
     {

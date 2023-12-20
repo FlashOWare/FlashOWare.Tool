@@ -19,7 +19,7 @@ internal sealed class InterceptorWalker : CSharpSyntaxWalker
         _cancellationToken = cancellationToken;
     }
 
-    public List<InterceptorInfo> Interceptors { get; } = new();
+    public List<InterceptorInfo> Interceptors { get; } = [];
 
     public override void VisitMethodDeclaration(MethodDeclarationSyntax node)
     {

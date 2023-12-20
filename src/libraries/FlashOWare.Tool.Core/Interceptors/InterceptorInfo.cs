@@ -21,7 +21,7 @@ public sealed class InterceptorInfo
         return new InterceptorInfo(filePath, line, character, method);
     }
 
-    private readonly List<InterceptionInfo> _interceptions = new();
+    private readonly List<InterceptionInfo> _interceptions = [];
 
     internal InterceptorInfo()
     {

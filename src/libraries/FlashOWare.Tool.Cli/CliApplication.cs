@@ -29,8 +29,8 @@ public static partial class CliApplication
         using var workspace = MSBuildWorkspace.Create(properties);
         workspace.WorkspaceFailed += OnWorkspaceFailed;
 
-        var aboutOption = new Option<bool>(new string[] { "--about", "-a", "-!" }, "Show application information");
-        var infoOption = new Option<bool>(new string[] { "--info", "-i", "-#" }, "Show environment information");
+        var aboutOption = new Option<bool>(["--about", "-a", "-!"], "Show application information");
+        var infoOption = new Option<bool>(["--info", "-i", "-#"], "Show environment information");
 
         var rootCommand = new RootCommand("A .NET tool that facilitates development workflows.")
         {

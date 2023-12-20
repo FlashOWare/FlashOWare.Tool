@@ -4,12 +4,13 @@ using FlashOWare.Tool.Cli.Tests.Testing;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Xunit.Sdk;
+using TextFile = (string Text, string FilePath);
 
 namespace FlashOWare.Tool.Cli.Tests.IO;
 
 internal sealed class FileSystemExpectation
 {
-    private readonly List<(string Text, string FilePath)> _files = new();
+    private readonly List<TextFile> _files = [];
 
     private readonly DirectoryInfo _directory;
     private readonly Language _language;
@@ -24,7 +25,7 @@ internal sealed class FileSystemExpectation
     {
         ThrowIfDuplicateFilePath(filePath);
 
-        var file = (text, filePath);
+        TextFile file = (text, filePath);
         _files.Add(file);
         return this;
     }
@@ -39,7 +40,7 @@ internal sealed class FileSystemExpectation
 
         ThrowIfDuplicateFilePath(filePath, null);
 
-        var file = (text, filePath);
+        TextFile file = (text, filePath);
         _files.Add(file);
         return this;
     }
@@ -84,15 +85,15 @@ internal sealed class FileSystemExpectation
 
         for (int i = 0; i < _files.Count; i++)
         {
-            var expectedFile = _files[i];
-            var actualFile = actualFiles.First(actualFile =>
+            TextFile expectedFile = _files[i];
+            FileInfo actualFile = actualFiles.First(actualFile =>
             {
                 string relativePath = Path.GetRelativePath(_directory.FullName, actualFile.FullName);
                 return relativePath == expectedFile.FilePath;
             });
 
-            var expectedText = expectedFile.Text;
-            var actualText = File.ReadAllText(actualFile.FullName);
+            string expectedText = expectedFile.Text;
+            string actualText = File.ReadAllText(actualFile.FullName);
 
             if (expectedText != actualText)
             {
@@ -115,7 +116,7 @@ internal sealed class FileSystemExpectation
     {
         if (_files.Any(file => file.FilePath == filePath))
         {
-            var file = _files.Single(file => file.FilePath == filePath);
+            TextFile file = _files.Single(file => file.FilePath == filePath);
             throw new ArgumentException($"A file with the same path has already been added. FilePath: {file.FilePath}", paramName);
         }
     }
@@ -151,7 +152,7 @@ internal sealed class FileSystemExpectation
             }
 
             StringBuilder expectedText = new();
-            foreach (var expectedFile in _files)
+            foreach (TextFile expectedFile in _files)
             {
                 expectedText.AppendLine(expectedFile.FilePath);
             }

@@ -9,7 +9,7 @@ public class RootCommandTests : IntegrationTests
     public async Task RootCommand_AboutOption_PrintAbout()
     {
         //Arrange
-        string[] args = { "--about" };
+        string[] args = ["--about"];
         //Act
         await RunAsync(args);
         //Assert
@@ -22,7 +22,7 @@ public class RootCommandTests : IntegrationTests
     public async Task RootCommand_InfoOption_PrintInfo()
     {
         //Arrange
-        string[] args = { "--info" };
+        string[] args = ["--info"];
         //Act
         await RunAsync(args);
         //Assert

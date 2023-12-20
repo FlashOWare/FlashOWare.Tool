@@ -54,7 +54,7 @@ public class UsingGlobalizerTests : IntegrationTests
                 global using System.Threading;
                 """, Names.GlobalUsings, Names.Properties)
             .Initialize(ProjectKind.SdkStyle, TargetFramework.Net60, LanguageVersion.CSharp10);
-        string[] args = new[] { "using", "globalize", Usings.System, "--project", project.File.FullName };
+        string[] args = ["using", "globalize", Usings.System, "--project", project.File.FullName];
         //Act
         await RunAsync(args);
         //Assert
@@ -168,7 +168,7 @@ public class UsingGlobalizerTests : IntegrationTests
                 global using System.Threading;
                 """, Names.GlobalUsings, Names.Properties)
             .Initialize(ProjectKind.Classic, TargetFramework.Net472, LanguageVersion.CSharp10);
-        string[] args = new[] { "using", "globalize", Usings.System, "--project", project.File.FullName };
+        string[] args = ["using", "globalize", Usings.System, "--project", project.File.FullName];
         //Act
         await RunAsync(args);
         //Assert
@@ -176,7 +176,7 @@ public class UsingGlobalizerTests : IntegrationTests
             Project: {Names.Project}
             2 occurrences of Using Directive "{Usings.System}" were globalized to "GlobalUsings.cs".
             """);
-        string[] files = { Names.GlobalUsings, "MyClass1.cs", "MyClass2.cs", Path.Combine(Names.Properties, Names.AssemblyInfo), Path.Combine(Names.Properties, Names.GlobalUsings) };
+        string[] files = [Names.GlobalUsings, "MyClass1.cs", "MyClass2.cs", Path.Combine(Names.Properties, Names.AssemblyInfo), Path.Combine(Names.Properties, Names.GlobalUsings)];
         Workspace.CreateExpectation()
             .AppendFile("""
                 global using System;
@@ -273,7 +273,7 @@ public class UsingGlobalizerTests : IntegrationTests
                 }
                 """, "MyClass2")
             .Initialize(ProjectKind.SdkStyle, TargetFramework.Net60, LanguageVersion.CSharp10);
-        string[] args = new[] { "using", "globalize", "--project", project.File.FullName, "--force" };
+        string[] args = ["using", "globalize", "--project", project.File.FullName, "--force"];
         //Act
         await RunAsync(args);
         //Assert
@@ -334,7 +334,7 @@ public class UsingGlobalizerTests : IntegrationTests
                 }
                 """, "MyClass1")
             .Initialize(ProjectKind.SdkStyle, TargetFramework.Net60, LanguageVersion.CSharp10);
-        string[] args = new[] { "using", "globalize", "--project", project.File.FullName };
+        string[] args = ["using", "globalize", "--project", project.File.FullName];
         //Act
         await RunAsync(args);
         //Assert
@@ -378,7 +378,7 @@ public class UsingGlobalizerTests : IntegrationTests
                 }
                 """, "MyClass2")
             .Initialize(ProjectKind.SdkStyle, TargetFramework.Net60, LanguageVersion.CSharp10);
-        string[] args = new[] { "using", "globalize", Usings.System_Collections_Generic, Usings.System_Linq, "--project", project.File.FullName };
+        string[] args = ["using", "globalize", Usings.System_Collections_Generic, Usings.System_Linq, "--project", project.File.FullName];
         //Act
         await RunAsync(args);
         //Assert
@@ -430,7 +430,7 @@ public class UsingGlobalizerTests : IntegrationTests
         string project = "ProjectFileDoesNotExist.csproj";
         _ = Workspace.CreateProject()
             .Initialize(ProjectKind.SdkStyle, TargetFramework.Net60, LanguageVersion.CSharp10);
-        string[] args = new[] { "using", "globalize", Usings.System, "--proj", project };
+        string[] args = ["using", "globalize", Usings.System, "--proj", project];
         //Act
         await RunAsync(args);
         //Assert
@@ -449,7 +449,7 @@ public class UsingGlobalizerTests : IntegrationTests
                 End Class
                 """, "Class1")
             .Initialize(ProjectKind.SdkStyle, TargetFramework.Net60);
-        string[] args = new[] { "using", "globalize", Usings.System, "--proj", project.File.FullName };
+        string[] args = ["using", "globalize", Usings.System, "--proj", project.File.FullName];
         //Act
         await RunAsync(args);
         //Assert
@@ -473,7 +473,7 @@ public class UsingGlobalizerTests : IntegrationTests
                 }
                 """, "MyClass1")
             .Initialize(ProjectKind.SdkStyle, TargetFramework.Net60, LanguageVersion.CSharp10);
-        string[] args = new[] { "using", "globalize", Usings.System };
+        string[] args = ["using", "globalize", Usings.System];
         //Act
         await RunAsync(args);
         //Assert
@@ -504,7 +504,7 @@ public class UsingGlobalizerTests : IntegrationTests
     public async Task Globalize_ImplicitProjectMissing_Error()
     {
         //Arrange
-        string[] args = new[] { "using", "globalize", Usings.System };
+        string[] args = ["using", "globalize", Usings.System];
         //Act
         await RunAsync(args);
         //Assert
@@ -520,7 +520,7 @@ public class UsingGlobalizerTests : IntegrationTests
             .Initialize(ProjectKind.SdkStyle, TargetFramework.Net60, LanguageVersion.CSharp10);
         _ = Workspace.CreateProject().WithProjectName("Ambiguous")
             .Initialize(ProjectKind.SdkStyle, TargetFramework.Net60, LanguageVersion.CSharp10);
-        string[] args = new[] { "using", "globalize", Usings.System };
+        string[] args = ["using", "globalize", Usings.System];
         //Act
         await RunAsync(args);
         //Assert

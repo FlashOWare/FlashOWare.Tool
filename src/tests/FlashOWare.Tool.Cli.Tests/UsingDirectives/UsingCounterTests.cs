@@ -53,7 +53,7 @@ public class UsingCounterTests : IntegrationTests
                 global using System.Threading;
                 """, Names.GlobalUsings, Names.Properties)
             .Initialize(ProjectKind.SdkStyle, TargetFramework.Net60, LanguageVersion.CSharp10);
-        string[] args = new[] { "using", "count", "--project", project.File.FullName };
+        string[] args = ["using", "count", "--project", project.File.FullName];
         //Act
         await RunAsync(args);
         //Assert
@@ -88,7 +88,7 @@ public class UsingCounterTests : IntegrationTests
                 }
                 """, "MyClass1")
             .Initialize(ProjectKind.SdkStyle, TargetFramework.Net60, LanguageVersion.CSharp10);
-        string[] args = new[] { "using", "count", Usings.System, Usings.System_Linq, "--project", project.File.FullName };
+        string[] args = ["using", "count", Usings.System, Usings.System_Linq, "--project", project.File.FullName];
         //Act
         await RunAsync(args);
         //Assert
@@ -107,7 +107,7 @@ public class UsingCounterTests : IntegrationTests
         string project = "ProjectFileDoesNotExist.csproj";
         _ = Workspace.CreateProject()
             .Initialize(ProjectKind.SdkStyle, TargetFramework.Net60, LanguageVersion.CSharp10);
-        string[] args = new[] { "using", "count", "--proj", project };
+        string[] args = ["using", "count", "--proj", project];
         //Act
         await RunAsync(args);
         //Assert
@@ -126,7 +126,7 @@ public class UsingCounterTests : IntegrationTests
                 End Class
                 """, "Class1")
             .Initialize(ProjectKind.SdkStyle, TargetFramework.Net60);
-        string[] args = new[] { "using", "count", "--proj", project.File.FullName };
+        string[] args = ["using", "count", "--proj", project.File.FullName];
         //Act
         await RunAsync(args);
         //Assert
@@ -149,7 +149,7 @@ public class UsingCounterTests : IntegrationTests
                 }
                 """, "MyClass1")
             .Initialize(ProjectKind.SdkStyle, TargetFramework.Net60, LanguageVersion.CSharp10);
-        string[] args = new[] { "using", "count" };
+        string[] args = ["using", "count"];
         //Act
         await RunAsync(args);
         //Assert
@@ -164,7 +164,7 @@ public class UsingCounterTests : IntegrationTests
     public async Task Count_ImplicitProjectMissing_Error()
     {
         //Arrange
-        string[] args = new[] { "using", "count" };
+        string[] args = ["using", "count"];
         //Act
         await RunAsync(args);
         //Assert
@@ -180,7 +180,7 @@ public class UsingCounterTests : IntegrationTests
             .Initialize(ProjectKind.SdkStyle, TargetFramework.Net60, LanguageVersion.CSharp10);
         _ = Workspace.CreateProject().WithProjectName("Ambiguous")
             .Initialize(ProjectKind.SdkStyle, TargetFramework.Net60, LanguageVersion.CSharp10);
-        string[] args = new[] { "using", "count" };
+        string[] args = ["using", "count"];
         //Act
         await RunAsync(args);
         //Assert

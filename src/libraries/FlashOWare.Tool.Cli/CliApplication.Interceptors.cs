@@ -21,7 +21,7 @@ public static partial class CliApplication
             CheckInterceptors(instances, context.Console);
         });
 
-        var groupOption = new Option<bool>(new[] { "--group-by-interceptors", "--group" }, "Group the result by interceptors instead of the intercepted locations.");
+        var groupOption = new Option<bool>(["--group-by-interceptors", "--group"], "Group the result by interceptors instead of the intercepted locations.");
         listCommand.Add(CliOptions.Project);
         listCommand.Add(groupOption);
         listCommand.SetHandler(async (InvocationContext context) =>

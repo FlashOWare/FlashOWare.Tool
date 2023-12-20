@@ -5,7 +5,7 @@ namespace FlashOWare.Tool.Core.UsingDirectives;
 
 public sealed class UsingCountResult
 {
-    private readonly Dictionary<string, UsingDirective> _usings = new();
+    private readonly Dictionary<string, UsingDirective> _usings = [];
 
     internal UsingCountResult()
     {

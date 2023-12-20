@@ -12,9 +12,7 @@ public class UsingCounterTests
     {
         //Arrange
         var project = await CreateProjectCheckedAsync();
-        var expectedResult = new UsingDirective[]
-        {
-        };
+        UsingDirective[] expectedResult = [];
         //Act
         var actualResult = await UsingCounter.CountAsync(project);
         //Assert
@@ -34,9 +32,7 @@ public class UsingCounterTests
                 }
             }
             """);
-        var expectedResult = new UsingDirective[]
-        {
-        };
+        UsingDirective[] expectedResult = [];
         //Act
         var actualResult = await UsingCounter.CountAsync(project);
         //Assert
@@ -50,10 +46,10 @@ public class UsingCounterTests
         var project = await CreateProjectCheckedAsync("""
             using System;
             """);
-        var expectedResult = new UsingDirective[]
-        {
+        UsingDirective[] expectedResult =
+        [
             new("System", 1),
-        };
+        ];
         //Act
         var actualResult = await UsingCounter.CountAsync(project);
         //Assert
@@ -73,16 +69,16 @@ public class UsingCounterTests
             using System.Threading;
             using System.Threading.Tasks;
             """);
-        var expectedResult = new UsingDirective[]
-        {
-            new("System", 1 ),
+        UsingDirective[] expectedResult =
+        [
+            new("System", 1),
             new("System.Collections.Generic", 1),
-            new("System.IO", 1 ),
-            new("System.Linq", 1 ),
-            new("System.Net.Http", 1 ),
-            new("System.Threading", 1 ),
-            new("System.Threading.Tasks", 1 ),
-        };
+            new("System.IO", 1),
+            new("System.Linq", 1),
+            new("System.Net.Http", 1),
+            new("System.Threading", 1),
+            new("System.Threading.Tasks", 1),
+        ];
         //Act
         var actualResult = await UsingCounter.CountAsync(project);
         //Assert
@@ -98,10 +94,10 @@ public class UsingCounterTests
             """, """
             using System;
             """);
-        var expectedResult = new UsingDirective[]
-        {
+        UsingDirective[] expectedResult =
+        [
             new("System", 2),
-        };
+        ];
         //Act
         var actualResult = await UsingCounter.CountAsync(project);
         //Assert
@@ -131,8 +127,8 @@ public class UsingCounterTests
             using System.IO;
             using System.Threading;
             """);
-        var expectedResult = new UsingDirective[]
-        {
+        UsingDirective[] expectedResult =
+        [
             new("System", 3),
             new("System.Collections.Generic", 3),
             new("System.IO", 2),
@@ -140,7 +136,7 @@ public class UsingCounterTests
             new("System.Net.Http", 1),
             new("System.Threading", 2),
             new("System.Threading.Tasks", 2),
-        };
+        ];
         //Act
         var actualResult = await UsingCounter.CountAsync(project);
         //Assert
@@ -183,8 +179,8 @@ public class UsingCounterTests
 
             public class MyClass3 {}
             """);
-        var expectedResult = new UsingDirective[]
-        {
+        UsingDirective[] expectedResult =
+        [
             new("System", 2),
             new("System.Collections.Generic", 2),
             new("System.IO", 1),
@@ -192,7 +188,7 @@ public class UsingCounterTests
             new("System.Net.Http", 1),
             new("System.Threading", 1),
             new("System.Threading.Tasks", 1),
-        };
+        ];
         //Act
         var actualResult = await UsingCounter.CountAsync(project);
         //Assert
@@ -238,8 +234,8 @@ public class UsingCounterTests
                 public class MyClass3 {}
             }
             """);
-        var expectedResult = new UsingDirective[]
-        {
+        UsingDirective[] expectedResult =
+        [
             new("System", 2),
             new("System.Collections.Generic", 2),
             new("System.IO", 1),
@@ -247,7 +243,7 @@ public class UsingCounterTests
             new("System.Net.Http", 1),
             new("System.Threading", 1),
             new("System.Threading.Tasks", 1),
-        };
+        ];
         //Act
         var actualResult = await UsingCounter.CountAsync(project);
         //Assert
@@ -262,9 +258,7 @@ public class UsingCounterTests
             using MyNamespace = System;
             using MyType = System.Console;
             """);
-        var expectedResult = new UsingDirective[]
-        {
-        };
+        UsingDirective[] expectedResult = [];
         //Act
         var actualResult = await UsingCounter.CountAsync(project);
         //Assert
@@ -278,9 +272,7 @@ public class UsingCounterTests
         var project = await CreateProjectCheckedAsync("""
             using static System.Console;
             """);
-        var expectedResult = new UsingDirective[]
-        {
-        };
+        UsingDirective[] expectedResult = [];
         //Act
         var actualResult = await UsingCounter.CountAsync(project);
         //Assert
@@ -297,9 +289,7 @@ public class UsingCounterTests
             global using MyType = System.Console;
             global using static System.Console;
             """);
-        var expectedResult = new UsingDirective[]
-        {
-        };
+        UsingDirective[] expectedResult = [];
         //Act
         var actualResult = await UsingCounter.CountAsync(project);
         //Assert
@@ -319,10 +309,10 @@ public class UsingCounterTests
             using System.Threading;
             using System.Threading.Tasks;
             """);
-        var expectedResult = new UsingDirective[]
-        {
-            new("System", 1 ),
-        };
+        UsingDirective[] expectedResult =
+        [
+            new("System", 1),
+        ];
         //Act
         var actualResult = await UsingCounter.CountAsync(project, "System");
         //Assert
@@ -342,10 +332,10 @@ public class UsingCounterTests
             using System.Threading;
             using System.Threading.Tasks;
             """);
-        var expectedResult = new UsingDirective[]
-        {
+        UsingDirective[] expectedResult =
+        [
             new("Not.Found", 0),
-        };
+        ];
         //Act
         var actualResult = await UsingCounter.CountAsync(project, "Not.Found");
         //Assert
@@ -365,13 +355,13 @@ public class UsingCounterTests
             using System.Threading;
             using System.Threading.Tasks;
             """);
-        var expectedResult = new UsingDirective[]
-        {
-            new("System", 1 ),
-            new("System.IO", 1 ),
-            new("System.Net.Http", 1 ),
-            new("System.Threading.Tasks", 1 ),
-        };
+        UsingDirective[] expectedResult =
+        [
+            new("System", 1),
+            new("System.IO", 1),
+            new("System.Net.Http", 1),
+            new("System.Threading.Tasks", 1),
+        ];
         //Act
         var actualResult = await UsingCounter.CountAsync(project, ImmutableArray.Create("System", "System.IO", "System.Net.Http", "System.Threading.Tasks"));
         //Assert
@@ -391,15 +381,15 @@ public class UsingCounterTests
             using System.Threading;
             using System.Threading.Tasks;
             """);
-        var expectedResult = new UsingDirective[]
-        {
+        UsingDirective[] expectedResult =
+        [
             new("System.Collections.Generic", 1),
             new("Not.Found", 0),
             new("System.Linq", 1),
             new("Duplicate", 0),
             new("System.Text", 0),
             new("System.Threading", 1),
-        };
+        ];
         //Act
         var actualResult = await UsingCounter.CountAsync(project, ImmutableArray.Create("System.Collections.Generic", "Not.Found", "System.Linq", "Duplicate", "System.Text", "Duplicate", "System.Threading"));
         //Assert
@@ -422,9 +412,7 @@ public class UsingCounterTests
             using System.Threading;
             using System.Threading.Tasks;
             """);
-        var expectedResult = new UsingDirective[]
-        {
-        };
+        UsingDirective[] expectedResult = [];
         //Act
         var actualResult = await UsingCounter.CountAsync(project);
         //Assert
@@ -443,10 +431,10 @@ public class UsingCounterTests
             ("File5.g.i.cs", "using System;"),
             ("File6.cs", "using System.IO;")
         );
-        var expectedResult = new UsingDirective[]
-        {
+        UsingDirective[] expectedResult =
+        [
             new("System.IO", 1),
-        };
+        ];
         //Act
         var actualResult = await UsingCounter.CountAsync(project);
         //Assert
@@ -476,11 +464,11 @@ public class UsingCounterTests
             /* auto-generated */
             using System.Threading;
             """);
-        var expectedResult = new UsingDirective[]
-        {
+        UsingDirective[] expectedResult =
+        [
             new("System.Linq", 1),
             new("System.Threading", 1),
-        };
+        ];
         //Act
         var actualResult = await UsingCounter.CountAsync(project);
         //Assert
@@ -505,7 +493,7 @@ public class UsingCounterTests
         var project = await CreateProjectCheckedAsync("""
             using System;
             """);
-        var cancellationToken = new CancellationToken(true);
+        CancellationToken cancellationToken = new(true);
         //Act
         var result = () => UsingCounter.CountAsync(project, cancellationToken);
         //Assert

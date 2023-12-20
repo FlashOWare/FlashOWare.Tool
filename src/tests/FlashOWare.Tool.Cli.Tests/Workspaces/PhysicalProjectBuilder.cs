@@ -9,8 +9,8 @@ namespace FlashOWare.Tool.Cli.Tests.Workspaces;
 
 internal sealed class PhysicalProjectBuilder
 {
-    private readonly List<PhysicalDocument> _documents = new();
-    private readonly List<PackageReference> _packages = new();
+    private readonly List<PhysicalDocument> _documents = [];
+    private readonly List<PackageReference> _packages = [];
     private string _projectName;
 
     private readonly DirectoryInfo _directory;

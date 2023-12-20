@@ -27,7 +27,7 @@ public static class InterceptorLocator
 
     private static async Task<List<InterceptorInfo>> FindInterceptorsAsync(Project project, Compilation compilation, CancellationToken cancellationToken)
     {
-        List<InterceptorInfo> interceptors = new();
+        List<InterceptorInfo> interceptors = [];
 
         IEnumerable<SourceGeneratedDocument> generated = await project.GetSourceGeneratedDocumentsAsync(cancellationToken);
 

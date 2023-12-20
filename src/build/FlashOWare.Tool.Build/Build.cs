@@ -21,18 +21,18 @@ using static Nuke.Common.Tools.DotNet.DotNetTasks;
         GitHubActionsImage.Ubuntu2204,
         GitHubActionsImage.WindowsServer2022,
         AutoGenerate = false,
-        OnPushBranches = new[] { "main" },
-        OnPullRequestBranches = new[] { "main" },
+        OnPushBranches = ["main"],
+        OnPullRequestBranches = ["main"],
         FetchDepth = 1,
-        InvokedTargets = new[] { nameof(Test), nameof(Pack) })]
+        InvokedTargets = [nameof(Test), nameof(Pack)])]
 [GitHubActions(
     "publish",
         GitHubActionsImage.Ubuntu2204,
         AutoGenerate = false,
-        OnPushBranches = new[] { "publish" },
+        OnPushBranches = ["publish"],
         FetchDepth = 1,
-        InvokedTargets = new[] { nameof(Publish) },
-        ImportSecrets = new[] { nameof(NuGetApiKey) })]
+        InvokedTargets = [nameof(Publish)],
+        ImportSecrets = [nameof(NuGetApiKey)])]
 class Build : NukeBuild
 {
     public static int Main() => Execute<Build>(x => x.Compile);

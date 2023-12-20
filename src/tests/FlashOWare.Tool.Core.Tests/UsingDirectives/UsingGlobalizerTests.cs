@@ -531,7 +531,7 @@ public class UsingGlobalizerTests
         var project = await CreateProjectCheckedAsync("""
             using System;
             """);
-        var cancellationToken = new CancellationToken(true);
+        CancellationToken cancellationToken = new(true);
         //Act
         var result = () => UsingGlobalizer.GlobalizeAsync(project, "System", cancellationToken);
         //Assert
@@ -688,7 +688,7 @@ public class UsingGlobalizerTests
         //Act
         var actualResult = await UsingGlobalizer.GlobalizeAsync(project, ImmutableArray.Create("System", "System.Collections", "System", "System.Collections.Generic", "System"));
         //Assert
-        await ToolAssert.AssertAsync(actualResult, expectedProject, new UsingDirective[] { new("System", 2), new("System.Collections", 0), new("System.Collections.Generic", 1) }, DefaultDocumentName);
+        await ToolAssert.AssertAsync(actualResult, expectedProject, [new("System", 2), new("System.Collections", 0), new("System.Collections.Generic", 1)], DefaultDocumentName);
     }
 
     [Fact]
@@ -735,7 +735,7 @@ public class UsingGlobalizerTests
         //Act
         var actualResult = await UsingGlobalizer.GlobalizeAsync(project, ImmutableArray.Create("System.IO", "System.Net.Http", "System.Threading"));
         //Assert
-        await ToolAssert.AssertAsync(actualResult, expectedProject, new UsingDirective[] { new("System.IO", 2), new("System.Net.Http", 2), new("System.Threading", 2) }, DefaultDocumentName);
+        await ToolAssert.AssertAsync(actualResult, expectedProject, [new("System.IO", 2), new("System.Net.Http", 2), new("System.Threading", 2)], DefaultDocumentName);
     }
 
     [Fact]
@@ -764,6 +764,6 @@ public class UsingGlobalizerTests
         //Act
         var actualResult = await UsingGlobalizer.GlobalizeAsync(project);
         //Assert
-        await ToolAssert.AssertAsync(actualResult, expectedProject, new UsingDirective[] { new("System", 3), new("System.Text", 2), new("System.Threading.Tasks", 1) }, DefaultDocumentName);
+        await ToolAssert.AssertAsync(actualResult, expectedProject, [new("System", 3), new("System.Text", 2), new("System.Threading.Tasks", 1)], DefaultDocumentName);
     }
 }
