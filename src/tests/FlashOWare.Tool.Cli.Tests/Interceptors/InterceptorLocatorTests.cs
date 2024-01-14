@@ -133,7 +133,7 @@ public class InterceptorLocatorTests : IntegrationTests
 
         //Arrange
         Stopwatch stopwatch = Stopwatch.StartNew();
-        var project = await DotNet.NewAsync(DotNetNewTemplate.AspNetCoreWebApiNativeAot);
+        var project = await DotNet.NewAsync(DotNetNewTemplate.AspNetCoreWebApiNativeAot, true);
         stopwatch.Stop();
         System.Console.WriteLine($"DotNet.NewAsync: {stopwatch.Elapsed}");
         //Act
