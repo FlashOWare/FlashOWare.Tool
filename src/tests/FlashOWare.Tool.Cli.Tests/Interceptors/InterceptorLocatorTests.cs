@@ -3,7 +3,6 @@ using FlashOWare.Tool.Cli.Tests.MSBuild;
 using FlashOWare.Tool.Cli.Tests.Sdk;
 using FlashOWare.Tool.Cli.Tests.Testing;
 using Microsoft.CodeAnalysis.CSharp;
-using System.Diagnostics;
 using Xunit.Abstractions;
 
 namespace FlashOWare.Tool.Cli.Tests.Interceptors;
@@ -95,10 +94,7 @@ public class InterceptorLocatorTests : IntegrationTests
                 """, "MyEnum.cs")
             .AddPackage(Packages.FlashOWare_Generators)
             .Initialize(ProjectKind.SdkStyle, TargetFramework.Net80, LanguageVersion.CSharp12);
-        Stopwatch stopwatch = Stopwatch.StartNew();
         await DotNet.SynchronizedRestoreAsync(project.File);
-        stopwatch.Stop();
-        System.Console.WriteLine($"DotNet.RestoreAsync: {stopwatch.Elapsed}");
         //Act
         await (option is null
             ? RunAsync("interceptor", "list")
@@ -132,10 +128,7 @@ public class InterceptorLocatorTests : IntegrationTests
         }
 
         //Arrange
-        Stopwatch stopwatch = Stopwatch.StartNew();
         var project = await DotNet.NewAsync(DotNetNewTemplate.AspNetCoreWebApiNativeAot, true);
-        stopwatch.Stop();
-        System.Console.WriteLine($"DotNet.NewAsync: {stopwatch.Elapsed}");
         //Act
         await RunAsync("interceptor", "list", option);
         //Assert
