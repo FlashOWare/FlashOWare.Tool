@@ -96,7 +96,7 @@ public class InterceptorLocatorTests : IntegrationTests
             .AddPackage(Packages.FlashOWare_Generators)
             .Initialize(ProjectKind.SdkStyle, TargetFramework.Net80, LanguageVersion.CSharp12);
         Stopwatch stopwatch = Stopwatch.StartNew();
-        await DotNet.RestoreAsync(project.File);
+        await DotNet.SynchronizedRestoreAsync(project.File);
         stopwatch.Stop();
         System.Console.WriteLine($"DotNet.RestoreAsync: {stopwatch.Elapsed}");
         //Act
