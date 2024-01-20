@@ -7,6 +7,7 @@ namespace FlashOWare.Tool.Cli.Tests.Sdk;
 public partial class DotNet
 {
     private static readonly DotNetCliOptions s_noRestore = new() { NoRestore = true };
+    private static readonly SemaphoreSlim s_newMutex = new(1, 1);
 
     internal Task<string> NewAsync(DotNetNewTemplate template)
     {
@@ -20,7 +21,7 @@ public partial class DotNet
         return template switch
         {
             DotNetNewTemplate.Unspecified => throw new InvalidOperationException("Template not specified."),
-            DotNetNewTemplate.AspNetCoreWebApiNativeAot => NewAspNetCoreWebApiNativeAotAsync(options),
+            DotNetNewTemplate.AspNetCoreWebApiNativeAot => SynchronizedNewAspNetCoreWebApiNativeAotAsync(options),
             _ => throw new InvalidEnumArgumentException(nameof(template), (int)template, typeof(DotNetNewTemplate)),
         };
     }
@@ -34,5 +35,19 @@ public partial class DotNet
         await process.WaitForSuccessfulExitAsync(TimeSpan.FromSeconds(15));
 
         return project;
+    }
+
+    private async Task<string> SynchronizedNewAspNetCoreWebApiNativeAotAsync(DotNetCliOptions options)
+    {
+        await s_newMutex.WaitAsync();
+
+        try
+        {
+            return await NewAspNetCoreWebApiNativeAotAsync(options);
+        }
+        finally
+        {
+            _ = s_newMutex.Release();
+        }
     }
 }
