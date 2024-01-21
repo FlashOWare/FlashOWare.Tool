@@ -9,6 +9,6 @@ internal static class TestEnvironment
     private static bool IsContinuousIntegrationCore()
     {
         string? value = Environment.GetEnvironmentVariable(EnvironmentVariables.GitHubActions);
-        return value == bool.TrueString;
+        return value == "true";
     }
 }
