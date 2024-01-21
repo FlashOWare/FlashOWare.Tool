@@ -14,9 +14,9 @@ public partial class DotNet
         return NewAsync(template, false);
     }
 
-    internal Task<string> NewAsync(DotNetNewTemplate template, bool norestore)
+    internal Task<string> NewAsync(DotNetNewTemplate template, bool noRestore)
     {
-        DotNetCliOptions options = norestore ? s_noRestore : DotNetCliOptions.None;
+        DotNetCliOptions options = noRestore ? s_noRestore : DotNetCliOptions.None;
 
         return template switch
         {
