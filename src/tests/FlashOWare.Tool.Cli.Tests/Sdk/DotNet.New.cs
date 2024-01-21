@@ -39,7 +39,7 @@ public partial class DotNet
 
     private async Task<string> SynchronizedNewAspNetCoreWebApiNativeAotAsync(DotNetCliOptions options)
     {
-        await s_newMutex.WaitAsync();
+        await s_synchronizationMutex.WaitAsync();
 
         try
         {
@@ -47,7 +47,7 @@ public partial class DotNet
         }
         finally
         {
-            _ = s_newMutex.Release();
+            _ = s_synchronizationMutex.Release();
         }
     }
 }

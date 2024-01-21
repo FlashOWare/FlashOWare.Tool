@@ -16,7 +16,7 @@ public partial class DotNet
 
     internal async Task SynchronizedRestoreAsync(FileInfo project)
     {
-        await s_restoreMutex.WaitAsync();
+        await s_synchronizationMutex.WaitAsync();
 
         try
         {
@@ -24,7 +24,7 @@ public partial class DotNet
         }
         finally
         {
-            _ = s_restoreMutex.Release();
+            _ = s_synchronizationMutex.Release();
         }
     }
 }
