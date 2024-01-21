@@ -31,7 +31,7 @@ public partial class DotNet
 
         using Process process = StartProcess("dotnet", ["new", "webapiaot", "--name", project, "--output", _directory.FullName, "--language", "C#", "--framework", "net8.0", "--exclude-launch-settings"], options);
 
-        await process.WaitForSuccessfulExitAsync(TimeSpan.FromSeconds(60));
+        await process.WaitForSuccessfulExitAsync(TimeSpan.FromSeconds(30));
 
         return project;
     }
