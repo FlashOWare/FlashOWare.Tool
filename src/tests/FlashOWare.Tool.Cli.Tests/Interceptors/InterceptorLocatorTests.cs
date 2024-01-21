@@ -94,7 +94,7 @@ public class InterceptorLocatorTests : IntegrationTests
                 """, "MyEnum.cs")
             .AddPackage(Packages.FlashOWare_Generators)
             .Initialize(ProjectKind.SdkStyle, TargetFramework.Net80, LanguageVersion.CSharp12);
-        await DotNet.SynchronizedRestoreAsync(project.File);
+        await DotNet.RestoreAsync(project.File);
         //Act
         await (option is null
             ? RunAsync("interceptor", "list")

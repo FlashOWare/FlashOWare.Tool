@@ -5,8 +5,6 @@ namespace FlashOWare.Tool.Cli.Tests.Sdk;
 
 public sealed partial class DotNet
 {
-    private static readonly SemaphoreSlim s_synchronizationMutex = new(1, 1);
-
     private readonly DirectoryInfo _directory;
 
     public DotNet(DirectoryInfo directory)
