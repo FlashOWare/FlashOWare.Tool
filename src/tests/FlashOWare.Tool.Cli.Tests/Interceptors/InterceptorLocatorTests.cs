@@ -128,7 +128,7 @@ public class InterceptorLocatorTests : IntegrationTests
         }
 
         //Arrange
-        var project = await DotNet.NewAsync(DotNetNewTemplate.AspNetCoreWebApiNativeAot);
+        var project = await DotNet.NewAsync(DotNetNewTemplate.AspNetCoreWebApiNativeAot, true);
         //Act
         await RunAsync("interceptor", "list", option);
         //Assert
