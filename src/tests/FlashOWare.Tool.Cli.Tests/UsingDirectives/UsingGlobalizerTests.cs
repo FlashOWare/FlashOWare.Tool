@@ -3,10 +3,11 @@ using FlashOWare.Tool.Cli.Tests.Testing;
 using FlashOWare.Tool.Cli.Tests.Workspaces;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Xunit.Abstractions;
 
 namespace FlashOWare.Tool.Cli.Tests.UsingDirectives;
 
-public class UsingGlobalizerTests : IntegrationTests
+public class UsingGlobalizerTests(ITestOutputHelper output) : IntegrationTests(output)
 {
     [Fact]
     public async Task Globalize_SdkStyleProject_ReplacesWithGlobalUsingDirectives()
@@ -175,7 +176,7 @@ public class UsingGlobalizerTests : IntegrationTests
         Console.Verify($"""
             Project: {Names.Project}
             2 occurrences of Using Directive "{Usings.System}" were globalized to "GlobalUsings.cs".
-            """);
+            """, null, Output);
         string[] files = [Names.GlobalUsings, "MyClass1.cs", "MyClass2.cs", Path.Combine(Names.Properties, Names.AssemblyInfo), Path.Combine(Names.Properties, Names.GlobalUsings)];
         Workspace.CreateExpectation()
             .AppendFile("""
