@@ -14,7 +14,7 @@ internal sealed class RedirectedConsole : IDisposable
     public void AssertEmpty()
     {
         Assert.Empty(_out.ToString());
-        //Assert.Empty(_error.ToString());
+        Assert.Empty(_error.ToString());
     }
 
     public void Dispose()

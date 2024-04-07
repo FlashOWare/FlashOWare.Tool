@@ -3,6 +3,7 @@ using FlashOWare.Tool.Cli.IO;
 using Microsoft.Build.Locator;
 using Microsoft.CodeAnalysis;
 using System.Collections.Immutable;
+using System.CommandLine.IO;
 
 namespace FlashOWare.Tool.Cli;
 
@@ -11,10 +12,11 @@ public static partial class CliApplication
     public static Task<int> RunAsync(string[] args)
     {
         VisualStudioInstance msBuild = MSBuildLocator.RegisterDefaults();
+        IConsole console = new SystemConsole();
         IFileSystemAccessor fileSystem = FileSystemAccessor.System;
 
         CliContext.InitializeApp(msBuild);
-        return RunAsync(args, null, fileSystem);
+        return RunAsync(args, console, fileSystem);
     }
 
     public static Task<int> RunAsync(string[] args, IConsole console, VisualStudioInstance msBuild, IFileSystemAccessor fileSystem)
@@ -23,7 +25,7 @@ public static partial class CliApplication
         return RunAsync(args, console, fileSystem);
     }
 
-    private static async Task<int> RunAsync(string[] args, IConsole? console, IFileSystemAccessor fileSystem)
+    private static async Task<int> RunAsync(string[] args, IConsole console, IFileSystemAccessor fileSystem)
     {
         var properties = ImmutableDictionary<string, string>.Empty.Add("Configuration", "Release");
         using var workspace = MSBuildWorkspace.Create(properties);
@@ -59,10 +61,10 @@ public static partial class CliApplication
         workspace.WorkspaceFailed -= OnWorkspaceFailed;
         CliContext.Dispose();
         return exitCode;
-    }
 
-    private static void OnWorkspaceFailed(object? sender, WorkspaceDiagnosticEventArgs e)
-    {
-        Console.Error.WriteLine(e.Diagnostic.ToString());
+        void OnWorkspaceFailed(object? sender, WorkspaceDiagnosticEventArgs e)
+        {
+            console.Error.WriteLine(e.Diagnostic.ToString());
+        }
     }
 }

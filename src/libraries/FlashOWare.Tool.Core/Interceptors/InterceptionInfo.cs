@@ -29,7 +29,6 @@ public sealed record class InterceptionInfo
 
     internal void Bind(InterceptedCallSiteInfo callSite)
     {
-
         _callSite = _callSite is not null
             ? throw new InvalidOperationException($"{nameof(CallSite)} is already bound.")
             : callSite;
