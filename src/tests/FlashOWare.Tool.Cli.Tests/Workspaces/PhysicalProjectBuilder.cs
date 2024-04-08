@@ -70,6 +70,15 @@ internal sealed class PhysicalProjectBuilder
         return this;
     }
 
+    public PhysicalProjectBuilder If(bool condition, Action<PhysicalProjectBuilder> conditionalAction)
+    {
+        if (condition)
+        {
+            conditionalAction.Invoke(this);
+        }
+        return this;
+    }
+
     public PhysicalProject Initialize(ProjectKind kind, TargetFramework tfm, LanguageVersion? langVersion = null)
     {
         if (!Enum.IsDefined(kind))

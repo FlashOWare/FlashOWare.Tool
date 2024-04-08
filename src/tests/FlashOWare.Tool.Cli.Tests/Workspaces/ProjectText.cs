@@ -44,11 +44,6 @@ internal static partial class ProjectText
 
     public static string CreateNonSdk(TargetFramework targetFrameworkVersion, LanguageVersion langVersion, string[] files, IReadOnlyCollection<PackageReference>? packages = null)
     {
-        if (packages is not null && packages.Count != 0)
-        {
-            throw new NotImplementedException("NuGet 'packages.config' is not implemented.");
-        }
-
         return $"""
             <?xml version="1.0" encoding="utf-8"?>
             <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
@@ -99,6 +94,7 @@ internal static partial class ProjectText
               <ItemGroup>
                 {CreateCompileItems("    ", files)}
               </ItemGroup>
+            {CreateFullPackageItems("  ", packages)}
               <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
             </Project>
             """;
@@ -143,6 +139,25 @@ internal static partial class ProjectText
         }
         items.Indent--;
         items.WriteLine("</ItemGroup>");
+
+        return stringBuilder.ToString();
+    }
+
+    private static string CreateFullPackageItems(string tabString, IReadOnlyCollection<PackageReference>? packages)
+    {
+        StringBuilder stringBuilder = new(tabString);
+        using TextWriter writer = new StringWriter(stringBuilder, CultureInfo.InvariantCulture);
+        using IndentedTextWriter items = new(writer, tabString);
+
+        items.Indent++;
+        items.WriteLine("<ItemGroup>");
+        items.Indent++;
+        if (packages is not null && packages.Count != 0)
+        {
+            packages.WriteFullProjectString(items);
+        }
+        items.Indent--;
+        items.Write("</ItemGroup>");
 
         return stringBuilder.ToString();
     }
