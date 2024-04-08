@@ -32,12 +32,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 1
-      - uses: actions/setup-dotnet@v4.0.0
-        with:
-          dotnet-version: |
-            6.0.x
-            7.0.x
-          global-json-file: ./global.json
+      - uses: actions/setup-dotnet@v3
       - name: 'Cache: .nuke/temp, ~/.nuget/packages'
         uses: actions/cache@v3
         with:
@@ -54,12 +49,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 1
-      - uses: actions/setup-dotnet@v4.0.0
-        with:
-          dotnet-version: |
-            6.0.x
-            7.0.x
-          global-json-file: ./global.json
+      - uses: actions/setup-dotnet@v3
       - name: 'Cache: .nuke/temp, ~/.nuget/packages'
         uses: actions/cache@v3
         with:
@@ -76,9 +66,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 1
-      - uses: actions/setup-dotnet@v4.0.0
-        with:
-          global-json-file: ./global.json
+      - uses: actions/setup-dotnet@v3
       - name: 'Cache: .nuke/temp, ~/.nuget/packages'
         uses: actions/cache@v3
         with:
