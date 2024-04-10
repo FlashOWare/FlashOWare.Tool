@@ -4,6 +4,8 @@ Prerelease Changelog
 [goto Release_Changelog;](./CHANGELOG.md)
 
 ## [vNext]
+### Tool
+- **Changed** the foreground color of the console to yellow when diagnostics from workspace failed events are written to the standard error output stream.
 
 ## [1.0.0-prerelease2] - 2023-12-20
 ### Tool
