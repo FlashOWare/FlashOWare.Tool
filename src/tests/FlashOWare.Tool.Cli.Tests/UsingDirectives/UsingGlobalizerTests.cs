@@ -167,7 +167,12 @@ public class UsingGlobalizerTests : IntegrationTests
                 global using System.Net.Http;
                 global using System.Threading;
                 """, Names.GlobalUsings, Names.Properties)
+            .If(!OperatingSystem.IsWindows(), static builder => builder.AddPackage(Packages.Microsoft_NETFramework_ReferenceAssemblies_net472))
             .Initialize(ProjectKind.Classic, TargetFramework.Net472, LanguageVersion.CSharp10);
+        if (!OperatingSystem.IsWindows())
+        {
+            await DotNet.RestoreAsync(project.File);
+        }
         string[] args = ["using", "globalize", Usings.System, "--project", project.File.FullName];
         //Act
         await RunAsync(args);
@@ -207,7 +212,7 @@ public class UsingGlobalizerTests : IntegrationTests
                 {
                 }
                 """, "MyClass2.cs")
-            .AppendFile(ProjectText.CreateNonSdk(TargetFramework.Net472, LanguageVersion.CSharp10, files), Names.CSharpProject)
+            .AppendFile(ProjectText.CreateNonSdk(TargetFramework.Net472, LanguageVersion.CSharp10, files, OperatingSystem.IsWindows() ? [] : [Packages.Microsoft_NETFramework_ReferenceAssemblies_net472]), Names.CSharpProject)
             .AppendFile($"""
                 using System.Reflection;
                 using System.Runtime.InteropServices;
