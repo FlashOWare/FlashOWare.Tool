@@ -6,14 +6,6 @@ namespace FlashOWare.Tool.Cli.Tests.Workspaces;
 
 internal sealed class PhysicalProject
 {
-    public PhysicalProject(string filePath)
-    {
-        File = new FileInfo(filePath);
-    }
-
-    public FileInfo File { get; }
-    public string Name => Path.GetFileNameWithoutExtension(File.Name);
-
     public static PhysicalProject Create(DirectoryInfo directory, string name, Language language)
     {
         string extension = language.GetProjectExtension(true);
@@ -22,6 +14,19 @@ internal sealed class PhysicalProject
         string path = Path.Combine(directory.FullName, fileName);
         return new PhysicalProject(path);
     }
+
+    private PhysicalProject(string filePath)
+        : this(new FileInfo(filePath))
+    {
+    }
+
+    private PhysicalProject(FileInfo file)
+    {
+        File = file;
+    }
+
+    public FileInfo File { get; }
+    public string Name => Path.GetFileNameWithoutExtension(File.Name);
 
     public string GetDirectoryName()
     {

@@ -5,6 +5,29 @@ namespace FlashOWare.Tool.Cli.Tests.Workspaces;
 
 internal sealed class PhysicalDocument
 {
+    public static PhysicalDocument Create(string text, DirectoryInfo directory, string name, Language language)
+    {
+        string extension = language.GetDocumentExtension(true);
+        string fileName = PathUtilities.WithExtension(extension, name);
+
+        return new PhysicalDocument(text, directory, fileName);
+    }
+
+    public static PhysicalDocument Create(string text, DirectoryInfo directory, string name, string[] folders, Language language)
+    {
+        if (folders.Length == 0)
+        {
+            throw new ArgumentException($"{nameof(folders.Length)} of {nameof(folders)} is 0.", nameof(folders));
+        }
+
+        string folder = folders.Aggregate(directory.FullName, static (aggregate, element) => Path.Combine(aggregate, element));
+
+        string extension = language.GetDocumentExtension(true);
+        string fileName = PathUtilities.WithExtension(extension, name);
+
+        return new PhysicalDocument(text, folder, fileName);
+    }
+
     private PhysicalDocument(string text, string directory, string fileName)
         : this(text, new DirectoryInfo(directory), fileName)
     {
@@ -20,29 +43,6 @@ internal sealed class PhysicalDocument
     public string Text { get; }
     public DirectoryInfo Directory { get; }
     public string FullName { get; }
-
-    public static PhysicalDocument Create(string text, DirectoryInfo directory, string fileName, Language language)
-    {
-        string extension = language.GetDocumentExtension(true);
-        fileName = PathUtilities.WithExtension(extension, fileName);
-
-        return new PhysicalDocument(text, directory, fileName);
-    }
-
-    public static PhysicalDocument Create(string text, DirectoryInfo directory, string fileName, string[] folders, Language language)
-    {
-        if (folders.Length == 0)
-        {
-            throw new ArgumentException($"{nameof(folders.Length)} of {nameof(folders)} is 0.", nameof(folders));
-        }
-
-        string folder = folders.Aggregate(directory.FullName, static (aggregate, element) => Path.Combine(aggregate, element));
-
-        string extension = language.GetDocumentExtension(true);
-        fileName = PathUtilities.WithExtension(extension, fileName);
-
-        return new PhysicalDocument(text, folder, fileName);
-    }
 
     public void Write()
     {
