@@ -1,5 +1,6 @@
 using FlashOWare.Tool.Cli.Tests.IO;
 using FlashOWare.Tool.Cli.Tests.Testing;
+using FlashOWare.Tool.Cli.Tests.Text;
 using System.Diagnostics;
 
 namespace FlashOWare.Tool.Cli.Tests.Workspaces;
@@ -42,6 +43,6 @@ internal sealed class PhysicalProject
             throw new InvalidOperationException($"Project '{File}' already exists.");
         }
 
-        System.IO.File.WriteAllText(File.FullName, text);
+        System.IO.File.WriteAllText(File.FullName, text, Encodings.UTF8NoBOM);
     }
 }

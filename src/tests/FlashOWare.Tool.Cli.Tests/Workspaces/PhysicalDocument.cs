@@ -1,5 +1,6 @@
 using FlashOWare.Tool.Cli.Tests.IO;
 using FlashOWare.Tool.Cli.Tests.Testing;
+using FlashOWare.Tool.Cli.Tests.Text;
 
 namespace FlashOWare.Tool.Cli.Tests.Workspaces;
 
@@ -56,6 +57,6 @@ internal sealed class PhysicalDocument
             throw new InvalidOperationException($"Document '{FullName}' already exists.");
         }
 
-        File.WriteAllText(FullName, Text);
+        File.WriteAllText(FullName, Text, Encodings.UTF8NoBOM);
     }
 }
