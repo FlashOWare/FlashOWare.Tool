@@ -1,6 +1,7 @@
 using DiffPlex.DiffBuilder;
 using DiffPlex.DiffBuilder.Model;
 using FlashOWare.Tool.Cli.Tests.Testing;
+using FlashOWare.Tool.Cli.Tests.Text;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Xunit.Sdk;
@@ -93,7 +94,7 @@ internal sealed class FileSystemExpectation
             });
 
             string expectedText = expectedFile.Text;
-            string actualText = File.ReadAllText(actualFile.FullName);
+            string actualText = File.ReadAllText(actualFile.FullName, Encodings.UTF8NoBOM);
 
             if (expectedText != actualText)
             {

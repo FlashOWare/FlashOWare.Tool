@@ -64,9 +64,7 @@ public static partial class CliApplication
 
         void OnWorkspaceFailed(object? sender, WorkspaceDiagnosticEventArgs e)
         {
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            console.Error.WriteLine(e.Diagnostic.ToString());
-            Console.ResetColor();
+            console.WriteErrorLine(ConsoleColor.Yellow, e.Diagnostic.ToString());
         }
     }
 }

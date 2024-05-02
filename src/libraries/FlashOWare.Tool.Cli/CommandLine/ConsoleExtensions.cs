@@ -28,6 +28,12 @@ internal static class ConsoleExtensions
         Console.ForegroundColor = color;
     }
 
+    public static void ResetColor(this IConsole console)
+    {
+        _ = console;
+        Console.ResetColor();
+    }
+
     public static void Write(this IConsole console, ConsoleColor foregroundColor, string value)
     {
         ConsoleColor oldColor = Console.ForegroundColor;
@@ -41,6 +47,22 @@ internal static class ConsoleExtensions
         ConsoleColor oldColor = Console.ForegroundColor;
         Console.ForegroundColor = foregroundColor;
         console.Out.WriteLine(value);
+        Console.ForegroundColor = oldColor;
+    }
+
+    public static void WriteError(this IConsole console, ConsoleColor foregroundColor, string value)
+    {
+        ConsoleColor oldColor = Console.ForegroundColor;
+        Console.ForegroundColor = foregroundColor;
+        console.Error.Write(value);
+        Console.ForegroundColor = oldColor;
+    }
+
+    public static void WriteErrorLine(this IConsole console, ConsoleColor foregroundColor, string value)
+    {
+        ConsoleColor oldColor = Console.ForegroundColor;
+        Console.ForegroundColor = foregroundColor;
+        console.Error.WriteLine(value);
         Console.ForegroundColor = oldColor;
     }
 }
