@@ -26,17 +26,17 @@ jobs:
     name: ubuntu-22_04
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 1
-      - uses: actions/setup-dotnet@v3
+      - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: |
             6.0.x
             7.0.x
             8.0.x
       - name: 'Cache: .nuke/temp, ~/.nuget/packages'
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             .nuke/temp
