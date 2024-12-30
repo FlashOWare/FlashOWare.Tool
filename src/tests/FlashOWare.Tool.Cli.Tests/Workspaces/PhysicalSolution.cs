@@ -1,18 +1,29 @@
+using FlashOWare.Tool.Cli.Tests.IO;
+
 namespace FlashOWare.Tool.Cli.Tests.Workspaces;
 
 internal sealed class PhysicalSolution
 {
-    private const string FileExtension = "sln";
-
-    public PhysicalSolution(string name)
+    public static PhysicalSolution Create(DirectoryInfo directory, string name)
     {
-        Name = name;
+        const string extension = ".sln";
+        string fileName = PathUtilities.WithExtension(extension, name);
+
+        string path = Path.Combine(directory.FullName, fileName);
+        return new PhysicalSolution(path);
     }
 
-    public string Name { get; }
-
-    public string GetFileName()
+    private PhysicalSolution(string filePath)
+        : this(new FileInfo(filePath))
     {
-        return $"{Name}.{FileExtension}";
     }
+
+    private PhysicalSolution(FileInfo file)
+    {
+        File = file;
+    }
+
+    public FileInfo File { get; }
+    public string FullName => File.FullName;
+    public string Name => Path.GetFileNameWithoutExtension(File.Name);
 }

@@ -542,4 +542,53 @@ public class UsingCounterTests
         //Assert
         await Assert.ThrowsAsync<InvalidOperationException>(result);
     }
+
+    [Fact]
+    public async Task CountAsync_Solution_FindsAllOccurrences()
+    {
+        //Arrange
+        var solution = await CreateSolutionCheckedAsync([
+            ["""
+                using System;
+                """],
+            ["""
+                using System;
+                using System.Collections.Generic;
+                """, """
+                using System;
+                using System.Collections.Generic;
+                using System.IO;
+                """],
+            ["""
+                using System;
+                using System.Collections.Generic;
+                using System.IO;
+                using System.Linq;
+                """, """
+                using System;
+                using System.Collections.Generic;
+                using System.IO;
+                using System.Linq;
+                using System.Net.Http;
+                """, """
+                using System;
+                using System.Collections.Generic;
+                using System.IO;
+                using System.Linq;
+                using System.Net.Http;
+                using System.Threading;
+                using System.Threading.Tasks;
+                """],
+            ]);
+        UsingCountResult[] expectedResults =
+        [
+            new("TestProject0", [new("System", 1), new("System.Collections.Generic", 0), new("System.Linq", 0), new("System.Threading.Tasks", 0)]),
+            new("TestProject1", [new("System", 2), new("System.Collections.Generic", 2), new("System.Linq", 0), new("System.Threading.Tasks", 0)]),
+            new("TestProject2", [new("System", 3), new("System.Collections.Generic", 3), new("System.Linq", 3), new("System.Threading.Tasks", 1)]),
+        ];
+        //Act
+        var actualResults = await UsingCounter.CountAsync(solution, ImmutableArray.Create("System", "System.Collections.Generic", "System.Linq", "System.Threading.Tasks"), default);
+        //Assert
+        ToolAssert.Equal(expectedResults, actualResults);
+    }
 }

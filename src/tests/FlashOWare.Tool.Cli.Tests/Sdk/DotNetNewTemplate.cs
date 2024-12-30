@@ -4,4 +4,5 @@ internal enum DotNetNewTemplate
 {
     Unspecified = 0,
     AspNetCoreWebApiNativeAot = 1,
+    SolutionFile = 2,
 }

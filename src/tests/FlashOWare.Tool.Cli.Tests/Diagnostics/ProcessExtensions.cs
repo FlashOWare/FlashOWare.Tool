@@ -30,7 +30,8 @@ internal static class ProcessExtensions
         if (process.ExitCode != 0)
         {
             string output = await process.StandardOutput.ReadToEndAsync(cts.Token);
-            throw new InvalidOperationException($"{nameof(Process.ExitCode)}: {process.ExitCode}{Environment.NewLine}{output}");
+            string error = await process.StandardError.ReadToEndAsync(cts.Token);
+            throw new InvalidOperationException($"{nameof(Process.ExitCode)}: {process.ExitCode}{Environment.NewLine}Standard Output:{Environment.NewLine}{output}{Environment.NewLine}Standard Error:{Environment.NewLine}{error}");
         }
     }
 }

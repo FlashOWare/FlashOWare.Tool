@@ -3,9 +3,68 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.VisualBasic;
 using Microsoft.CodeAnalysis.VisualBasic.Syntax;
 using System.Diagnostics;
+using ProjectFile = (string Name, (string Name, string Text)[] Documents);
 using TextFile = (string Name, string Text);
 
 namespace FlashOWare.Tool.Core.Tests.Testing;
+
+internal static partial class VisualBasicFactory
+{
+    public static Solution CreateSolutionUnchecked()
+    {
+        return CreateSolutionUnchecked(Array.Empty<string[]>());
+    }
+
+    public static Task<Solution> CreateSolutionCheckedAsync()
+    {
+        return CreateSolutionCheckedAsync(Array.Empty<string[]>());
+    }
+
+    public static Solution CreateSolutionUnchecked(string[][] projects)
+    {
+        int projectIndex = 0;
+        int documentIndex = 0;
+        return CreateSolutionUnchecked(projects.Select(documents => ($"TestProject{projectIndex++}", documents.Select(text => ($"TestDocument{documentIndex++}.cs", text)).ToArray())).ToArray());
+    }
+
+    public static Task<Solution> CreateSolutionCheckedAsync(string[][] projects)
+    {
+        int projectIndex = 0;
+        int documentIndex = 0;
+        return CreateSolutionCheckedAsync(projects.Select(documents => ($"TestProject{projectIndex++}", documents.Select(text => ($"TestDocument{documentIndex++}.cs", text)).ToArray())).ToArray());
+    }
+
+    public static Solution CreateSolutionUnchecked(params ProjectFile[] projects)
+    {
+        using var workspace = new AdhocWorkspace();
+        var solution = workspace.CurrentSolution;
+
+        foreach (ProjectFile project in projects)
+        {
+            var projectId = ProjectId.CreateNewId($"Test-Project-Id: {project.Name}");
+            solution = solution.AddProject(projectId, project.Name, project.Name, LanguageNames.VisualBasic);
+
+            foreach (TextFile document in project.Documents)
+            {
+                var documentId = DocumentId.CreateNewId(projectId, $"Test-Document-Id: {document.Name}");
+                solution = solution.AddDocument(documentId, document.Name, document.Text);
+            }
+
+            solution = solution.AddMetadataReferences(projectId, ReferenceAssemblies.Net60);
+            solution = solution.WithProjectCompilationOptions(projectId, new VisualBasicCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+            solution = solution.WithProjectParseOptions(projectId, new VisualBasicParseOptions(LanguageVersion.VisualBasic16_9));
+        }
+
+        return solution;
+    }
+
+    public static async Task<Solution> CreateSolutionCheckedAsync(params ProjectFile[] projects)
+    {
+        Solution solution = CreateSolutionUnchecked(projects);
+        await RoslynFactory.CheckAsync(solution);
+        return solution;
+    }
+}
 
 internal static partial class VisualBasicFactory
 {

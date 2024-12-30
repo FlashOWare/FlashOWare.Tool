@@ -8,6 +8,20 @@ namespace FlashOWare.Tool.Core.UsingDirectives;
 
 public static class UsingCounter
 {
+    public static async Task<UsingCountResults> CountAsync(Solution solution, ImmutableArray<string> usings, CancellationToken cancellationToken = default)
+    {
+        string name = solution.FilePath is not null ? Path.GetFileNameWithoutExtension(solution.FilePath) : "There is no solution file.";
+        UsingCountResults results = new(name);
+
+        foreach (Project project in solution.Projects)
+        {
+            UsingCountResult result = await CountAsync(project, usings, cancellationToken);
+            results.Add(result);
+        }
+
+        return results;
+    }
+
     public static Task<UsingCountResult> CountAsync(Project project, CancellationToken cancellationToken = default)
     {
         return CountAsync(project, ImmutableArray<string>.Empty, cancellationToken);

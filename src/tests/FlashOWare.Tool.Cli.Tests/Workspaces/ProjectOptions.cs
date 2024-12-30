@@ -2,6 +2,8 @@ namespace FlashOWare.Tool.Cli.Tests.Workspaces;
 
 internal sealed class ProjectOptions
 {
+    public static ProjectOptions Default { get; } = new ProjectOptions();
+
     private ProjectOptions()
     {
         Name = "TestProject";
@@ -11,8 +13,6 @@ internal sealed class ProjectOptions
         ProjectGuid = Guid.NewGuid();
         AssemblyGuid = Guid.NewGuid();
     }
-
-    public static ProjectOptions Default { get; } = new ProjectOptions();
 
     public string Name { get; }
     public string Properties { get; }

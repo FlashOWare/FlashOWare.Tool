@@ -2,6 +2,7 @@ namespace FlashOWare.Tool.Cli.Tests.Testing;
 
 internal static class Names
 {
+    public const string Solution = "TestSolution";
     public const string Project = "TestProject";
     public const string CSharpProject = "TestProject.csproj";
     public const string VisualBasicProject = "TestProject.vbproj";

@@ -3,18 +3,12 @@ using FlashOWare.Tool.Cli.Tests.MSBuild;
 using FlashOWare.Tool.Cli.Tests.Sdk;
 using FlashOWare.Tool.Cli.Tests.Testing;
 using Microsoft.CodeAnalysis.CSharp;
-using Xunit.Abstractions;
 
 namespace FlashOWare.Tool.Cli.Tests.Interceptors;
 
 public class InterceptorLocatorTests : IntegrationTests
 {
     private static readonly char DirectorySeparator = Path.DirectorySeparatorChar;
-
-    public InterceptorLocatorTests(ITestOutputHelper output)
-        : base(output)
-    {
-    }
 
     [Fact]
     public async Task List_WithoutInterceptors_Empty()
@@ -128,7 +122,7 @@ public class InterceptorLocatorTests : IntegrationTests
         }
 
         //Arrange
-        var project = await DotNet.NewAsync(DotNetNewTemplate.AspNetCoreWebApiNativeAot, true);
+        var project = await DotNet.NewAsync(DotNetNewTemplate.AspNetCoreWebApiNativeAot, "WebApiAotProject", true);
         //Act
         await RunAsync("interceptor", "list", option);
         //Assert

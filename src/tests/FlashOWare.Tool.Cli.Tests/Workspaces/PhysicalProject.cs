@@ -27,6 +27,7 @@ internal sealed class PhysicalProject
     }
 
     public FileInfo File { get; }
+    public string FullName => File.FullName;
     public string Name => Path.GetFileNameWithoutExtension(File.Name);
 
     public string GetDirectoryName()

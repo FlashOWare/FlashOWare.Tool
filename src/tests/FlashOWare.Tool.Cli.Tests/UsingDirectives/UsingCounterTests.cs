@@ -1,5 +1,6 @@
 using FlashOWare.Tool.Cli.Tests.CommandLine.IO;
 using FlashOWare.Tool.Cli.Tests.Testing;
+using FlashOWare.Tool.Cli.Tests.Workspaces;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
@@ -116,6 +117,21 @@ public class UsingCounterTests : IntegrationTests
     }
 
     [Fact]
+    public async Task Count_ExplicitSolutionFileDoesNotExist_FailsValidation()
+    {
+        //Arrange
+        string solution = "SolutionFileDoesNotExist.sln";
+        _ = await Workspace.CreateSolution()
+            .InitializeAsync();
+        string[] args = ["using", "count", "--sln", solution];
+        //Act
+        await RunAsync(args);
+        //Assert
+        Console.VerifyError($"File does not exist: '{solution}'.");
+        Result.Verify(ExitCodes.Error);
+    }
+
+    [Fact]
     public async Task Count_VisualBasicProject_NotSupported()
     {
         //Arrange
@@ -161,14 +177,58 @@ public class UsingCounterTests : IntegrationTests
     }
 
     [Fact]
-    public async Task Count_ImplicitProjectMissing_Error()
+    public async Task Count_ImplicitSingleSolution_UseCurrentDirectory()
+    {
+        //Arrange
+        _ = await Workspace.CreateSolution()
+            .AddCSharpProject(ProjectKind.SdkStyle, TargetFramework.Net60, LanguageVersion.CSharp10, static void (PhysicalProjectBuilder builder) => builder
+                .AddDocument("""
+                    using System;
+
+                    namespace ProjectUnderTest.NetCore;
+
+                    internal class MyClass1
+                    {
+                    }
+                    """, "MyClass1"))
+            .InitializeAsync();
+        string[] args = ["using", "count"];
+        //Act
+        await RunAsync(args);
+        //Assert
+        Console.Verify($"""
+            Solution: {Names.Solution}
+              Project: {Names.Project}0
+                System: 1
+            """);
+        Result.Verify(ExitCodes.Success);
+    }
+
+    [Fact]
+    public async Task Count_ImplicitProjectOrSolutionMissing_Error()
     {
         //Arrange
         string[] args = ["using", "count"];
         //Act
         await RunAsync(args);
         //Assert
-        Console.VerifyContains(null, "Specify a project file. The current working directory does not contain a project file.");
+        Console.VerifyContains(null, "Specify a project or solution file. The current working directory does not contain a project or solution file.");
+        Result.Verify(ExitCodes.Error);
+    }
+
+    [Fact]
+    public async Task Count_ExplicitProjectAndSolution_Ambiguous()
+    {
+        //Arrange
+        var project = Workspace.CreateProject()
+            .Initialize(ProjectKind.SdkStyle, TargetFramework.Net60, LanguageVersion.CSharp10);
+        var solution = await Workspace.CreateSolution()
+            .InitializeAsync();
+        string[] args = ["using", "count", "--proj", project.FullName, "--sln", solution.FullName];
+        //Act
+        await RunAsync(args);
+        //Assert
+        Console.VerifyContains(null, "Both 'Project' and 'Solution' are specified. Specify either a 'Project' or a 'Solution', which are mutually exclusive.");
         Result.Verify(ExitCodes.Error);
     }
 
@@ -184,7 +244,105 @@ public class UsingCounterTests : IntegrationTests
         //Act
         await RunAsync(args);
         //Assert
-        Console.VerifyContains(null, "Specify which project file to use because this folder contains more than one project file.");
+        Console.VerifyContains(null, "Specify which project or solution file to use because this folder contains more than one project or solution file.");
         Result.Verify(ExitCodes.Error);
+    }
+
+    [Fact]
+    public async Task Count_ImplicitMultipleSolutions_Ambiguous()
+    {
+        //Arrange
+        _ = await Workspace.CreateSolution()
+            .InitializeAsync();
+        _ = await Workspace.CreateSolution().WithSolutionName("Ambiguous")
+            .InitializeAsync();
+        string[] args = ["using", "count"];
+        //Act
+        await RunAsync(args);
+        //Assert
+        Console.VerifyContains(null, "Specify which project or solution file to use because this folder contains more than one project or solution file.");
+        Result.Verify(ExitCodes.Error);
+    }
+
+    [Fact]
+    public async Task Count_ImplicitMultipleProjectsAndSolutions_Ambiguous()
+    {
+        //Arrange
+        _ = Workspace.CreateProject()
+            .Initialize(ProjectKind.SdkStyle, TargetFramework.Net60, LanguageVersion.CSharp10);
+        _ = await Workspace.CreateSolution()
+            .InitializeAsync();
+        string[] args = ["using", "count"];
+        //Act
+        await RunAsync(args);
+        //Assert
+        Console.VerifyContains(null, "Specify which project or solution file to use because this folder contains more than one project or solution file.");
+        Result.Verify(ExitCodes.Error);
+    }
+
+    [Fact]
+    public async Task Count_Solution_FindAllOccurrences()
+    {
+        //Arrange
+        var solution = await Workspace.CreateSolution()
+            .AddCSharpProject(ProjectKind.SdkStyle, TargetFramework.Net60, LanguageVersion.CSharp10, static void (PhysicalProjectBuilder builder) => builder
+                .AddDocument("""
+                    using System;
+                    """)
+                .AddDocument("""
+                    using System;
+                    using System.Collections.Generic;
+                    """)
+                .AddDocument("""
+                    using System;
+                    using System.Collections.Generic;
+                    using System.Linq;
+                    """)
+                .AddDocument("""
+                    using System;
+                    using System.Collections.Generic;
+                    using System.Linq;
+                    using System.Text;
+                    """)
+                .AddDocument("""
+                    using System;
+                    using System.Collections.Generic;
+                    using System.Linq;
+                    using System.Text;
+                    using System.Threading.Tasks;
+                    """))
+            .AddCSharpProject(ProjectKind.SdkStyle, TargetFramework.Net60, LanguageVersion.CSharp10, static void (PhysicalProjectBuilder builder) => builder
+                .AddDocument("""
+                    using System;
+                    using System.Collections.Generic;
+                    using System.IO;
+                    using System.Linq;
+                    using System.Net.Http;
+                    using System.Threading;
+                    using System.Threading.Tasks;
+                    """))
+            .InitializeAsync();
+        string[] args = ["using", "count", "--solution", solution.File.FullName];
+        //Act
+        await RunAsync(args);
+        //Assert
+        Console.Verify($"""
+            Solution: {Names.Solution}
+              Project: {Names.Project}0
+                System: 5
+                System.Collections.Generic: 4
+                System.Linq: 3
+                System.Text: 2
+                System.Threading.Tasks: 1
+              Project: {Names.Project}1
+                System: 1
+                System.Collections.Generic: 1
+                System.IO: 1
+                System.Linq: 1
+                System.Net.Http: 1
+                System.Threading: 1
+                System.Threading.Tasks: 1
+            """);
+        Result.Verify(ExitCodes.Success);
     }
 }

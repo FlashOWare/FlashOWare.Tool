@@ -28,6 +28,7 @@ public sealed partial class DotNet
             WorkingDirectory = _directory.FullName,
             CreateNoWindow = true,
             RedirectStandardOutput = true,
+            RedirectStandardError = true,
         };
 
 #if !NET8_0_OR_GREATER

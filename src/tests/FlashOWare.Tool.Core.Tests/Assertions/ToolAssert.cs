@@ -43,6 +43,21 @@ internal static partial class ToolAssert
 
 internal static partial class ToolAssert
 {
+    public static void Equal(UsingCountResult[] expected, UsingCountResults actual)
+    {
+        Assert.Equal("There is no solution file.", actual.SolutionName);
+        Assert.Equal(expected.Length, actual.Results.Count);
+
+        for (int i = 0; i < expected.Length; i++)
+        {
+            UsingCountResult expectedResult = expected[i];
+            UsingCountResult actualResult = actual.Results[i];
+
+            Assert.Equal(expectedResult.ProjectName, actualResult.ProjectName);
+            Equal(expectedResult.Usings, actualResult.Usings);
+        }
+    }
+
     public static void Equal(UsingDirective[] expected, UsingCountResult actual)
     {
         Assert.Equal("TestProject", actual.ProjectName);
@@ -64,7 +79,7 @@ internal static partial class ToolAssert
         Assert.Equal(occurrences, actual.Occurrences);
     }
 
-    private static void Equal(UsingDirective[] expected, IReadOnlyCollection<UsingDirective> actual)
+    private static void Equal(IReadOnlyCollection<UsingDirective> expected, IReadOnlyCollection<UsingDirective> actual)
     {
         if (!expected.SequenceEqual(actual, UsingDirectiveEqualityComparer.Instance))
         {

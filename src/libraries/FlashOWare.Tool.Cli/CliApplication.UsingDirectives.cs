@@ -1,4 +1,5 @@
 using FlashOWare.Tool.Cli.CodeAnalysis;
+using FlashOWare.Tool.Cli.CommandLine;
 using FlashOWare.Tool.Cli.IO;
 using FlashOWare.Tool.Core.UsingDirectives;
 using Microsoft.CodeAnalysis;
@@ -18,14 +19,13 @@ public static partial class CliApplication
 
         var countArgument = new Argument<string[]>("USINGS", "The names of the top-level using directives to count. If usings are not specified, the command will list all top-level directives.");
         countCommand.Add(countArgument);
-        countCommand.Add(CliOptions.Project);
+        CliOptions.AddProjectAndSolutionOptionsTo(countCommand);
         countCommand.SetHandler(async (InvocationContext context) =>
         {
             string[] usings = context.ParseResult.GetValueForArgument(countArgument);
-            FileInfo? project = context.ParseResult.GetValueForOption(CliOptions.Project);
-            project ??= fileSystem.GetSingleProject();
+            ProjectOrSolutionFile file = CliOptions.GetProjectOrSolutionFileFrom(context.ParseResult, fileSystem);
 
-            await CountUsingsAsync(workspace, project.FullName, usings.ToImmutableArray(), context.Console, context.GetCancellationToken());
+            await CountUsingsAsync(workspace, file, usings.ToImmutableArray(), context.Console, context.GetCancellationToken());
         });
 
         var globalizeArgument = new Argument<string[]>("USINGS", "The names of the top-level using directives to convert to global using directives. If usings are not specified, the command will globalize all top-level directives.");
@@ -53,18 +53,37 @@ public static partial class CliApplication
         rootCommand.Add(usingCommand);
     }
 
-    private static async Task CountUsingsAsync(MSBuildWorkspace workspace, string projectFilePath, ImmutableArray<string> usings, IConsole console, CancellationToken cancellationToken)
+    private static async Task CountUsingsAsync(MSBuildWorkspace workspace, ProjectOrSolutionFile file, ImmutableArray<string> usings, IConsole console, CancellationToken cancellationToken)
     {
         try
         {
             await CliContext.MSBuildMutex.WaitAsync(cancellationToken);
-            Project project = await workspace.OpenProjectAsync(projectFilePath, null, cancellationToken);
 
-            var result = await UsingCounter.CountAsync(project, usings, cancellationToken);
-            console.WriteLine($"{nameof(Project)}: {result.ProjectName}");
-            foreach (var usingDirective in result.Usings)
+            if (file.IsProject)
             {
-                console.WriteLine($"  {usingDirective.Name}: {usingDirective.Occurrences}");
+                Project project = await workspace.OpenProjectAsync(file.FilePath, null, cancellationToken);
+
+                var result = await UsingCounter.CountAsync(project, usings, cancellationToken);
+                console.WriteLine($"{nameof(Project)}: {result.ProjectName}");
+                foreach (var usingDirective in result.Usings)
+                {
+                    console.WriteLine($"  {usingDirective.Name}: {usingDirective.Occurrences}");
+                }
+            }
+            else
+            {
+                Solution solution = await workspace.OpenSolutionAsync(file.FilePath, null, cancellationToken);
+
+                var results = await UsingCounter.CountAsync(solution, usings, cancellationToken);
+                console.WriteLine($"{nameof(Solution)}: {results.SolutionName}");
+                foreach (var result in results.Results)
+                {
+                    console.WriteLine($"  {nameof(Project)}: {result.ProjectName}");
+                    foreach (var usingDirective in result.Usings)
+                    {
+                        console.WriteLine($"    {usingDirective.Name}: {usingDirective.Occurrences}");
+                    }
+                }
             }
         }
         catch (OperationCanceledException)

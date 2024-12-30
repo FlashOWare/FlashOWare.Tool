@@ -4,15 +4,24 @@ namespace FlashOWare.Tool.Core.UsingDirectives;
 
 public sealed class UsingCountResult
 {
-    private readonly Dictionary<string, UsingDirective> _usings = [];
+    private readonly Dictionary<string, UsingDirective> _usings;
 
     internal UsingCountResult()
     {
+        _usings = [];
     }
 
     [SetsRequiredMembers]
     internal UsingCountResult(string projectName)
     {
+        _usings = [];
+        ProjectName = projectName;
+    }
+
+    [SetsRequiredMembers]
+    public UsingCountResult(string projectName, params UsingDirective[] usings)
+    {
+        _usings = usings.ToDictionary(static string (UsingDirective @using) => @using.Name);
         ProjectName = projectName;
     }
 

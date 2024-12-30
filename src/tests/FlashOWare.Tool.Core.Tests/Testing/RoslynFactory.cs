@@ -7,6 +7,14 @@ namespace FlashOWare.Tool.Core.Tests.Testing;
 
 internal static partial class RoslynFactory
 {
+    public static async Task CheckAsync(Solution solution)
+    {
+        foreach (Project project in solution.Projects)
+        {
+            await CheckAsync(project);
+        }
+    }
+
     public static async Task CheckAsync(Project project)
     {
         Compilation? compilation = await project.GetCompilationAsync(CancellationToken.None);
